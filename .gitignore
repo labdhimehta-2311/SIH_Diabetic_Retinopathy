@@ -18,3 +18,12 @@ desktop.ini
 __pycache__/
 *.pyc
 *.log
+# M3 Segmentation generated data
+src/segmentation/datasets/multiclass_images/
+src/segmentation/datasets/multiclass_masks/
+
+# M3 trained models
+src/segmentation/trained_models/
+
+# M3 generated outputs
+src/segmentation/outputs/
