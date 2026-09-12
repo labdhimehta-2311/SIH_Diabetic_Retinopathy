@@ -27,3 +27,5 @@ src/segmentation/trained_models/
 
 # M3 generated outputs
 src/segmentation/outputs/
+# M3/M4 generated clinical reports
+reports/DR_Screening_Report_*.txt
