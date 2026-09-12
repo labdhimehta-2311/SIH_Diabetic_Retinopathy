@@ -23,9 +23,11 @@ src/segmentation/datasets/multiclass_images/
 src/segmentation/datasets/multiclass_masks/
 
 # M3 trained models
-src/segmentation/trained_models/
+src/segmentation/trained_models/*`r`n!src/segmentation/trained_models/`r`n!src/segmentation/trained_models/unet_multiclass_improved_best.mat
 
 # M3 generated outputs
 src/segmentation/outputs/
 # M3/M4 generated clinical reports
 reports/DR_Screening_Report_*.txt
+src/segmentation/trained_models/*.mat
+!src/segmentation/trained_models/unet_multiclass_improved_best.mat
