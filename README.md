@@ -1,19 +1,5 @@
 # SIH-DIABETIC RETINA
 
-## Project Overview
-
-SIH-DIABETIC RETINA is a diabetic retinopathy screening pipeline developed for the Smart India Hackathon (SIH).
-
-The pipeline contains:
-
-- **M1** – Fundus Image Quality Enhancement
-- **M2** – Diabetic Retinopathy Grading
-- **M3** – Multiclass Retinal Segmentation
-- **M4** – Explainable AI & Clinical Reporting
-- **M6** – Discrete-Event Simulation, Performance Analysis & Queue Modelling 
-
----
-
 # Explainable AI for Diabetic Retinopathy Screening in Rural India
 
 [![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg)](https://www.sih.gov.in/)
