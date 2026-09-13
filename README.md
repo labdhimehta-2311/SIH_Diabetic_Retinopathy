@@ -144,29 +144,7 @@ The model is trained and validated on the **APTOS 2019 Blindness Detection** ben
 
 ---
 
-
-## 6. Limitations & Future Scope
-
-### Current Prototype Limitations
-1. **Camera Variability**: Calibrated primarily on non-mydriatic desktop and portable fundus cameras; requires domain fine-tuning for ultra-low-cost smartphone ophthalmoscopes.
-2. **2D Projection Constraints**: 2D fundus photography cannot measure retinal cross-sectional thickness (requires Optical Coherence Tomography / OCT for definitive Diabetic Macular Edema grading).
-3. **Connectivity Edge Fallback**: While the model is optimized for CPU inference, ultra-low bandwidth sites benefit from further INT8 quantization.
-
-### Future Work
-- Deploying quantized ONNX / TensorRT runtimes directly onto embedded camera hardware at the PHC.
-- Multi-disease expansion to detect concurrent glaucoma (cup-to-disc ratio) and age-related macular degeneration (drusen).
-- Integration with India's **Ayushman Bharat Digital Mission (ABDM)** Health Stack for longitudinal electronic health records.
-
----
-
-## 7. Statutory Medical Disclaimer
-
-> **IMPORTANT MEDICAL NOTICE**:  
-> The **SIH-DIABETIC-RETINA** software is an **academic and research prototype decision-support tool** engineered for the Smart India Hackathon. It is not currently approved or certified by the Central Drugs Standard Control Organisation (CDSCO), the US Food and Drug Administration (FDA), or any medical regulatory authority. It is designed to assist clinical screening triage and does NOT substitute for professional evaluation by a licensed ophthalmologist.
-
----
-
-## 8. Smart India Hackathon Team
+## 6. Smart India Hackathon Team
 
 - **Optical Quality & Enhancement Lead**: Member 1
 - **Biomedical Image Segmentation Lead**: Member 2
@@ -187,7 +165,7 @@ The current pretrained model allows M3 inference without retraining.
 
 ---
 
-## 9. M6: Discrete-Event Workflow Simulation & Queue Modeling
+## 7. M6: Discrete-Event Workflow Simulation & Queue Modeling
  
 **Toolbox / Technology:** MATLAB, Simulink, SimEvents, Discrete-Event Simulation (DES)
 
