@@ -5,6 +5,10 @@ function metrics = calculateMetrics(patientLog, cfg, timeSeries, steadyStateMask
 % queue lengths, resource utilizations, stage-wise delay contributions,
 % and automatically diagnoses the binding system bottleneck.
 %
+% Fully self-contained: Uses robust internal statistical helpers (safeMean,
+% safeMedian, safePercentile, safeStd) to avoid dependencies on optional
+% toolboxes or conflicts with user scripts in MATLAB Drive (such as median.m).
+%
 % Member 6: labdhimehta-2311
 % Smart India Hackathon (SIH) 2026
 
@@ -42,11 +46,11 @@ function metrics = calculateMetrics(patientLog, cfg, timeSeries, steadyStateMask
     end
 
     latencies = validLog.TotalLatency;
-    metrics.avgLatency    = mean(latencies);
-    metrics.medianLatency = median(latencies);
-    metrics.p95Latency    = prctile(latencies, 95);
+    metrics.avgLatency    = safeMean(latencies);
+    metrics.medianLatency = safeMedian(latencies);
+    metrics.p95Latency    = safePercentile(latencies, 95);
     metrics.maxLatency    = max(latencies);
-    metrics.stdLatency    = std(latencies);
+    metrics.stdLatency    = safeStd(latencies);
 
     % Stage-wise Delays
     % 1. Patient Queue Waiting Time
@@ -68,36 +72,36 @@ function metrics = calculateMetrics(patientLog, cfg, timeSeries, steadyStateMask
     docWait = validLog.DocStart - validLog.DocQueueEntry;
     docServ = validLog.DocEnd - validLog.DocStart;
 
-    metrics.avgPatientQueueWait = mean(patientWait);
-    metrics.avgCheckinService   = mean(checkinServ);
-    metrics.avgCaptureWait      = mean(captureWait);
-    metrics.avgCaptureService   = mean(captureServ);
-    metrics.avgNetworkDelay     = mean(networkDelay);
-    metrics.avgAIQueueWait      = mean(aiWait);
-    metrics.avgAIService        = mean(aiServ);
-    metrics.avgDoctorQueueWait  = mean(docWait);
-    metrics.avgDoctorService    = mean(docServ);
+    metrics.avgPatientQueueWait = safeMean(patientWait);
+    metrics.avgCheckinService   = safeMean(checkinServ);
+    metrics.avgCaptureWait      = safeMean(captureWait);
+    metrics.avgCaptureService   = safeMean(captureServ);
+    metrics.avgNetworkDelay     = safeMean(networkDelay);
+    metrics.avgAIQueueWait      = safeMean(aiWait);
+    metrics.avgAIService        = safeMean(aiServ);
+    metrics.avgDoctorQueueWait  = safeMean(docWait);
+    metrics.avgDoctorService    = safeMean(docServ);
 
     % Verification: Stage sum vs total latency
-    stageSum = mean(patientWait + checkinServ + captureWait + captureServ + ...
-                    networkDelay + aiWait + aiServ + docWait + docServ);
+    stageSum = safeMean(patientWait + checkinServ + captureWait + captureServ + ...
+                        networkDelay + aiWait + aiServ + docWait + docServ);
     metrics.stageSumDelay       = stageSum;
     metrics.latencyResidual     = abs(stageSum - metrics.avgLatency);
 
     % Queue lengths (from continuous time-series)
     if nargin >= 3 && ~isempty(timeSeries)
-        metrics.avgPatientQueue = mean(timeSeries.patientQueue);
+        metrics.avgPatientQueue = safeMean(timeSeries.patientQueue);
         metrics.maxPatientQueue = max(timeSeries.patientQueue);
-        metrics.avgAIQueue      = mean(timeSeries.aiQueue);
+        metrics.avgAIQueue      = safeMean(timeSeries.aiQueue);
         metrics.maxAIQueue      = max(timeSeries.aiQueue);
-        metrics.avgDoctorQueue  = mean(timeSeries.doctorQueue);
+        metrics.avgDoctorQueue  = safeMean(timeSeries.doctorQueue);
         metrics.maxDoctorQueue  = max(timeSeries.doctorQueue);
     else
-        metrics.avgPatientQueue = mean(patientWait) * (cfg.arrivalRate / 3600); % Little's Law approx
+        metrics.avgPatientQueue = safeMean(patientWait) * (cfg.arrivalRate / 3600); % Little's Law approx
         metrics.maxPatientQueue = NaN;
-        metrics.avgAIQueue      = mean(aiWait) * (cfg.arrivalRate / 3600);
+        metrics.avgAIQueue      = safeMean(aiWait) * (cfg.arrivalRate / 3600);
         metrics.maxAIQueue      = NaN;
-        metrics.avgDoctorQueue  = mean(docWait) * (cfg.arrivalRate / 3600);
+        metrics.avgDoctorQueue  = safeMean(docWait) * (cfg.arrivalRate / 3600);
         metrics.maxDoctorQueue  = NaN;
     end
 
@@ -137,18 +141,80 @@ function metrics = calculateMetrics(patientLog, cfg, timeSeries, steadyStateMask
     % AI-Assisted Risk Prioritization Metrics
     highRiskMask = validLog.IsHighRisk;
     if any(highRiskMask) && any(~highRiskMask)
-        metrics.avgHighRiskDocWait = mean(docWait(highRiskMask));
-        metrics.avgLowRiskDocWait  = mean(docWait(~highRiskMask));
+        metrics.avgHighRiskDocWait = safeMean(docWait(highRiskMask));
+        metrics.avgLowRiskDocWait  = safeMean(docWait(~highRiskMask));
         metrics.maxHighRiskDocWait = max(docWait(highRiskMask));
-        metrics.p95HighRiskDocWait = prctile(docWait(highRiskMask), 95);
+        metrics.p95HighRiskDocWait = safePercentile(docWait(highRiskMask), 95);
         metrics.priorityBenefitPct = ((metrics.avgLowRiskDocWait - metrics.avgHighRiskDocWait) / ...
                                        max(1e-3, metrics.avgLowRiskDocWait)) * 100;
     else
-        metrics.avgHighRiskDocWait = mean(docWait);
-        metrics.avgLowRiskDocWait  = mean(docWait);
+        metrics.avgHighRiskDocWait = safeMean(docWait);
+        metrics.avgLowRiskDocWait  = safeMean(docWait);
         metrics.maxHighRiskDocWait = max(docWait);
-        metrics.p95HighRiskDocWait = prctile(docWait, 95);
+        metrics.p95HighRiskDocWait = safePercentile(docWait, 95);
         metrics.priorityBenefitPct = 0;
     end
 
+end
+
+% =========================================================================
+% ROBUST LOCAL STATISTICAL HELPERS (Immune to User Script Shadowing)
+% =========================================================================
+
+function m = safeMedian(x)
+    % Compute median purely via sorting, immune to /MATLAB Drive/median.m script
+    x = x(~isnan(x));
+    if isempty(x)
+        m = NaN;
+        return;
+    end
+    sx = sort(x(:));
+    n = length(sx);
+    if mod(n, 2) == 1
+        m = sx((n + 1) / 2);
+    else
+        m = (sx(n / 2) + sx(n / 2 + 1)) / 2;
+    end
+end
+
+function p = safePercentile(x, ptile)
+    % Compute percentile via linear interpolation, independent of Statistics Toolbox
+    x = x(~isnan(x));
+    if isempty(x)
+        p = NaN;
+        return;
+    end
+    sx = sort(x(:));
+    n = length(sx);
+    if n == 1
+        p = sx(1);
+        return;
+    end
+    q = (ptile / 100) * (n - 1) + 1;
+    qLow = floor(q);
+    qHigh = ceil(q);
+    w = q - qLow;
+    p = (1 - w) * sx(qLow) + w * sx(qHigh);
+end
+
+function s = safeStd(x)
+    % Sample standard deviation using core MATLAB arithmetic
+    x = x(~isnan(x));
+    n = length(x);
+    if n <= 1
+        s = 0;
+        return;
+    end
+    mu = sum(x) / n;
+    s = sqrt(sum((x - mu).^2) / (n - 1));
+end
+
+function mu = safeMean(x)
+    % Sample mean using core MATLAB sum and length
+    x = x(~isnan(x));
+    if isempty(x)
+        mu = NaN;
+    else
+        mu = sum(x) / length(x);
+    end
 end

@@ -56,16 +56,16 @@ function mcSummary = runMonteCarlo(numReplications, testLoads)
         end
 
         loadVec(i)     = lam;
-        latMeanVec(i)  = mean(latTrials);
-        latStdVec(i)   = std(latTrials);
+        latMeanVec(i)  = safeMean(latTrials);
+        latStdVec(i)   = safeStd(latTrials);
         latCI95Vec(i)  = 1.96 * (latStdVec(i) / sqrt(numReplications));
 
-        thrMeanVec(i)  = mean(thrTrials);
-        thrStdVec(i)   = std(thrTrials);
+        thrMeanVec(i)  = safeMean(thrTrials);
+        thrStdVec(i)   = safeStd(thrTrials);
         thrCI95Vec(i)  = 1.96 * (thrStdVec(i) / sqrt(numReplications));
 
-        docQMeanVec(i) = mean(docQTrials);
-        docQStdVec(i)  = std(docQTrials);
+        docQMeanVec(i) = safeMean(docQTrials);
+        docQStdVec(i)  = safeStd(docQTrials);
         docQCI95Vec(i) = 1.96 * (docQStdVec(i) / sqrt(numReplications));
 
         fprintf('Mean Lat: %5.1f +- %4.1fs | Mean Thr: %4.1f +- %3.1f pts/hr\n', ...
@@ -84,4 +84,24 @@ function mcSummary = runMonteCarlo(numReplications, testLoads)
     if ~isfolder(resultsDir), mkdir(resultsDir); end
     writetable(mcSummary, fullfile(resultsDir, 'monte_carlo_results.csv'));
 
+end
+
+function mu = safeMean(x)
+    x = x(~isnan(x));
+    if isempty(x)
+        mu = NaN;
+    else
+        mu = sum(x) / length(x);
+    end
+end
+
+function s = safeStd(x)
+    x = x(~isnan(x));
+    n = length(x);
+    if n <= 1
+        s = 0;
+        return;
+    end
+    mu = sum(x) / n;
+    s = sqrt(sum((x - mu).^2) / (n - 1));
 end

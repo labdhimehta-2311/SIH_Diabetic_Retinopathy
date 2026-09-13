@@ -6,6 +6,10 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
 % -> Network Transmission -> AI Inference (Multi-Worker) -> Doctor Review
 % (Multi-Doctor, optional AI-priority) -> Screening Output -> Exit.
 %
+% Fully self-contained: Uses robust local random generators (safeExpRnd,
+% safeNormRnd, safeBetaRnd) built on base MATLAB rand/randn to eliminate
+% dependencies on optional toolboxes and avoid script shadowing issues.
+%
 % Inputs:
 %   cfg - Simulation configuration struct (from simulationConfig.m)
 %
@@ -35,7 +39,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
     tCurr = 0;
     while tCurr < simDuration
         if strcmpi(cfg.arrivalPattern, 'poisson')
-            dt = exprnd(meanInterArrival);
+            dt = safeExpRnd(meanInterArrival);
         else
             dt = meanInterArrival; % Deterministic
         end
@@ -72,7 +76,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
         patients(i).ArrivalTime = arrivalTimes(i);
         patients(i).IsEmergency = (rand() < cfg.emergencyProb);
         % Simulated AI Risk Score: Beta distribution skewed towards lower risk, with moderate/severe tail
-        patients(i).RiskScore = betarnd(1.8, 3.5);
+        patients(i).RiskScore = safeBetaRnd(1.8, 3.5);
         patients(i).IsHighRisk = (patients(i).RiskScore >= cfg.highRiskThreshold) || patients(i).IsEmergency;
     end
 
@@ -97,7 +101,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
     for i = 1:numPatients
         arrT = patients(i).ArrivalTime;
         % Service time for check-in
-        sCheckin = max(5, normrnd(cfg.checkinTime, cfg.checkinStd));
+        sCheckin = max(5, safeNormRnd(cfg.checkinTime, cfg.checkinStd));
         tStart = max(arrT, checkinBusyUntil);
         tEnd = tStart + sCheckin;
         checkinBusyUntil = tEnd;
@@ -113,9 +117,9 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
         [earliestFree, devIdx] = min(captureBusyUntil);
         tStart = max(readyT, earliestFree);
         % Image capture duration with possible retry
-        sCapture = max(10, normrnd(cfg.imageCaptureTime, cfg.imageCaptureStd));
+        sCapture = max(10, safeNormRnd(cfg.imageCaptureTime, cfg.imageCaptureStd));
         if rand() < cfg.imageRecaptureProb
-            sCapture = sCapture + max(10, normrnd(cfg.imageCaptureTime * 0.7, cfg.imageCaptureStd));
+            sCapture = sCapture + max(10, safeNormRnd(cfg.imageCaptureTime * 0.7, cfg.imageCaptureStd));
         end
         tEnd = tStart + sCapture;
         captureBusyUntil(devIdx) = tEnd;
@@ -131,10 +135,10 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
         if strcmpi(cfg.networkMode, 'fixed')
             netDelaySec = cfg.networkDelay / 1000;
         else
-            % Stochastic delay (lognormal or truncated normal)
+            % Stochastic delay (normal with jitter)
             meanDelay = cfg.networkDelay / 1000;
             jitter = cfg.networkJitter / 1000;
-            netDelaySec = max(0.005, normrnd(meanDelay, jitter));
+            netDelaySec = max(0.005, safeNormRnd(meanDelay, jitter));
         end
         patients(i).NetworkEnd = readyT + netDelaySec;
         patients(i).AIQueueEntry = patients(i).NetworkEnd;
@@ -152,7 +156,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
 
             [earliestFree, wIdx] = min(aiBusyUntil);
             tStart = max(readyT, earliestFree);
-            sAI = max(0.1, normrnd(cfg.aiProcessingTime, cfg.aiProcessingStd));
+            sAI = max(0.1, safeNormRnd(cfg.aiProcessingTime, cfg.aiProcessingStd));
             tEnd = tStart + sAI;
             aiBusyUntil(wIdx) = tEnd;
 
@@ -182,7 +186,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
             readyT = patients(idx).DocQueueEntry;
             [earliestFree, dIdx] = min(doctorBusyUntil);
             tStart = max(readyT, earliestFree);
-            sDoc = max(10, normrnd(cfg.doctorReviewTime, cfg.doctorReviewStd));
+            sDoc = max(10, safeNormRnd(cfg.doctorReviewTime, cfg.doctorReviewStd));
             tEnd = tStart + sDoc;
             doctorBusyUntil(dIdx) = tEnd;
 
@@ -231,7 +235,7 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
 
             readyT = patients(chosenPatient).DocQueueEntry;
             tStart = max(readyT, earliestDocFree);
-            sDoc = max(10, normrnd(cfg.doctorReviewTime, cfg.doctorReviewStd));
+            sDoc = max(10, safeNormRnd(cfg.doctorReviewTime, cfg.doctorReviewStd));
             tEnd = tStart + sDoc;
             doctorBusyUntil(dIdx) = tEnd;
 
@@ -287,4 +291,53 @@ function [results, patientLog, timeSeries] = runSimulation(cfg)
     results = calculateMetrics(patientLog, cfg, timeSeries, steadyStateMask);
     results.cfg = cfg;
 
+end
+
+% =========================================================================
+% ROBUST LOCAL RANDOM GENERATORS (Independent of Statistics Toolbox)
+% =========================================================================
+
+function r = safeExpRnd(mu)
+    % Exponential distribution generator via inverse transform
+    r = -mu * log(max(1e-12, rand()));
+end
+
+function r = safeNormRnd(mu, sigma)
+    % Normal distribution generator via core MATLAB randn
+    r = mu + sigma * randn();
+end
+
+function r = safeBetaRnd(a, b)
+    % Beta distribution generator via Gamma ratio
+    g1 = sampleGamma(a);
+    g2 = sampleGamma(b);
+    if (g1 + g2) > 0
+        r = g1 / (g1 + g2);
+    else
+        r = rand();
+    end
+end
+
+function g = sampleGamma(alpha)
+    % Marsaglia & Tsang method for generating Gamma(alpha, 1) using core rand & randn
+    if alpha < 1
+        g = sampleGamma(alpha + 1) * (rand()^(1 / alpha));
+        return;
+    end
+    d = alpha - 1/3;
+    c = 1 / sqrt(9 * d);
+    while true
+        z = randn();
+        v = (1 + c * z)^3;
+        if v <= 0, continue; end
+        u = rand();
+        if u < 1 - 0.0331 * (z^4)
+            g = d * v;
+            return;
+        end
+        if log(u) < 0.5 * (z^2) + d * (1 - v + log(v))
+            g = d * v;
+            return;
+        end
+    end
 end
