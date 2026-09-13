@@ -150,8 +150,8 @@ The model is trained and validated on the **APTOS 2019 Blindness Detection** ben
 - **Biomedical Image Segmentation Lead**: Member 2
 - **Deep Learning & ML Lead**: Member 3
 - **Explainable AI & Clinical Interface Lead**: Member 4
-- **Simulink & Systems Logistics Lead**: Member 5
-- **Integration Engineer**: Member 6
+- **Integration Engineer**: Member 5
+- **Simulink & Systems Logistics Lead**: Member 6
 
 
 
@@ -205,7 +205,7 @@ In MATLAB:
 % 1. Run complete automated experiment suite (all sweeps, plots, dashboard):
 runAllExperiments
 
-% 2. Or run the integrated end-to-end demo (M1 -> M2 -> M3 -> M4 -> M6):
+% 2. Or run the integrated end-to-end demo (M1 -> M2 -> M3 -> M4 -> M5 -> M6):
 run_pipeline_demo
 ```
 
