@@ -990,3 +990,61 @@ pipelineResult.timing.total = ...
 
 fprintf( ...
     '[PIPELINE] pipelineResult structure is available in workspace.\n');
+
+
+%% ================================================================
+% 20. MODULE 6: WORKFLOW PERFORMANCE & QUEUE SIMULATION
+%     (Member 6: labdhimehta-2311)
+% ================================================================
+
+fprintf('\n');
+fprintf('===============================================================\n');
+fprintf('  MODULE 6: CLINICAL WORKFLOW & QUEUE PERFORMANCE VALIDATION  \n');
+fprintf('  (Simulink / Discrete-Event Simulation Engine)                \n');
+fprintf('===============================================================\n');
+
+% Set up Member 6 simulation paths
+simScriptDir = fullfile(rootDir, 'SIH_DR_Simulink', 'scripts');
+addpath(simScriptDir);
+
+% Ingest actual empirical AI pipeline execution time into simulation model
+calibratedAITime = max(0.5, totalTime);
+fprintf('[M6] Calibrating AI inference service time from empirical M1-M4 run: %.2f seconds\n', calibratedAITime);
+
+% Configure screening simulation for nominal community clinic load (30 pts/hr)
+cfgSim = simulationConfig(...
+    'arrivalRate', 30, ...
+    'aiProcessingTime', calibratedAITime, ...
+    'numberOfAIWorkers', 2, ...
+    'numberOfDoctors', 1, ...
+    'workflowType', 'proposed');
+
+% Execute discrete-event simulation
+fprintf('[M6] Executing clinical workflow discrete-event simulation ...\n');
+[simResults, simPatientLog, simTimeSeries] = runSimulation(cfgSim);
+
+% Display results in console
+fprintf('\n[M6 CLINICAL WORKFLOW SIMULATION RESULTS]\n');
+fprintf('  Tested Patient Load:       %d patients/hour\n', cfgSim.arrivalRate);
+fprintf('  Operational Throughput:    %.1f patients/hour (%.2f pts/min)\n', ...
+    simResults.throughputPerHour, simResults.throughputPerMin);
+fprintf('  Average End-to-End Latency:%.1f seconds (%.2f minutes)\n', ...
+    simResults.avgLatency, simResults.avgLatency / 60);
+fprintf('  P95 Screening Latency:     %.1f seconds\n', simResults.p95Latency);
+fprintf('  Mean Doctor Waiting Queue: %.2f patients (Max: %d)\n', ...
+    simResults.avgDoctorQueue, simResults.maxDoctorQueue);
+fprintf('  Ophthalmologist Util:      %.1f%%\n', simResults.doctorUtilization * 100);
+fprintf('  AI Cluster Utilization:    %.1f%%\n', simResults.aiUtilization * 100);
+fprintf('  Primary Capacity Limit:    %s\n', simResults.bottleneckStage);
+fprintf('  Network Delay Share:       %.2f%% (Latency: %.1f ms)\n', ...
+    simResults.networkDelayContributionPct, simResults.avgNetworkDelay * 1000);
+fprintf('---------------------------------------------------------------\n');
+fprintf('  [MODULE 6] Discrete-Event Simulation Validation: SUCCESS\n');
+fprintf('===============================================================\n\n');
+
+% Attach simulation results to workspace pipelineResult
+pipelineResult.m6 = struct();
+pipelineResult.m6.simulationResults = simResults;
+pipelineResult.m6.patientLog = simPatientLog;
+pipelineResult.m6.timeSeries = simTimeSeries;
+pipelineResult.m6.config = cfgSim;

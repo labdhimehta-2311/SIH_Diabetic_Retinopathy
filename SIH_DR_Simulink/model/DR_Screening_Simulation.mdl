@@ -1,0 +1,531 @@
+Model {
+  Name			  "DR_Screening_Simulation"
+  Version		  10.0
+  SavedCharacterEncoding  "UTF-8"
+  GraphicalInterface {
+    NumRootInports	    0
+    NumRootOutports	    0
+    ParameterArgumentNames  ""
+    ComputedModelVersion    "1.42"
+    NumModelReferences	    0
+    NumTestPointedSignals   0
+  }
+  Description		  "SIH 2026 AI-Assisted Diabetic Retinopathy Screening Workflow Simulation\nMember 6: labdhimehta-2311\nComplete Discrete-Event / Queueing Model: Patient Arrival -> Checkin -> Image Capture -> Network Delay -> AI Inference -> Doctor Review -> Exit"
+  ScopeRefreshTime	  0.035000
+  OverrideScopeRefreshTime on
+  DisableAllScopes	  off
+  DataTypeOverride	  "UseLocalSettings"
+  MinMaxOverflowLogging	  "UseLocalSettings"
+  MinMaxOverflowArchiveMode "Overwrite"
+  MaxMDLFileLineLength	  120
+  SimulationMode	  "normal"
+  Solver		  "VariableStepDiscrete"
+  StartTime		  "0.0"
+  StopTime		  "28800.0"
+  MaxStep		  "auto"
+  MinStep		  "auto"
+  InitialStep		  "auto"
+  FixedStep		  "auto"
+  RelTol		  "1e-3"
+  AbsTol		  "auto"
+  Array {
+    Type		    "Handle"
+    Dimension		    1
+    Simulink.ConfigSet {
+      $ObjectID		      1
+      Version		      "10.0"
+      Description	      ""
+      Name		      "Configuration"
+      CurrentDlgPage	      "Solver"
+    }
+    PropName		    "ConfigurationSets"
+  }
+  BlockDefaults {
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    NamePlacement	    "normal"
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+    ShowName		    on
+  }
+  AnnotationDefaults {
+    HorizontalAlignment	    "center"
+    VerticalAlignment	    "middle"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  LineDefaults {
+    FontName		    "Helvetica"
+    FontSize		    9
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  System {
+    Name		    "DR_Screening_Simulation"
+    Location		    [100, 100, 1400, 800]
+    Open		    on
+    ModelBrowserVisibility  off
+    ModelBrowserWidth	    200
+    ScreenColor		    "white"
+    PaperOrientation	    "landscape"
+    PaperPositionMode	    "auto"
+    PaperType		    "usletter"
+    PaperUnits		    "inches"
+    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+    TiledPageScale	    1
+    ShowPageBoundaries	    off
+    ZoomFactor		    "100"
+    ReportName		    "simulink-default.rpt"
+    SIDHighWatermark	    "50"
+    Block {
+      BlockType		      SubSystem
+      Name		      "Patient_Arrival_Generator"
+      SID		      "1"
+      Ports		      [0, 1]
+      Position		      [60, 120, 180, 190]
+      BackgroundColor	      "LightBlue"
+      System {
+	Name			"Patient_Arrival_Generator"
+	Location		[120, 120, 700, 600]
+	Open			off
+	Port {
+	  PortNumber		  1
+	  Name			  "Patient_Entity"
+	  RTWStorageClass	  "Auto"
+	  DataLoggingNameMode	  "SignalName"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Time_Based_Entity_Generator"
+	  SID			  "2"
+	  Ports			  [0, 1]
+	  Position		  [60, 80, 160, 140]
+	  SourceBlock		  "simeventsentitymanagement1/Time-Based\nEntity Generator"
+	  SourceType		  "Time-Based Entity Generator"
+	  distribution		  "Exponential"
+	  mean			  "3600 / cfg.arrivalRate"
+	  entityType		  "Patient"
+	  attributeNames	  "{'PatientID', 'ArrivalTime', 'RiskScore', 'IsHighRisk'}"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_Patient"
+	  SID			  "3"
+	  Position		  [240, 95, 270, 125]
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "Time_Based_Entity_Generator"
+	  SrcPort		  1
+	  DstBlock		  "Out_Patient"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Triage_and_CheckIn"
+      SID		      "4"
+      Ports		      [1, 1]
+      Position		      [230, 120, 350, 190]
+      BackgroundColor	      "Cyan"
+      System {
+	Name			"Triage_and_CheckIn"
+	Location		[200, 200, 800, 600]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_Patient"
+	  SID			  "5"
+	  Position		  [40, 95, 70, 125]
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Waiting_Room_Queue"
+	  SID			  "6"
+	  Ports			  [1, 1]
+	  Position		  [110, 80, 190, 140]
+	  SourceBlock		  "simeventsqueue1/FIFO Queue"
+	  SourceType		  "FIFO Queue"
+	  capacity		  "cfg.patientQueueCapacity"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Checkin_Desk_Server"
+	  SID			  "7"
+	  Ports			  [1, 1]
+	  Position		  [230, 80, 310, 140]
+	  SourceBlock		  "simeventsserver1/Single Server"
+	  SourceType		  "Single Server"
+	  servicePeriod		  "cfg.checkinTime"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_CheckedIn"
+	  SID			  "8"
+	  Position		  [350, 95, 380, 125]
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "In_Patient"
+	  SrcPort		  1
+	  DstBlock		  "Waiting_Room_Queue"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Waiting_Room_Queue"
+	  SrcPort		  1
+	  DstBlock		  "Checkin_Desk_Server"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Checkin_Desk_Server"
+	  SrcPort		  1
+	  DstBlock		  "Out_CheckedIn"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Fundus_Image_Capture"
+      SID		      "9"
+      Ports		      [1, 1]
+      Position		      [400, 120, 520, 190]
+      BackgroundColor	      "Yellow"
+      System {
+	Name			"Fundus_Image_Capture"
+	Location		[250, 250, 850, 650]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_Patient"
+	  SID			  "10"
+	  Position		  [40, 95, 70, 125]
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Capture_Queue"
+	  SID			  "11"
+	  Ports			  [1, 1]
+	  Position		  [110, 80, 190, 140]
+	  SourceBlock		  "simeventsqueue1/FIFO Queue"
+	  SourceType		  "FIFO Queue"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Fundus_Camera_Station"
+	  SID			  "12"
+	  Ports			  [1, 1]
+	  Position		  [230, 80, 310, 140]
+	  SourceBlock		  "simeventsserver1/Single Server"
+	  SourceType		  "Single Server"
+	  servicePeriod		  "cfg.imageCaptureTime"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_Captured"
+	  SID			  "13"
+	  Position		  [350, 95, 380, 125]
+	}
+	Line {
+	  SrcBlock		  "In_Patient"
+	  SrcPort		  1
+	  DstBlock		  "Capture_Queue"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Capture_Queue"
+	  SrcPort		  1
+	  DstBlock		  "Fundus_Camera_Station"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Fundus_Camera_Station"
+	  SrcPort		  1
+	  DstBlock		  "Out_Captured"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Network_Delay_Channel"
+      SID		      "14"
+      Ports		      [1, 1]
+      Position		      [570, 120, 690, 190]
+      BackgroundColor	      "Orange"
+      System {
+	Name			"Network_Delay_Channel"
+	Location		[300, 300, 800, 600]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_FundusData"
+	  SID			  "15"
+	  Position		  [40, 95, 70, 125]
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Cloud_Transmission_Delay"
+	  SID			  "16"
+	  Ports			  [1, 1]
+	  Position		  [130, 80, 230, 140]
+	  SourceBlock		  "simeventsdelays1/Discrete Event Delay"
+	  SourceType		  "Discrete Event Delay"
+	  delayTime		  "cfg.networkDelay / 1000"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_ArrivedCloud"
+	  SID			  "17"
+	  Position		  [290, 95, 320, 125]
+	}
+	Line {
+	  SrcBlock		  "In_FundusData"
+	  SrcPort		  1
+	  DstBlock		  "Cloud_Transmission_Delay"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Cloud_Transmission_Delay"
+	  SrcPort		  1
+	  DstBlock		  "Out_ArrivedCloud"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "AI_Inference_Cluster"
+      SID		      "18"
+      Ports		      [1, 1]
+      Position		      [740, 120, 860, 190]
+      BackgroundColor	      "Magenta"
+      System {
+	Name			"AI_Inference_Cluster"
+	Location		[350, 350, 950, 750]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_CloudData"
+	  SID			  "19"
+	  Position		  [40, 95, 70, 125]
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "AI_Inference_Queue"
+	  SID			  "20"
+	  Ports			  [1, 1]
+	  Position		  [110, 80, 190, 140]
+	  SourceBlock		  "simeventsqueue1/FIFO Queue"
+	  SourceType		  "FIFO Queue"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "AI_Worker_Pool"
+	  SID			  "21"
+	  Ports			  [1, 1]
+	  Position		  [230, 80, 330, 140]
+	  SourceBlock		  "simeventsserver1/N-Server"
+	  SourceType		  "N-Server"
+	  numberOfServers	  "cfg.numberOfAIWorkers"
+	  servicePeriod		  "cfg.aiProcessingTime"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_AIGraded"
+	  SID			  "22"
+	  Position		  [370, 95, 400, 125]
+	}
+	Line {
+	  SrcBlock		  "In_CloudData"
+	  SrcPort		  1
+	  DstBlock		  "AI_Inference_Queue"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "AI_Inference_Queue"
+	  SrcPort		  1
+	  DstBlock		  "AI_Worker_Pool"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "AI_Worker_Pool"
+	  SrcPort		  1
+	  DstBlock		  "Out_AIGraded"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Doctor_Tele_Review"
+      SID		      "23"
+      Ports		      [1, 1]
+      Position		      [910, 120, 1030, 190]
+      BackgroundColor	      "LightBlue"
+      System {
+	Name			"Doctor_Tele_Review"
+	Location		[400, 400, 1000, 800]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_GradedCase"
+	  SID			  "24"
+	  Position		  [40, 95, 70, 125]
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Priority_Review_Queue"
+	  SID			  "25"
+	  Ports			  [1, 1]
+	  Position		  [110, 80, 200, 140]
+	  SourceBlock		  "simeventsqueue1/Priority Queue"
+	  SourceType		  "Priority Queue"
+	  sortingAttribute	  "'IsHighRisk'"
+	  sortingDirection	  "Descending"
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Ophthalmologist_Team"
+	  SID			  "26"
+	  Ports			  [1, 1]
+	  Position		  [240, 80, 340, 140]
+	  SourceBlock		  "simeventsserver1/N-Server"
+	  SourceType		  "N-Server"
+	  numberOfServers	  "cfg.numberOfDoctors"
+	  servicePeriod		  "cfg.doctorReviewTime"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "Out_Reviewed"
+	  SID			  "27"
+	  Position		  [380, 95, 410, 125]
+	}
+	Line {
+	  SrcBlock		  "In_GradedCase"
+	  SrcPort		  1
+	  DstBlock		  "Priority_Review_Queue"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Priority_Review_Queue"
+	  SrcPort		  1
+	  DstBlock		  "Ophthalmologist_Team"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Ophthalmologist_Team"
+	  SrcPort		  1
+	  DstBlock		  "Out_Reviewed"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Screening_Output_Sink"
+      SID		      "28"
+      Ports		      [1, 0]
+      Position		      [1080, 120, 1200, 190]
+      BackgroundColor	      "Green"
+      System {
+	Name			"Screening_Output_Sink"
+	Location		[450, 450, 900, 750]
+	Open			off
+	Block {
+	  BlockType		  Inport
+	  Name			  "In_CompletedCase"
+	  SID			  "29"
+	  Position		  [40, 95, 70, 125]
+	}
+	Block {
+	  BlockType		  Reference
+	  Name			  "Entity_Sink"
+	  SID			  "30"
+	  Ports			  [1, 0]
+	  Position		  [130, 80, 210, 140]
+	  SourceBlock		  "simeventssink1/Entity Sink"
+	  SourceType		  "Entity Sink"
+	}
+	Line {
+	  SrcBlock		  "In_CompletedCase"
+	  SrcPort		  1
+	  DstBlock		  "Entity_Sink"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Performance_Metrics_Dashboard"
+      SID		      "31"
+      Ports		      [0, 0]
+      Position		      [400, 260, 850, 360]
+      BackgroundColor	      "Gray"
+      System {
+	Name			"Performance_Metrics_Dashboard"
+	Location		[200, 200, 900, 600]
+	Open			off
+	Annotation {
+	  Name			  "Real-Time Queue Observers & Little's Law Verifier\nMonitors Queues, Latency Distributions, and Station Utilizations"
+	  Position		  [300, 50]
+	  FontSize		  12
+	  FontWeight		  "bold"
+	}
+      }
+    }
+    Line {
+      SrcBlock		      "Patient_Arrival_Generator"
+      SrcPort		      1
+      DstBlock		      "Triage_and_CheckIn"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Triage_and_CheckIn"
+      SrcPort		      1
+      DstBlock		      "Fundus_Image_Capture"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Fundus_Image_Capture"
+      SrcPort		      1
+      DstBlock		      "Network_Delay_Channel"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Network_Delay_Channel"
+      SrcPort		      1
+      DstBlock		      "AI_Inference_Cluster"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "AI_Inference_Cluster"
+      SrcPort		      1
+      DstBlock		      "Doctor_Tele_Review"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Doctor_Tele_Review"
+      SrcPort		      1
+      DstBlock		      "Screening_Output_Sink"
+      DstPort		      1
+    }
+    Annotation {
+      Name		      "SIH 2026: Diabetic Retinopathy AI Screening Discrete-Event Simulation\nMember 6: labdhimehta-2311 | Complete Clinical Workflow & Queueing Model"
+      Position		      [630, 40]
+      FontSize		      14
+      FontWeight	      "bold"
+    }
+  }
+}
