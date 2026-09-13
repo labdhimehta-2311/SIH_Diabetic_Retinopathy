@@ -43,18 +43,8 @@ The current pretrained model allows M3 inference without retraining.
 
 ---
 
-# Running M3 Without Training
-
-The pretrained model is already included in the repository:
-
-```text
-src/segmentation/trained_models/unet_multiclass_improved_best.mat
-```
-
----
-
 # M6: Discrete-Event Workflow Simulation & Queue Modeling
-**Member 6:** `labdhimehta-2311`  
+ 
 **Toolbox / Technology:** MATLAB, Simulink, SimEvents, Discrete-Event Simulation (DES)
 
 Module 6 simulates the end-to-end clinical and computational workflow of our AI-assisted diabetic retinopathy screening platform to quantitatively prove scalability, latency, throughput, queue behavior, bottlenecks, and rural telemedicine feasibility.
