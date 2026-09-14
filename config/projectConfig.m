@@ -37,7 +37,7 @@ function cfg = projectConfig()
 
     %% 3. Explainability & Calibration Parameters (Member 4)
     cfg.explainability = struct();
-    cfg.explainability.gradCamLayer     = 'conv5_block3_out'; % Final convolutional layer in ResNet50
+    cfg.explainability.gradCamLayer     = 'res5c_branch2c'; % Final convolutional layer in ResNet50
     cfg.explainability.overlayAlpha     = 0.45;               % Heatmap blend transparency
     cfg.explainability.colormap         = 'turbo';            % Medical visualization colormap ('turbo' or 'jet')
     cfg.explainability.tempScaleT       = 1.35;               % Calibrated temperature scaling parameter

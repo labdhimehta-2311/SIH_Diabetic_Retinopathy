@@ -71,16 +71,16 @@ function [camMap, featureLayerUsed] = generateGradCAM(img, net, targetClass, les
 
             % Try with configured feature layer first
             try
-                rawCam = gradcam(net, resizedImg, matlabClassIdx, 'FeatureLayer', gradCamLayer);
+                rawCam = gradCAM(net, resizedImg, matlabClassIdx, 'FeatureLayer', gradCamLayer);
                 featureLayerUsed = gradCamLayer;
             catch
                 % Fallback: try activation_49_relu (common for DAG ResNet-50)
                 try
-                    rawCam = gradcam(net, resizedImg, matlabClassIdx, 'FeatureLayer', 'activation_49_relu');
+                    rawCam = gradCAM(net, resizedImg, matlabClassIdx, 'FeatureLayer', 'activation_49_relu');
                     featureLayerUsed = 'activation_49_relu';
                 catch
                     % Fallback: let MATLAB automatically select the final feature layer
-                    rawCam = gradcam(net, resizedImg, matlabClassIdx);
+                    rawCam = gradCAM(net, resizedImg, matlabClassIdx);
                     featureLayerUsed = 'auto_final_conv';
                 end
             end

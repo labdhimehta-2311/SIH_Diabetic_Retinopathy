@@ -54,7 +54,7 @@ function [severityLevel, isReferable, confidence, reportPath] = M2_DR_Grading(en
     end
 
     % Member 4: Explainability (Grad-CAM Saliency Map)
-    camMap = gradCAM(net, img, YPred);
+  camMap = projectGradCAM(net, img, YPred);
 
     % Member 4: Alpha-Blended Clinical Heatmap Overlay
     if exist('overlayGradCAM', 'file')

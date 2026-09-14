@@ -80,7 +80,7 @@ function results = test_member4_explainability()
         assert(~isempty(layerUsed), 'Must report feature layer used');
 
         % Test gradCAM wrapper with reversed argument order
-        camMapWrapper = gradCAM([], synthImg, 2);
+      camMapWrapper = projectGradCAM([], synthImg, 2);
         assert(all(size(camMapWrapper) == [224, 224]), 'Wrapper must handle reversed arguments');
 
         fprintf('[PASS] Test 3: Grad-CAM Saliency Engine verified.\n');
