@@ -186,7 +186,11 @@ Screening Output & Referral -> Patient Departure
 | **High-Risk Wait Time (AI Priority Triage)** | 76.6 s | **19.8 s** | **74.2% Faster Intervention** |
 | **Network Latency Impact (100 ms Rural 4G)** | N/A | **< 0.08% of total latency** | **Proven Rural Feasibility** |
 
+```
+
 ### Running the Member 6 Simulation Suite
+```
+
 In MATLAB:
 ```matlab
 % 1. Run complete automated experiment suite (all sweeps, plots, dashboard):
