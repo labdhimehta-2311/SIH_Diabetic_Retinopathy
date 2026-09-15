@@ -150,6 +150,8 @@ The model is trained and validated on the **APTOS 2019 Blindness Detection** ben
 ---
 
 ## 7. M6: Discrete-Event Workflow Simulation & Queue Modeling
+
+“If our AI-based diabetic-retinopathy screening system is deployed in a real hospital, how does it behave as patient load increases, where does the bottleneck occur, and how much faster is our proposed system?”
  
 **Toolbox / Technology:** MATLAB, Simulink, SimEvents, Discrete-Event Simulation (DES)
 
@@ -172,10 +174,9 @@ Tele-Ophthalmologist Review (FIFO vs AI-Assisted Priority Queue)
 Screening Output & Referral -> Patient Departure
 ```
 
-### If our AI-based diabetic-retinopathy screening system is deployed in a real hospital, how does it behave as patient load increases, where does the bottleneck occur, and how much faster is our proposed system?
 
 ### Key Quantitative Results (8-Hour Shift, 30 patients/hour)
-```
+
 
 | Metric | Traditional Baseline | Proposed AI-Assisted System | Impact |
 | :--- | :---: | :---: | :---: |
@@ -186,7 +187,7 @@ Screening Output & Referral -> Patient Departure
 | **High-Risk Wait Time (AI Priority Triage)** | 76.6 s | **19.8 s** | **74.2% Faster Intervention** |
 | **Network Latency Impact (100 ms Rural 4G)** | N/A | **< 0.08% of total latency** | **Proven Rural Feasibility** |
 
-```
+
 
 ### Running the Member 6 Simulation Suite
 ```
