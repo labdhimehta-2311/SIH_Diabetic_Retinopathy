@@ -147,8 +147,6 @@ The model is trained and validated on the **APTOS 2019 Blindness Detection** ben
 - Deep Learning Toolbox
 - Image Processing Toolbox
 
-The current pretrained model allows M3 inference without retraining.
-
 ---
 
 ## 7. M6: Discrete-Event Workflow Simulation & Queue Modeling
@@ -174,7 +172,10 @@ Tele-Ophthalmologist Review (FIFO vs AI-Assisted Priority Queue)
 Screening Output & Referral -> Patient Departure
 ```
 
+### If our AI-based diabetic-retinopathy screening system is deployed in a real hospital, how does it behave as patient load increases, where does the bottleneck occur, and how much faster is our proposed system?
+
 ### Key Quantitative Results (8-Hour Shift, 30 patients/hour)
+```
 
 | Metric | Traditional Baseline | Proposed AI-Assisted System | Impact |
 | :--- | :---: | :---: | :---: |
