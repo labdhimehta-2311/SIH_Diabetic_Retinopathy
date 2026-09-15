@@ -1,0 +1,14 @@
+{
+  "latency": [
+    { "name": "AI Inference", "time": 11 },
+    { "name": "Check-in Wait", "time": 2 },
+    { "name": "Doctor Review", "time": 60 },
+    { "name": "Fundus Capture", "time": 25 },
+    { "name": "Network Uplink", "time": 1 }
+  ],
+  "utilization": [
+    { "name": "AI Cluster", "value": 5, "fill": "#3b82f6" },
+    { "name": "Doctor Tele-Review", "value": 45, "fill": "#8b5cf6" },
+    { "name": "Fundus Camera", "value": 20, "fill": "#f97316" }
+  ]
+}

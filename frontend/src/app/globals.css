@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased font-sans min-h-screen selection:bg-teal-100 selection:text-teal-900;
+  }
+}
+
+/* Custom Medical UI Styles */
+.medical-card {
+  @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md transition-shadow;
+}
+
+.clinical-input {
+  @apply w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-all placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-500;
+}
+
+.clinical-label {
+  @apply block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5;
+}
+
+/* A4 Print Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    border-radius: 6px !important;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+@media print {
+  /* Strips the ugly browser URLs and dates from the header/footer */
+  @page {
+    margin: 12mm !important;
+    size: A4 portrait;
+  }
+
+  /* Forces the browser to print all background colors, masks, and diagnostic images */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Ensures the background stays pristine white */
+  body {
+    background-color: white !important;
+  }
+}

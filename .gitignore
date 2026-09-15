@@ -31,3 +31,11 @@ src/segmentation/outputs/
 reports/DR_Screening_Report_*.txt
 src/segmentation/trained_models/*.mat
 !src/segmentation/trained_models/unet_multiclass_improved_best.mat
+# --- Web Additions ---
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+__pycache__/
