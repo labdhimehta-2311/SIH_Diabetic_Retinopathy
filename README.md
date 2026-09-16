@@ -80,6 +80,8 @@ The application relies on a sequential, 4-stage machine learning architecture ex
 *   **Database Sync:** Firebase Firestore (with LocalStorage failover)
 *   **Caching:** HTML5 Local Storage with custom `sanitizeForLocalStorage` protocols.
 
+---
+
 ## Smart India Hackathon Team
 
 - **Optical Quality & Enhancement Lead**: Member 1
