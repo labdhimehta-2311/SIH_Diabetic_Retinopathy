@@ -80,6 +80,15 @@ The application relies on a sequential, 4-stage machine learning architecture ex
 *   **Database Sync:** Firebase Firestore (with LocalStorage failover)
 *   **Caching:** HTML5 Local Storage with custom `sanitizeForLocalStorage` protocols.
 
+## Smart India Hackathon Team
+
+- **Optical Quality & Enhancement Lead**: Member 1
+- **Biomedical Image Segmentation Lead**: Member 2
+- **Deep Learning & ML Lead**: Member 3
+- **Explainable AI & Clinical Interface Lead**: Member 4
+- **Integration Engineer**: Member 5
+- **Simulink & Systems Logistics Lead**: Member 6
+
 
 ---
 *Disclaimer: This software is a diagnostic aid and research tool. It is not a replacement for professional ophthalmological evaluation.*
