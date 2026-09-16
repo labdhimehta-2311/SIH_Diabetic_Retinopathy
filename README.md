@@ -1,3 +1,16 @@
+# Explainable AI for Diabetic Retinopathy Screening in Rural India
+
+[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg)](https://www.sih.gov.in/)
+[![Platform](https://img.shields.io/badge/Platform-MATLAB%20%7C%20Simulink-blue.svg)](https://www.mathworks.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Screening Capacity](https://img.shields.io/badge/Capacity-100%2C000%2B%20Patients%2FYear-brightgreen.svg)](simulink/)
+[![Clinical Targets](https://img.shields.io/badge/Referable%20DR-Sens%20%3E%2090%25%20%7C%20Spec%20%3E%2085%25-success.svg)](benchmark/)
+
+> **Smart India Hackathon (SIH) 2026**  
+> **Problem Statement**: Automated, Explainable, and Resource-Optimized Retinal Screening for Primary Healthcare Centres (PHCs) in Rural India.
+
+---
+
 # 👁️ RetinX Clinical: Diabetic Retinopathy Portal
 
 > An advanced, multi-tenant clinical screening platform bridging modern web frameworks with heavy-duty MATLAB deep learning for real-time Diabetic Retinopathy (DR) diagnostics.
