@@ -82,7 +82,7 @@ The application relies on a sequential, 4-stage machine learning architecture ex
 
 ---
 
-## Smart India Hackathon Team
+## ✨ Smart India Hackathon Team
 
 - **Optical Quality & Enhancement Lead**: Member 1
 - **Biomedical Image Segmentation Lead**: Member 2
