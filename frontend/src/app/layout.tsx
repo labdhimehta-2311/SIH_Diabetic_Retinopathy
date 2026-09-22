@@ -2,7 +2,14 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '../lib/authContext';
 import Navbar from '../components/Navbar';
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// 1. IMPORT DYNAMICALLY AND DISABLE SSR
+const OfflineSyncBadge = dynamic(
+  () => import('../components/OfflineSyncBadge'), 
+  { ssr: false } 
+);
+
 export const metadata: Metadata = {
   title: 'RetinaScan AI - Diabetic Retinopathy Clinical Screening Platform',
   description: 'AI-assisted Diabetic Retinopathy Screening Pipeline with MATLAB bridge inference, ResNet-50 grading, and U-Net lesion segmentation.',
@@ -20,6 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </AuthProvider>
         </div>
+        
+        {/* 2. THIS WILL NOW ONLY LOAD ON THE CLIENT SIDE */}
+        <OfflineSyncBadge />
       </body>
     </html>
   );
