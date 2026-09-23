@@ -52,6 +52,7 @@ function IntakeFormInner() {
   const [checkM3Setup, setCheckM3Setup] = useState<boolean>(true);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [validationError, setValidationError] = useState<{ isRejected: boolean; reason: string } | null>(null);
 
   const inputClass = "w-full px-3 py-2 bg-white/40 backdrop-blur-sm border border-white/60 rounded-xl text-xs focus:outline-none focus:bg-white/70 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-inner text-slate-800 font-medium placeholder-slate-500";
   const labelClass = "block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 ml-1 drop-shadow-sm";
@@ -84,6 +85,8 @@ function IntakeFormInner() {
     if (e.dataTransfer.files?.[0]) {
       setUploadedFile(e.dataTransfer.files[0]);
       setPreviewUrl(URL.createObjectURL(e.dataTransfer.files[0]));
+      setValidationError(null);
+      setErrorText('');
     }
   };
 
@@ -91,6 +94,8 @@ function IntakeFormInner() {
     if (e.target.files?.[0]) {
       setUploadedFile(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+      setValidationError(null);
+      setErrorText('');
     }
   };
 
@@ -172,7 +177,7 @@ function IntakeFormInner() {
 
       await PatientService.savePatient(patientData);
 
-      let aiResult: any;
+      let aiResult: any = null;
       const startTime = performance.now(); // 1. START FRONTEND ROUND-TRIP CLOCK
 
       const formData = new FormData(); 
@@ -181,8 +186,16 @@ function IntakeFormInner() {
       formData.append('doctor_id', doctor.uid); 
       formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
       const res = await fetch('http://127.0.0.1:8000/infer', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('AI image screening failed');
-      aiResult = await res.json();
+      
+      try {
+        aiResult = await res.json();
+      } catch (parseErr) {
+        console.error('Error parsing inference response JSON:', parseErr);
+      }
+
+      if (!res.ok && (!aiResult || aiResult.isFundus !== false)) {
+        throw new Error(aiResult?.error || 'AI image screening failed');
+      }
 
       const endTime = performance.now(); // 2. STOP FRONTEND ROUND-TRIP CLOCK
       const roundTripTimeMs = Math.round(endTime - startTime);
@@ -213,7 +226,16 @@ function IntakeFormInner() {
         await PatientService.addScreeningSession(pId, doctor.uid, screeningSession);
         await AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, screeningId: screeningSession.id, action: 'AI_SCREENING_RUN', summary: `AI screening executed for ${name}. Grade: ${aiResult.grade}.`, details: { checkM3Setup, engine: aiResult.engine, latency: aiResult.latency_ms } });
         router.push(`/report/${pId}?screeningId=${screeningSession.id}`);
-      } else throw new Error(aiResult?.error || 'Inference returned unsuccessful status');
+      } else if (aiResult && (aiResult.isFundus === false || aiResult.canRetake)) {
+        setIsSubmitting(false);
+        setValidationError({
+          isRejected: true,
+          reason: aiResult.rejectionReason || aiResult.error || 'Non-retinal image detected.'
+        });
+        return;
+      } else {
+        throw new Error(aiResult?.error || 'Inference returned unsuccessful status');
+      }
     } catch (err: any) { setErrorText(err.message || 'Error occurred while triggering AI screening pipeline'); } finally { setIsSubmitting(false); }
   };
 
@@ -350,6 +372,53 @@ function IntakeFormInner() {
                   </label>
                 </div>
               </div>
+
+              {validationError && (
+                <div className="p-4 bg-amber-50/95 border-2 border-amber-500 rounded-2xl shadow-lg space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-amber-100 rounded-xl text-amber-700 shrink-0">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-black text-amber-900 uppercase tracking-wider">
+                          Non-Retinal Image Rejected — Retake Required
+                        </h3>
+                        <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                          Validity Filter Active
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 mt-1 leading-relaxed font-semibold">
+                        {validationError.reason}
+                      </p>
+                      <p className="text-[10px] text-amber-700 mt-0.5 italic">
+                        External photography (modeling photos, outdoor selfies, cartoons, landscapes) cannot be clinically assessed. Please retake or upload an authentic circular retinal fundus photograph.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadedFile(null);
+                        setPreviewUrl('');
+                        setValidationError(null);
+                        setErrorText('');
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Retake Retinal Scan (Choose New Image)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setValidationError(null)}
+                      className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-xl shadow-sm transition-all"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <label className={labelClass}>Raw Retinal Fundus Image *</label>

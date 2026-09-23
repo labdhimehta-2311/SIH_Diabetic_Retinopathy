@@ -15,7 +15,9 @@ import {
   Patient, 
   ScreeningSession, 
   getHealthMeasuresForGrade, 
-  getClinicianTreatmentReview 
+  getClinicianTreatmentReview,
+  getOfficialMedicationsGuidance,
+  OfficialMedicationsGuidance
 } from '../../../lib/patientService';
 import { AuditService } from '../../../lib/auditService';
 import ComparativeViewer from '../../../components/ComparativeViewer';
@@ -100,6 +102,13 @@ function ReportContentInner() {
               Boolean(scr.aiResults?.referable)
             );
           }
+          if (!scr.relevantMedications) {
+            scr.relevantMedications = getOfficialMedicationsGuidance(
+              scr.aiResults?.grade ?? 0,
+              Boolean(scr.aiResults?.referable),
+              p.clinicalVitals
+            );
+          }
 
           setScreening(scr);
           setNotes(scr.clinicalNotes || '');
@@ -180,18 +189,32 @@ function ReportContentInner() {
 
   const comparison = screening.comparisonReport;
   const healthMeasures = screening.healthMeasures || getHealthMeasuresForGrade(screening.aiResults?.grade ?? 0);
-  const treatmentReview = screening.treatmentReview || getClinicianTreatmentReview(screening.aiResults?.grade ?? 0, Boolean(screening.aiResults?.referable));
+  const medicationsGuidance = screening.relevantMedications || getOfficialMedicationsGuidance(screening.aiResults?.grade ?? 0, Boolean(screening.aiResults?.referable), patient.clinicalVitals);
   const allScreenings = patient.screenings || [];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4 print:p-4">
+    <div className="max-w-5xl mx-auto space-y-4 print:p-0">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          @page { margin: 0.5cm; size: A4 portrait; }
-          body { 
+          @page { margin: 8mm 10mm !important; size: A4 portrait; }
+          html, body { 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
             background: white !important;
+            font-size: 9pt !important;
+          }
+          .report-section,
+          .print-break-inside-avoid,
+          .print-avoid-break,
+          .print-card,
+          table,
+          tr,
+          td,
+          th,
+          img,
+          figure {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
         }
       `}} />
@@ -231,11 +254,19 @@ function ReportContentInner() {
           </div>
         )}
 
-        <div className="flex gap-2 self-end sm:self-auto">
-          <button onClick={() => setShowAuditModal(true)} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold bg-white border border-slate-300 hover:bg-slate-100">
+        <div className="flex gap-2 self-end sm:self-auto items-center">
+          <Link
+            href={`/intake?patientId=${patient.id}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-all rounded shadow-xs"
+            title="Retake retinal scan if image was low quality or non-retinal"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-700" />
+            <span>Retake Retinal Scan</span>
+          </Link>
+          <button onClick={() => setShowAuditModal(true)} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold bg-white border border-slate-300 hover:bg-slate-100 rounded">
             <ShieldCheck className="w-3.5 h-3.5" /> Audit Trail
           </button>
-          <button onClick={handlePrintPDF} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold bg-slate-900 text-white hover:bg-black transition-all">
+          <button onClick={handlePrintPDF} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold bg-slate-900 text-white hover:bg-black transition-all rounded">
             <Printer className="w-3.5 h-3.5" />
             <span>Print / PDF</span>
           </button>
@@ -246,7 +277,7 @@ function ReportContentInner() {
       <div className="bg-white border border-slate-300 p-6 sm:p-8 space-y-6 print:border-none print:p-0 print:space-y-1.5">
         
         {/* Letterhead */}
-        <div className="border-b-2 border-slate-900 pb-3 flex justify-between items-end print:pb-1.5">
+        <div className="report-section print-break-inside-avoid border-b-2 border-slate-900 pb-3 flex justify-between items-end print:pb-1.5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-slate-900 text-white flex items-center justify-center">
               <Eye className="w-6 h-6" />
@@ -270,7 +301,7 @@ function ReportContentInner() {
         </div>
 
         {/* Tabular Patient Demographics */}
-        <div className="border border-slate-900 text-xs print:text-[9px]">
+        <div className="report-section print-break-inside-avoid border border-slate-900 text-xs print:text-[9px]">
           <div className="grid grid-cols-4 bg-slate-100 text-[9px] font-bold uppercase tracking-widest text-slate-600 border-b border-slate-900 print:text-[7px]">
             <div className="p-1.5 border-r border-slate-900">Patient Name</div>
             <div className="p-1.5 border-r border-slate-900">ID / Age / Sex</div>
@@ -300,7 +331,7 @@ function ReportContentInner() {
         </div>
 
         {/* Primary Inference Grading Alert Block */}
-        <div className="border-2 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 print:p-2 print:gap-1">
+        <div className="report-section print-break-inside-avoid border-2 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 print:p-2 print:gap-1">
           <div className="flex-1">
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 print:text-[7px]">Current Screening Diagnostic Grading</div>
             <div className="text-xl font-black text-slate-900 uppercase print:text-xs leading-tight">{screening.aiResults.gradeLabel}</div>
@@ -315,7 +346,7 @@ function ReportContentInner() {
         </div>
 
         {/* Visual Diagnostics Matrix */}
-        <div className="print:block">
+        <div className="report-section print-break-inside-avoid print:block">
           <ComparativeViewer images={screening.aiResults.images} m3Executed={screening.checkM3Setup} />
         </div>
 
@@ -324,7 +355,7 @@ function ReportContentInner() {
         {/* Rendered when this visit is compared with an immediately previous completed screening */}
         {/* ================================================================ */}
         {comparison && (
-          <div className="border-2 border-slate-900 p-4 space-y-4 print:p-2 print:space-y-2 bg-slate-50/50">
+          <div className="report-section print-break-inside-avoid border-2 border-slate-900 p-4 space-y-4 print:p-2 print:space-y-1 bg-slate-50/50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-300 pb-2 print:pb-1">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-teal-800 bg-teal-100 px-2 py-0.5 rounded print:text-[7px]">
@@ -497,7 +528,10 @@ function ReportContentInner() {
         {/* ================================================================ */}
         {/* FEATURE 10: EVIDENCE-BASED HEALTH & LIFESTYLE SUPPORTIVE MEASURES */}
         {/* ================================================================ */}
-        <div className="border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
+        {/* ================================================================ */}
+        {/* FEATURE 10: EVIDENCE-BASED HEALTH & LIFESTYLE SUPPORTIVE MEASURES */}
+        {/* ================================================================ */}
+        <div className="report-section print-break-inside-avoid border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1 bg-white">
           <div className="flex items-center justify-between border-b border-slate-300 pb-2 print:pb-1">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[8px]">
               <Heart className="w-3.5 h-3.5 text-teal-700" /> Evidence-Based Health & Supportive Lifestyle Measures
@@ -557,48 +591,135 @@ function ReportContentInner() {
         </div>
 
         {/* ================================================================ */}
-        {/* FEATURE 11: CLINICIAN REVIEW & TREATMENT REFERENCE INFORMATION   */}
+        {/* RELEVANT CLINICAL MEDICATIONS & PHARMACOTHERAPY                   */}
+        {/* Grounded in Goodman & Gilman 14th Ed., Katzung 15th Ed., AAO PPP */}
         {/* ================================================================ */}
-        <div className="border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-300 pb-2 print:pb-1">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[8px]">
-              <Pill className="w-3.5 h-3.5 text-teal-700" /> Clinician Review & Treatment Reference Information
-            </h3>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider print:text-[6px]">
-              Physician Reference
-            </span>
+        <div className="report-section print-break-inside-avoid border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-300 pb-2 print:pb-1 gap-1">
+            <div className="flex items-center gap-1.5">
+              <Pill className="w-4 h-4 text-teal-700 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest print:text-[8px]">
+                Relevant Clinical Medications & Pharmacotherapy
+              </h3>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider print:text-[6px]">
+                Official Medical Books Reference
+              </span>
+            </div>
           </div>
 
-          <div className="text-[10px] text-slate-600 print:text-[7px] font-medium">
-            <strong>Recognized Clinical Guidance:</strong> {treatmentReview.primaryGuidelineCitation}
+          <div className="text-[10px] text-slate-700 print:text-[7px] leading-tight">
+            <strong>Stage Pharmacological Target:</strong> {medicationsGuidance.clinicalSummary}
           </div>
 
-          <div className="space-y-2 print:space-y-1">
-            {treatmentReview.relevantTreatmentClasses.map((item, idx) => (
-              <div key={idx} className="bg-slate-50 border border-slate-200 p-2.5 rounded text-xs print:text-[7px] print:p-1">
-                <div className="font-bold text-slate-900 text-[11px] print:text-[7px] flex items-center gap-1">
-                  <BookOpen className="w-3 h-3 text-slate-600" /> {item.className}
-                </div>
-                <div className="text-slate-700 mt-1">
-                  <strong>Indication:</strong> {item.clinicalIndication}
-                </div>
-                <div className="text-slate-600 mt-0.5">
-                  <strong>Clinical Evidence:</strong> {item.evidenceRationale}
-                </div>
-                <div className="text-slate-500 mt-0.5 italic text-[10px] print:text-[6px]">
-                  <strong>Physician Considerations:</strong> {item.considerations}
-                </div>
+          {/* Ophthalmic Medications Subsection */}
+          {medicationsGuidance.primaryOphthalmicMedications.length > 0 && (
+            <div className="space-y-2 print:space-y-1">
+              <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1 print:text-[7px]">
+                <Eye className="w-3 h-3 text-teal-600" />
+                Targeted Ophthalmic Biologics & Intravitreal Pharmacotherapy:
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 print:grid-cols-2 print:gap-1.5">
+                {medicationsGuidance.primaryOphthalmicMedications.map((med, idx) => (
+                  <div key={idx} className="print-break-inside-avoid bg-slate-50 border border-slate-200 p-2.5 rounded text-xs print:text-[7px] print:p-1 space-y-1">
+                    <div className="flex items-start justify-between gap-1">
+                      <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
+                        {med.drugName}
+                      </div>
+                      <span className="text-[8px] font-mono bg-teal-100/80 text-teal-900 px-1.5 py-0.5 rounded print:text-[5px] shrink-0 font-bold">
+                        {med.routeAndDosing.split(':')[0]}
+                      </span>
+                    </div>
+
+                    <div className="text-slate-700 leading-tight">
+                      <strong>Class:</strong> {med.pharmacologicalClass}
+                    </div>
+
+                    <div className="text-slate-800 leading-tight">
+                      <strong>Dosing & Route:</strong> {med.routeAndDosing}
+                    </div>
+
+                    <div className="text-slate-700 leading-tight">
+                      <strong>Biological Mechanism:</strong> {med.mechanismOfAction}
+                    </div>
+
+                    <div className="bg-white border border-slate-300 p-1.5 rounded text-[10px] print:text-[6px] space-y-0.5">
+                      <div className="font-bold text-teal-900 flex items-center gap-1">
+                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> Official Medical Textbook Citation:
+                      </div>
+                      <div className="text-slate-800 font-semibold">
+                        {med.officialTextbookReference.bookTitle} — {med.officialTextbookReference.chapterAndSection}
+                      </div>
+                      {med.officialTextbookReference.trialEvidence && (
+                        <div className="text-slate-500 italic">
+                          Trial Evidence: {med.officialTextbookReference.trialEvidence}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Systemic Microvascular Medications Subsection */}
+          {medicationsGuidance.systemicMicrovascularMedications.length > 0 && (
+            <div className="space-y-2 print:space-y-1 pt-1 border-t border-slate-200">
+              <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1 print:text-[7px]">
+                <Activity className="w-3 h-3 text-teal-600" />
+                Systemic Microvascular & Endothelial Protective Pharmacotherapy:
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 print:grid-cols-2 print:gap-1.5">
+                {medicationsGuidance.systemicMicrovascularMedications.map((med, idx) => (
+                  <div key={idx} className="print-break-inside-avoid bg-slate-50 border border-slate-200 p-2.5 rounded text-xs print:text-[7px] print:p-1 space-y-1">
+                    <div className="flex items-start justify-between gap-1">
+                      <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
+                        {med.drugName}
+                      </div>
+                      <span className="text-[8px] font-mono bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded print:text-[5px] shrink-0 font-bold">
+                        {med.routeAndDosing.split(':')[0]}
+                      </span>
+                    </div>
+
+                    <div className="text-slate-700 leading-tight">
+                      <strong>Class:</strong> {med.pharmacologicalClass}
+                    </div>
+
+                    <div className="text-slate-800 leading-tight">
+                      <strong>Dosing & Regimen:</strong> {med.routeAndDosing}
+                    </div>
+
+                    <div className="text-slate-700 leading-tight">
+                      <strong>Target Mechanism:</strong> {med.mechanismOfAction}
+                    </div>
+
+                    <div className="bg-white border border-slate-300 p-1.5 rounded text-[10px] print:text-[6px] space-y-0.5">
+                      <div className="font-bold text-teal-900 flex items-center gap-1">
+                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> Official Medical Textbook Citation:
+                      </div>
+                      <div className="text-slate-800 font-semibold">
+                        {med.officialTextbookReference.bookTitle} — {med.officialTextbookReference.chapterAndSection}
+                      </div>
+                      {med.officialTextbookReference.trialEvidence && (
+                        <div className="text-slate-500 italic">
+                          Validation: {med.officialTextbookReference.trialEvidence}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-amber-50 border border-amber-200 p-2 rounded text-[9px] text-amber-900 leading-tight print:text-[6px]">
-            <strong>DISCLAIMER:</strong> {treatmentReview.clinicianDisclaimer}
+            <strong>OFFICIAL PHARMACOTHERAPY DISCLAIMER:</strong> {medicationsGuidance.pharmacotherapyDisclaimer}
           </div>
         </div>
 
         {/* Editable Physician Notes */}
-        <div className="border-t-2 border-slate-900 pt-3 print:pt-1.5 space-y-2 print:space-y-1">
+        <div className="report-section print-break-inside-avoid border-t-2 border-slate-900 pt-3 print:pt-1.5 space-y-2 print:space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[9px]">
               <Edit3 className="w-3 h-3 print:hidden" /> Clinical Observations & Directives
@@ -639,7 +760,7 @@ function ReportContentInner() {
         </div>
 
         {/* Digital Signature Footer */}
-        <div className="pt-4 border-t border-slate-300 flex justify-between items-end print:pt-1.5 print:mt-1">
+        <div className="report-section print-break-inside-avoid pt-4 border-t border-slate-300 flex justify-between items-end print:pt-1.5 print:mt-1">
           <div className="text-[9px] text-slate-500 max-w-sm uppercase leading-tight tracking-wider print:text-[6px]">
             Report generated via assistive automated pipeline. Must be correlated with full clinical exam. Not a substitute for physical consultation.
           </div>

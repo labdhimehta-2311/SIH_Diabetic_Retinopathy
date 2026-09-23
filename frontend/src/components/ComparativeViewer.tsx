@@ -51,12 +51,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
       </div>
 
       {/* Grid Mode (Always shows in print) */}
-      <div className={`${activeTab === 'grid' ? 'block' : 'hidden'} print:block print:w-full`}>
+      <div className={`${activeTab === 'grid' ? 'block' : 'hidden'} print:block print:w-full print:break-inside-avoid`}>
         {/* CRITICAL FIX: print:grid print:grid-cols-4 prevents Safari from dropping to a single column */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 print:grid print:grid-cols-4 print:gap-2 print:w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 print:grid print:grid-cols-4 print:gap-2 print:w-full print:break-inside-avoid">
           
           {/* 1. Original Fundus */}
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full">
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[7px] print:text-slate-900">1. Raw Fundus</span>
               <button onClick={() => setSelectedZoomImage(images.originalUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
@@ -71,7 +71,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           </div>
 
           {/* 2. Enhanced */}
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full">
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center gap-1 print:text-[7px] print:text-slate-900">
                 <Sparkles className="w-3.5 h-3.5 print:hidden" /> 2. CLAHE Contrast
@@ -88,7 +88,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           </div>
 
           {/* 3. Lesion Mask */}
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full">
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-amber-700 uppercase tracking-wide print:text-[7px] print:text-slate-900">3. U-Net Lesion Mask</span>
               {images.lesionMaskUrl && (
@@ -114,7 +114,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           </div>
 
           {/* 4. Grad-CAM Heatmap */}
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full">
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1 print:text-[7px] print:text-slate-900">
                 <Eye className="w-3.5 h-3.5 print:hidden" /> 4. Grad-CAM Activation

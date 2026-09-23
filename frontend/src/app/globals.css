@@ -25,13 +25,21 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 15mm;
+    margin: 8mm 10mm !important;
   }
 
-  body {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
     background: #ffffff !important;
     color: #0f172a !important;
-    font-size: 11pt;
+    font-size: 9.5pt;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .no-print {
@@ -42,9 +50,19 @@
     display: block !important;
   }
 
-  .print-break-inside-avoid {
-    break-inside: avoid;
-    page-break-inside: avoid;
+  /* Prevent sections, cards, tables, rows, images from being cut across pages */
+  .report-section,
+  .print-break-inside-avoid,
+  .print-avoid-break,
+  .print-card,
+  table,
+  tr,
+  td,
+  th,
+  img,
+  figure {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .print-card {
@@ -57,24 +75,5 @@
 @media screen {
   .print-only {
     display: none !important;
-  }
-}
-@media print {
-  /* Strips the ugly browser URLs and dates from the header/footer */
-  @page {
-    margin: 12mm !important;
-    size: A4 portrait;
-  }
-
-  /* Forces the browser to print all background colors, masks, and diagnostic images */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  /* Ensures the background stays pristine white */
-  body {
-    background-color: white !important;
   }
 }

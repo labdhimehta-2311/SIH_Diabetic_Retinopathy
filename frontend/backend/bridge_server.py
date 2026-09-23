@@ -24,6 +24,7 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 from pipeline import mock_inference
+from pipeline.fundus_validator import validate_fundus_image
 
 app = FastAPI(title="RetinX MATLAB & Python Inference Bridge")
 
@@ -290,6 +291,23 @@ async def run_inference(
         with open(tmp_path, "wb") as f_out:
             content = await image.read()
             f_out.write(content)
+
+        # M0 Stage: Fundus Validity & Non-Ocular Filter (Detects modeling, selfies, cartoons, outdoor photos)
+        is_valid, rejection_reason, metrics = validate_fundus_image(tmp_path)
+        if not is_valid:
+            logger.warning(f"Fundus validation rejected upload '{tmp_path}': {rejection_reason}")
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "success": False,
+                    "isFundus": False,
+                    "canRetake": True,
+                    "error": "Non-Retinal Image Detected: The uploaded photograph does not meet clinical retinal fundus criteria (portrait/modeling/cartoon/outdoor photo detected).",
+                    "rejectionReason": rejection_reason,
+                    "metrics": metrics,
+                    "rawUrl": move_to_public(tmp_path)
+                }
+            )
 
         result = execute_pipeline(tmp_path, run_m3_bool, session_id)
         return JSONResponse(content=result)
