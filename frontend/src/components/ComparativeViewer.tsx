@@ -127,42 +127,6 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
             >
               <img src={images.heatmapUrl} alt="Grad-CAM Neural Heatmap" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Attentive feature grading saliency.</div>
-          </div>
-        </div>
-
-        {/* Quantitative Lesion & Biomarker Matrix Bar (Fills Page 1 cleanly with essential clinical data) */}
-        <div className="mt-3 print:mt-2 bg-slate-50 border border-slate-300 rounded-lg p-2.5 print:p-2 text-xs print:text-[8px] print-break-inside-avoid">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-1 mb-1.5 print:pb-0.5 print:mb-1">
-            <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px] print:text-[7.5px] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-teal-600 inline-block"></span>
-              Quantitative Lesion Distribution & Optical Assessment
-            </span>
-            <span className="text-[10px] print:text-[6.5px] text-slate-500 font-mono">
-              Field of View: 45° • Depth: 24-bit sRGB • Optics Quality: High
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 print:grid-cols-4 print:gap-1.5 text-center">
-            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Microaneurysms (MA)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-amber-700 mt-0.5">Focal Vascular Dilations</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Isolated capillary outpouchings</div>
-            </div>
-            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hemorrhages (HEM)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-rose-700 mt-0.5">Intra-Retinal Micro-Bleeds</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Blot, dot & flame patterns</div>
-            </div>
-            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hard Exudates (EX)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-teal-700 mt-0.5">Lipoprotein Deposition</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Macular edema risk assessment</div>
-            </div>
-            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Vessel Arborization</div>
-              <div className="text-xs print:text-[8.5px] font-black text-slate-800 mt-0.5">Arcades & Caliber Checked</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Optic disc & foveal centration</div>
-            </div>
           </div>
         </div>
       </div>
