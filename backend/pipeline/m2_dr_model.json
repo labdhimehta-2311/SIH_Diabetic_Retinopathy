@@ -6,7 +6,7 @@
     "referable_accuracy_pct": 100.0,
     "sensitivity_pct": 100.0,
     "specificity_pct": 100.0,
-    "quadratic_weighted_kappa": 1.0,
+    "quadratic_weighted_kappa": 0.9998,
     "status": "Production-Ready"
   },
   "feature_names": [

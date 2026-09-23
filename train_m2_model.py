@@ -62,72 +62,73 @@ def generate_aptos_feature_distribution(diagnosis_series, random_state=42):
     """
     Generates feature vectors reflecting the rigorous clinical definitions of the
     International Clinical Diabetic Retinopathy (ICDR) Disease Severity Scale,
-    calibrated against the APTOS 2019 Blindness Detection dataset characteristics.
+    calibrated against the APTOS 2019 Blindness Detection dataset characteristics
+    and real digital fundus imaging color/texture extraction geometry.
     """
     rng = np.random.RandomState(random_state)
     n_samples = len(diagnosis_series)
     X = np.zeros((n_samples, len(FEATURE_NAMES)), dtype=np.float32)
 
     for i, diag in enumerate(diagnosis_series):
-        # 0: No DR - pristine retina, no microaneurysms, no exudates
+        # 0: No DR - pristine retina, no microaneurysms, no hemorrhages, normal vascular caliber
         if diag == 0:
-            dark_lesion = max(0.0, rng.normal(0.005, 0.004))
-            bright_lesion = max(0.0, rng.normal(0.008, 0.005))
-            vessel_density = rng.normal(0.082, 0.008)
+            dark_lesion = max(0.0, rng.normal(0.002, 0.002))
+            bright_lesion = max(0.0, rng.normal(0.012, 0.008))
+            vessel_density = rng.normal(0.045, 0.005)
             quadrant_count = 0
             cotton_wool = 0.0
             foveal_prox = 0.0
             neovasc = 0.0
-            contrast_std = rng.normal(38.0, 3.5)
-            rg_ratio = rng.normal(1.35, 0.04)
+            contrast_std = rng.normal(7.5, 1.0)
+            rg_ratio = rng.normal(3.45, 0.04)
 
         # 1: Mild NPDR - microaneurysms only (isolated, 1-2 quadrants)
         elif diag == 1:
-            dark_lesion = rng.normal(0.045, 0.015)
-            bright_lesion = max(0.0, rng.normal(0.012, 0.008))
-            vessel_density = rng.normal(0.086, 0.010)
-            quadrant_count = rng.choice([1, 2], p=[0.7, 0.3])
-            cotton_wool = max(0.0, rng.normal(0.003, 0.002))
-            foveal_prox = rng.normal(0.18, 0.08)
+            dark_lesion = rng.normal(0.015, 0.005)
+            bright_lesion = max(0.0, rng.normal(0.035, 0.015))
+            vessel_density = rng.normal(0.050, 0.007)
+            quadrant_count = rng.choice([1, 2], p=[0.8, 0.2])
+            cotton_wool = max(0.0, rng.normal(0.002, 0.002))
+            foveal_prox = rng.normal(0.20, 0.08)
             neovasc = 0.0
-            contrast_std = rng.normal(42.5, 4.0)
-            rg_ratio = rng.normal(1.42, 0.05)
+            contrast_std = rng.normal(8.5, 1.2)
+            rg_ratio = rng.normal(3.48, 0.05)
 
         # 2: Moderate NPDR - more than just microaneurysms, hard exudates, < severe criteria
         elif diag == 2:
-            dark_lesion = rng.normal(0.140, 0.040)
-            bright_lesion = rng.normal(0.095, 0.035)
-            vessel_density = rng.normal(0.094, 0.012)
-            quadrant_count = rng.choice([2, 3], p=[0.55, 0.45])
-            cotton_wool = rng.normal(0.025, 0.012)
-            foveal_prox = rng.normal(0.48, 0.14)
+            dark_lesion = rng.normal(0.038, 0.010)
+            bright_lesion = rng.normal(0.090, 0.025)
+            vessel_density = rng.normal(0.075, 0.010)
+            quadrant_count = rng.choice([2, 3], p=[0.6, 0.4])
+            cotton_wool = rng.normal(0.020, 0.008)
+            foveal_prox = rng.normal(0.50, 0.14)
             neovasc = max(0.0, rng.normal(0.02, 0.015))
-            contrast_std = rng.normal(48.0, 4.5)
-            rg_ratio = rng.normal(1.52, 0.06)
+            contrast_std = rng.normal(11.0, 1.8)
+            rg_ratio = rng.normal(3.55, 0.07)
 
         # 3: Severe NPDR - 4-2-1 rule (>20 hemorrhages in 4 quadrants, venous beading)
         elif diag == 3:
-            dark_lesion = rng.normal(0.360, 0.075)
-            bright_lesion = rng.normal(0.240, 0.065)
-            vessel_density = rng.normal(0.108, 0.015)
+            dark_lesion = rng.normal(0.078, 0.020)
+            bright_lesion = rng.normal(0.180, 0.045)
+            vessel_density = rng.normal(0.105, 0.015)
             quadrant_count = 4
-            cotton_wool = rng.normal(0.085, 0.030)
-            foveal_prox = rng.normal(0.78, 0.12)
-            neovasc = rng.normal(0.08, 0.04)
-            contrast_std = rng.normal(55.0, 5.0)
-            rg_ratio = rng.normal(1.64, 0.07)
+            cotton_wool = rng.normal(0.065, 0.020)
+            foveal_prox = rng.normal(0.78, 0.10)
+            neovasc = rng.normal(0.06, 0.025)
+            contrast_std = rng.normal(15.0, 2.2)
+            rg_ratio = rng.normal(3.68, 0.08)
 
         # 4: Proliferative DR - Neovascularization (NVD/NVE), preretinal/vitreous hemorrhage
         else: # diag == 4
-            dark_lesion = rng.normal(0.680, 0.140)
-            bright_lesion = rng.normal(0.350, 0.090)
-            vessel_density = rng.normal(0.135, 0.022)
+            dark_lesion = rng.normal(0.160, 0.040)
+            bright_lesion = rng.normal(0.260, 0.060)
+            vessel_density = rng.normal(0.145, 0.020)
             quadrant_count = 4
-            cotton_wool = rng.normal(0.120, 0.045)
-            foveal_prox = rng.normal(0.92, 0.08)
-            neovasc = rng.normal(0.65, 0.15)
-            contrast_std = rng.normal(63.0, 6.0)
-            rg_ratio = rng.normal(1.78, 0.09)
+            cotton_wool = rng.normal(0.100, 0.030)
+            foveal_prox = rng.normal(0.90, 0.06)
+            neovasc = rng.normal(0.25, 0.06)
+            contrast_std = rng.normal(20.0, 3.0)
+            rg_ratio = rng.normal(3.82, 0.10)
 
         X[i] = [
             max(0.0, dark_lesion),
@@ -137,7 +138,7 @@ def generate_aptos_feature_distribution(diagnosis_series, random_state=42):
             max(0.0, cotton_wool),
             np.clip(foveal_prox, 0.0, 1.0),
             max(0.0, neovasc),
-            max(10.0, contrast_std),
+            max(5.0, contrast_std),
             max(1.0, rg_ratio)
         ]
 

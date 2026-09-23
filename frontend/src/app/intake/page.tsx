@@ -10,8 +10,6 @@ import { PatientService, Patient, ScreeningSession } from '../../lib/patientServ
 import { AuditService } from '../../lib/auditService';
 import { SyncQueue } from '../../lib/syncQueue';
 
-interface SampleItem { id: string; title: string; url: string; }
-
 function IntakeFormInner() {
   const [submitLock, setSubmitLock] = useState(false);
   const router = useRouter();
@@ -22,8 +20,6 @@ function IntakeFormInner() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatusText, setSubmitStatusText] = useState('');
   const [errorText, setErrorText] = useState('');
-  const [samples, setSamples] = useState<SampleItem[]>([]);
-  const [selectedSample, setSelectedSample] = useState<string>('sample_2_severe_dr.png');
   const [existingScreenings, setExistingScreenings] = useState<ScreeningSession[]>([]);
   const [originalCreatedAt, setOriginalCreatedAt] = useState<string>('');
 
@@ -56,7 +52,6 @@ function IntakeFormInner() {
   const [checkM3Setup, setCheckM3Setup] = useState<boolean>(true);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [isUsingSample, setIsUsingSample] = useState(true);
 
   const inputClass = "w-full px-3 py-2 bg-white/40 backdrop-blur-sm border border-white/60 rounded-xl text-xs focus:outline-none focus:bg-white/70 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-inner text-slate-800 font-medium placeholder-slate-500";
   const labelClass = "block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 ml-1 drop-shadow-sm";
@@ -69,21 +64,6 @@ function IntakeFormInner() {
   useEffect(() => {
     if (patientIdParam && doctor) loadPatientForPreFill(patientIdParam);
   }, [patientIdParam, doctor]);
-
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/samples')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.samples) { 
-          setSamples(data.samples); 
-          if (data.samples.length > 0) { 
-            setSelectedSample(data.samples[0].id); 
-            setPreviewUrl(data.samples[0].url); 
-          } 
-        }
-      })
-      .catch(err => console.warn('Could not load samples:', err));
-  }, []);
 
   const loadPatientForPreFill = async (pId: string) => {
     if (!doctor) return;
@@ -99,9 +79,20 @@ function IntakeFormInner() {
     }
   };
 
-  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); if (e.dataTransfer.files?.[0]) { setUploadedFile(e.dataTransfer.files[0]); setIsUsingSample(false); setPreviewUrl(URL.createObjectURL(e.dataTransfer.files[0])); } };
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => { if (e.target.files?.[0]) { setUploadedFile(e.target.files[0]); setIsUsingSample(false); setPreviewUrl(URL.createObjectURL(e.target.files[0])); } };
-  const handleSampleSelect = (sId: string, sUrl: string) => { setSelectedSample(sId); setIsUsingSample(true); setUploadedFile(null); setPreviewUrl(sUrl); };
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files?.[0]) {
+      setUploadedFile(e.dataTransfer.files[0]);
+      setPreviewUrl(URL.createObjectURL(e.dataTransfer.files[0]));
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setUploadedFile(e.target.files[0]);
+      setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+    }
+  };
 
   const validateStep = (step: number) => {
     if (step === 1) {
@@ -137,7 +128,7 @@ function IntakeFormInner() {
     if (!doctor) return setErrorText('Please sign in as an authenticated clinician to submit.');
     if (!name.trim() || !age || !phone.trim()) { setCurrentStep(1); return setErrorText('Patient Name, Age, and Phone Number are required.'); }
     if (!yearOfDiagnosis) { setCurrentStep(2); return setErrorText('Year of Diagnosis is required.'); }
-    if (!isUsingSample && !uploadedFile) return setErrorText('Please upload a raw fundus image or choose a pre-loaded sample.');
+    if (!uploadedFile) return setErrorText('Please upload a raw retinal fundus image before submitting.');
 
     setIsSubmitting(true); setSubmitStatusText('Executing AI Pipeline: Image Enhancement, ResNet-50 Grading, Lesion Mask Detection, Grad-CAM...');
     try {
@@ -170,7 +161,7 @@ function IntakeFormInner() {
         });
       }
         PatientService.savePatient(patientData).catch(() => console.log('Patient queued in local cache.'));
-        SyncQueue.enqueue({ patientId: pId, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, sampleId: isUsingSample ? selectedSample : undefined, imageFileBase64: base64Img, imageFileName: uploadedFile?.name });
+        SyncQueue.enqueue({ patientId: pId, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, imageFileBase64: base64Img, imageFileName: uploadedFile.name });
         AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, action: 'AI_SCREENING_RUN', summary: `Offline screening queued for patient ${name} (${pId}).`, details: { checkM3Setup, offline: true } }).catch(() => {});
         
         setIsSubmitting(false);
@@ -184,24 +175,14 @@ function IntakeFormInner() {
       let aiResult: any;
       const startTime = performance.now(); // 1. START FRONTEND ROUND-TRIP CLOCK
 
-      if (isUsingSample) {
-        const res = await fetch('http://127.0.0.1:8000/infer', { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ sample_id: selectedSample, check_M3_setup: checkM3Setup }) 
-        });
-        if (!res.ok) throw new Error('AI screening endpoint failed');
-        aiResult = await res.json();
-      } else if (uploadedFile) {
-        const formData = new FormData(); 
-        formData.append('image', uploadedFile); 
-        formData.append('patient_id', pId); 
-        formData.append('doctor_id', doctor.uid); 
-        formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
-        const res = await fetch('http://127.0.0.1:8000/infer', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('AI image screening failed');
-        aiResult = await res.json();
-      }
+      const formData = new FormData(); 
+      formData.append('image', uploadedFile); 
+      formData.append('patient_id', pId); 
+      formData.append('doctor_id', doctor.uid); 
+      formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
+      const res = await fetch('http://127.0.0.1:8000/infer', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('AI image screening failed');
+      aiResult = await res.json();
 
       const endTime = performance.now(); // 2. STOP FRONTEND ROUND-TRIP CLOCK
       const roundTripTimeMs = Math.round(endTime - startTime);
@@ -372,33 +353,27 @@ function IntakeFormInner() {
 
               <div className="space-y-3">
                 <label className={labelClass}>Raw Retinal Fundus Image *</label>
-                {samples.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {samples.map((s) => (
-                      <button key={s.id} type="button" onClick={() => handleSampleSelect(s.id, s.url)} className={`p-2 rounded-xl border backdrop-blur-sm flex items-center gap-2 shadow-sm transition-all ${isUsingSample && selectedSample === s.id ? 'bg-white/80 border-teal-400' : 'bg-white/40 border-white/60 hover:bg-white/60'}`}>
-                        <img src={s.url} alt={s.title} className="w-8 h-8 rounded-lg object-cover bg-black shrink-0 shadow-sm" />
-                        <div className="truncate text-left"><div className="text-[10px] font-bold text-slate-800 truncate mb-0.5">{s.title}</div><div className="text-[9px] text-teal-700 font-black">{s.id.includes('normal') ? 'Normal' : 'DR'}</div></div>
-                      </button>
-                    ))}
-                  </div>
-                )}
                 
                 <div onDragOver={(e) => e.preventDefault()} onDrop={handleFileDrop} className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all backdrop-blur-sm shadow-inner ${uploadedFile ? 'border-teal-400 bg-teal-50/40' : 'border-white/80 bg-white/30 hover:bg-white/40'}`}>
-                  {previewUrl ? (
+                  {previewUrl && uploadedFile ? (
                     <div className="flex flex-col items-center justify-center space-y-3">
-                      <img src={previewUrl} alt="Preview" className="w-28 h-28 rounded-xl object-contain bg-black/90 shadow-lg border border-white/20" />
-                      <div className="text-[11px] font-bold text-slate-700 bg-white/50 px-3 py-1 rounded-full">{isUsingSample ? `Sample: ${selectedSample}` : uploadedFile?.name}</div>
+                      <img src={previewUrl} alt="Preview" className="w-32 h-32 rounded-xl object-contain bg-black/90 shadow-lg border border-white/20" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-slate-800 bg-white/70 px-3 py-1 rounded-full border border-white/80 shadow-xs truncate max-w-xs">{uploadedFile.name}</span>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-white/50 px-2 py-1 rounded-full border border-white/60">{(uploadedFile.size / 1024).toFixed(0)} KB</span>
+                      </div>
                       <div className="flex gap-2">
                         <label className="text-[11px] text-teal-800 font-bold bg-white/80 hover:bg-white px-3 py-1.5 rounded-lg border border-white shadow-sm cursor-pointer transition-all">
-                          Browse Device<input type="file" accept="image/*" onChange={handleFileInput} className="hidden" />
+                          Change Image<input type="file" accept="image/*" onChange={handleFileInput} className="hidden" />
                         </label>
-                        <button type="button" onClick={() => { setUploadedFile(null); setPreviewUrl(''); }} className="text-[11px] text-slate-600 font-bold px-3 py-1.5 hover:bg-white/50 rounded-lg transition-all">Clear</button>
+                        <button type="button" onClick={() => { setUploadedFile(null); setPreviewUrl(''); }} className="text-[11px] text-rose-700 font-bold px-3 py-1.5 bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/50 rounded-lg transition-all">Remove</button>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2 py-4">
                       <div className="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center mx-auto shadow-sm border border-white/60"><UploadCloud className="w-6 h-6 text-teal-600" /></div>
-                      <div className="text-xs font-bold text-slate-800 drop-shadow-sm">Drag and drop raw fundus image</div>
+                      <div className="text-xs font-bold text-slate-800 drop-shadow-sm">Drag and drop raw retinal fundus image</div>
+                      <div className="text-[10px] text-slate-500">Supports PNG, JPG, JPEG, TIFF from standard fundus scopes</div>
                       <label className="inline-block mt-2 text-[11px] text-teal-800 font-bold bg-white/60 hover:bg-white/80 px-4 py-2 rounded-lg border border-white/80 shadow-sm cursor-pointer transition-all">
                         Browse Device<input type="file" accept="image/*" onChange={handleFileInput} className="hidden" />
                       </label>
