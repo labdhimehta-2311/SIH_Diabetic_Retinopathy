@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-[url('/theme-bg.png')] bg-cover bg-fixed bg-center bg-no-repeat min-h-screen text-slate-900">
-        <div className="min-h-screen flex flex-col bg-slate-100/30 backdrop-blur-sm">
+      <body className="bg-[url('/theme-bg.png')] bg-cover bg-fixed bg-center bg-no-repeat min-h-screen text-slate-900 print:bg-none print:min-h-0 print:text-black">
+        <div className="min-h-screen flex flex-col bg-slate-100/30 backdrop-blur-sm print:min-h-0 print:block print:bg-transparent">
           <AuthProvider>
             <Navbar />
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 print:p-0 print:m-0 print:max-w-none print:block">
               {children}
             </main>
           </AuthProvider>

@@ -196,14 +196,37 @@ function ReportContentInner() {
     <div className="max-w-5xl mx-auto space-y-4 print:p-0">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          @page { margin: 8mm 10mm !important; size: A4 portrait; }
+          @page { margin: 8mm 8mm !important; size: A4 portrait; }
           html, body { 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
             background: white !important;
-            font-size: 9pt !important;
+            font-size: 8.5pt !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
           }
-          .report-section,
+          body,
+          body > div,
+          main,
+          #__next {
+            display: block !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          .no-print, nav, [role="navigation"] {
+            display: none !important;
+          }
+          h1, h2, h3, h4, .print-break-after-avoid {
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+          }
           .print-break-inside-avoid,
           .print-avoid-break,
           .print-card,
@@ -274,10 +297,10 @@ function ReportContentInner() {
       </div>
 
       {/* Printable Clinical Document */}
-      <div className="bg-white border border-slate-300 p-6 sm:p-8 space-y-6 print:border-none print:p-0 print:space-y-1.5">
+      <div className="bg-white border border-slate-300 p-6 sm:p-8 space-y-6 print:border-none print:p-0 print:space-y-3">
         
         {/* Letterhead */}
-        <div className="report-section print-break-inside-avoid border-b-2 border-slate-900 pb-3 flex justify-between items-end print:pb-1.5">
+        <div className="print-break-inside-avoid border-b-2 border-slate-900 pb-3 flex justify-between items-end print:pb-2 print:mb-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-slate-900 text-white flex items-center justify-center">
               <Eye className="w-6 h-6" />
@@ -301,7 +324,7 @@ function ReportContentInner() {
         </div>
 
         {/* Tabular Patient Demographics */}
-        <div className="report-section print-break-inside-avoid border border-slate-900 text-xs print:text-[9px]">
+        <div className="print-break-inside-avoid border border-slate-900 text-xs print:text-[8.5px]">
           <div className="grid grid-cols-4 bg-slate-100 text-[9px] font-bold uppercase tracking-widest text-slate-600 border-b border-slate-900 print:text-[7px]">
             <div className="p-1.5 border-r border-slate-900">Patient Name</div>
             <div className="p-1.5 border-r border-slate-900">ID / Age / Sex</div>
@@ -331,11 +354,11 @@ function ReportContentInner() {
         </div>
 
         {/* Primary Inference Grading Alert Block */}
-        <div className="report-section print-break-inside-avoid border-2 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 print:p-2 print:gap-1">
+        <div className="print-break-inside-avoid border-2 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 print:p-2.5 print:gap-1.5">
           <div className="flex-1">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 print:text-[7px]">Current Screening Diagnostic Grading</div>
-            <div className="text-xl font-black text-slate-900 uppercase print:text-xs leading-tight">{screening.aiResults.gradeLabel}</div>
-            <div className="text-[10px] text-slate-600 font-mono mt-1 print:text-[7px] print:mt-0.5">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 print:text-[7.5px]">Current Screening Diagnostic Grading</div>
+            <div className="text-xl font-black text-slate-900 uppercase print:text-sm leading-tight">{screening.aiResults.gradeLabel}</div>
+            <div className="text-[10px] text-slate-600 font-mono mt-1 print:text-[7.5px] print:mt-0.5">
               CONFIDENCE: <strong className="text-slate-900">{screening.aiResults.confidence}%</strong> | 
               ENGINE: {screening.aiResults.engine} ({screening.aiResults.executionTimeSec}s)
             </div>
@@ -346,7 +369,7 @@ function ReportContentInner() {
         </div>
 
         {/* Visual Diagnostics Matrix */}
-        <div className="report-section print-break-inside-avoid print:block">
+        <div className="print-break-inside-avoid print:block">
           <ComparativeViewer images={screening.aiResults.images} m3Executed={screening.checkM3Setup} />
         </div>
 
@@ -528,10 +551,7 @@ function ReportContentInner() {
         {/* ================================================================ */}
         {/* FEATURE 10: EVIDENCE-BASED HEALTH & LIFESTYLE SUPPORTIVE MEASURES */}
         {/* ================================================================ */}
-        {/* ================================================================ */}
-        {/* FEATURE 10: EVIDENCE-BASED HEALTH & LIFESTYLE SUPPORTIVE MEASURES */}
-        {/* ================================================================ */}
-        <div className="report-section print-break-inside-avoid border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1 bg-white">
+        <div className="print-break-inside-avoid border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-1.5 bg-white">
           <div className="flex items-center justify-between border-b border-slate-300 pb-2 print:pb-1">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[8px]">
               <Heart className="w-3.5 h-3.5 text-teal-700" /> Evidence-Based Health & Supportive Lifestyle Measures
@@ -594,7 +614,7 @@ function ReportContentInner() {
         {/* RELEVANT CLINICAL MEDICATIONS & PHARMACOTHERAPY                   */}
         {/* Grounded in Goodman & Gilman 14th Ed., Katzung 15th Ed., AAO PPP */}
         {/* ================================================================ */}
-        <div className="report-section print-break-inside-avoid border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
+        <div className="border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-2 bg-white">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-300 pb-2 print:pb-1 gap-1">
             <div className="flex items-center gap-1.5">
               <Pill className="w-4 h-4 text-teal-700 shrink-0" />
@@ -719,7 +739,7 @@ function ReportContentInner() {
         </div>
 
         {/* Editable Physician Notes */}
-        <div className="report-section print-break-inside-avoid border-t-2 border-slate-900 pt-3 print:pt-1.5 space-y-2 print:space-y-1">
+        <div className="print-break-inside-avoid border-t-2 border-slate-900 pt-3 print:pt-2 space-y-2 print:space-y-1.5">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[9px]">
               <Edit3 className="w-3 h-3 print:hidden" /> Clinical Observations & Directives
@@ -760,7 +780,7 @@ function ReportContentInner() {
         </div>
 
         {/* Digital Signature Footer */}
-        <div className="report-section print-break-inside-avoid pt-4 border-t border-slate-300 flex justify-between items-end print:pt-1.5 print:mt-1">
+        <div className="print-break-inside-avoid pt-4 border-t border-slate-300 flex justify-between items-end print:pt-2 print:mt-1.5">
           <div className="text-[9px] text-slate-500 max-w-sm uppercase leading-tight tracking-wider print:text-[6px]">
             Report generated via assistive automated pipeline. Must be correlated with full clinical exam. Not a substitute for physical consultation.
           </div>

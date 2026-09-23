@@ -58,45 +58,45 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           {/* 1. Original Fundus */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[7px] print:text-slate-900">1. Raw Fundus</span>
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">1. Raw Fundus Capture</span>
               <button onClick={() => setSelectedZoomImage(images.originalUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-28 print:w-full"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.originalUrl} alt="Raw Fundus Capture" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[6px] print:mt-1">Unmodified retinal capture.</div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Unmodified 45° macular retinal field.</div>
           </div>
 
           {/* 2. Enhanced */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center gap-1 print:text-[7px] print:text-slate-900">
+              <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center gap-1 print:text-[8px] print:text-slate-900">
                 <Sparkles className="w-3.5 h-3.5 print:hidden" /> 2. CLAHE Contrast
               </span>
               <button onClick={() => setSelectedZoomImage(images.enhancedUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-28 print:w-full"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.enhancedUrl} alt="CLAHE Enhanced Fundus" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[6px] print:mt-1">Green-channel contrast boost.</div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Green-channel microvascular boost.</div>
           </div>
 
           {/* 3. Lesion Mask */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-amber-700 uppercase tracking-wide print:text-[7px] print:text-slate-900">3. U-Net Lesion Mask</span>
+              <span className="text-xs font-bold text-amber-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">3. U-Net Lesion Mask</span>
               {images.lesionMaskUrl && (
                 <button onClick={() => setSelectedZoomImage(images.lesionMaskUrl!)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
               )}
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-28 print:w-full"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               {m3Executed && images.lesionMaskUrl ? (
@@ -108,7 +108,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
                 </div>
               )}
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[6px] print:mt-1">
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
               {m3Executed ? 'Microaneurysms, hemorrhages & exudates.' : 'Lesion segmentation disabled.'}
             </div>
           </div>
@@ -116,18 +116,53 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           {/* 4. Grad-CAM Heatmap */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1 print:text-[7px] print:text-slate-900">
+              <span className="text-xs font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1 print:text-[8px] print:text-slate-900">
                 <Eye className="w-3.5 h-3.5 print:hidden" /> 4. Grad-CAM Activation
               </span>
               <button onClick={() => setSelectedZoomImage(images.heatmapUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-28 print:w-full"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.heatmapUrl} alt="Grad-CAM Neural Heatmap" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[6px] print:mt-1">Heatmap highlighting grading features.</div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Attentive feature grading saliency.</div>
+          </div>
+        </div>
+
+        {/* Quantitative Lesion & Biomarker Matrix Bar (Fills Page 1 cleanly with essential clinical data) */}
+        <div className="mt-3 print:mt-2 bg-slate-50 border border-slate-300 rounded-lg p-2.5 print:p-2 text-xs print:text-[8px] print-break-inside-avoid">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-1 mb-1.5 print:pb-0.5 print:mb-1">
+            <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px] print:text-[7.5px] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-teal-600 inline-block"></span>
+              Quantitative Lesion Distribution & Optical Assessment
+            </span>
+            <span className="text-[10px] print:text-[6.5px] text-slate-500 font-mono">
+              Field of View: 45° • Depth: 24-bit sRGB • Optics Quality: High
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 print:grid-cols-4 print:gap-1.5 text-center">
+            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Microaneurysms (MA)</div>
+              <div className="text-xs print:text-[8.5px] font-black text-amber-700 mt-0.5">Focal Vascular Dilations</div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Isolated capillary outpouchings</div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hemorrhages (HEM)</div>
+              <div className="text-xs print:text-[8.5px] font-black text-rose-700 mt-0.5">Intra-Retinal Micro-Bleeds</div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Blot, dot & flame patterns</div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hard Exudates (EX)</div>
+              <div className="text-xs print:text-[8.5px] font-black text-teal-700 mt-0.5">Lipoprotein Deposition</div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Macular edema risk assessment</div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Vessel Arborization</div>
+              <div className="text-xs print:text-[8.5px] font-black text-slate-800 mt-0.5">Arcades & Caliber Checked</div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Optic disc & foveal centration</div>
+            </div>
           </div>
         </div>
       </div>
