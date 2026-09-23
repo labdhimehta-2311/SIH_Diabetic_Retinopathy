@@ -438,7 +438,7 @@ export function getOfficialMedicationsGuidance(
           drugName: "Dexamethasone Intravitreal Implant (Ozurdex)",
           genericInn: "Dexamethasone (sustained-release PLGA polymer matrix)",
           pharmacologicalClass: "Potent Synthetic Glucocorticoid Anti-inflammatory Implant",
-          routeAndDosing: "0.7 mg intravitreal implant into posterior vitreous segment via preloaded 22-gauge applicator every 4 to 6 months.",
+          routeAndDosing: "Intravitreal Implant: 0.7 mg sustained-release intravitreal implant into posterior vitreous segment via preloaded 22-gauge applicator every 4 to 6 months.",
           clinicalIndication: "Persistent or refractory Diabetic Macular Edema unresponsive to anti-VEGF, or in pseudophakic patients.",
           mechanismOfAction: "Suppresses intraocular transcription of VEGF, IL-6, ICAM-1, and prostaglandins via glucocorticoid receptor activation; reinforces endothelial tight junctions and halts breakdown of the blood-retinal barrier.",
           prescribingConsiderations: "Monitor for secondary ocular hypertension (elevated IOP occurs in ~25-30% of eyes, responsive to topical IOP-lowering drops). Contraindicated in active ocular herpes simplex or mycobacterial infections.",

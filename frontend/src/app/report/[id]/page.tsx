@@ -56,6 +56,18 @@ const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
   );
 };
 
+// Safe and bulletproof route badge formatter (prevents overflowing or text slicing)
+const getRouteBadgeLabel = (routeAndDosing: string) => {
+  if (!routeAndDosing) return 'Clinical Rx';
+  const lower = routeAndDosing.toLowerCase();
+  if (lower.includes('implant')) return 'Intravitreal Implant';
+  if (lower.includes('injection')) return 'Intravitreal Injection';
+  if (lower.includes('topical')) return 'Topical Ophthalmic';
+  if (lower.includes('oral')) return 'Oral Administration';
+  const firstPart = routeAndDosing.split(':')[0].trim();
+  return firstPart.length > 22 ? 'Prescription Rx' : firstPart;
+};
+
 function ReportContentInner() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -226,6 +238,11 @@ function ReportContentInner() {
           h1, h2, h3, h4, .print-break-after-avoid {
             break-after: avoid !important;
             page-break-after: avoid !important;
+          }
+          .print-break-before-page,
+          .print\:break-before-page {
+            break-before: page !important;
+            page-break-before: always !important;
           }
           .print-break-inside-avoid,
           .print-avoid-break,
@@ -614,7 +631,7 @@ function ReportContentInner() {
         {/* RELEVANT CLINICAL MEDICATIONS & PHARMACOTHERAPY                   */}
         {/* Grounded in Goodman & Gilman 14th Ed., Katzung 15th Ed., AAO PPP */}
         {/* ================================================================ */}
-        <div className="border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-2 bg-white">
+        <div className="border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-2 bg-white print:break-before-page print-break-before-page">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-300 pb-2 print:pb-1 gap-1">
             <div className="flex items-center gap-1.5">
               <Pill className="w-4 h-4 text-teal-700 shrink-0" />
@@ -647,8 +664,8 @@ function ReportContentInner() {
                       <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
                         {med.drugName}
                       </div>
-                      <span className="text-[8px] font-mono bg-teal-100/80 text-teal-900 px-1.5 py-0.5 rounded print:text-[5px] shrink-0 font-bold">
-                        {med.routeAndDosing.split(':')[0]}
+                      <span className="text-[8px] font-mono bg-teal-100/80 text-teal-900 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing)}>
+                        {getRouteBadgeLabel(med.routeAndDosing)}
                       </span>
                     </div>
 
@@ -685,7 +702,7 @@ function ReportContentInner() {
 
           {/* Systemic Microvascular Medications Subsection */}
           {medicationsGuidance.systemicMicrovascularMedications.length > 0 && (
-            <div className="space-y-2 print:space-y-1 pt-1 border-t border-slate-200">
+            <div className="space-y-2 print:space-y-1 pt-1 border-t border-slate-200 print-break-inside-avoid">
               <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1 print:text-[7px]">
                 <Activity className="w-3 h-3 text-teal-600" />
                 Systemic Microvascular & Endothelial Protective Pharmacotherapy:
@@ -697,8 +714,8 @@ function ReportContentInner() {
                       <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
                         {med.drugName}
                       </div>
-                      <span className="text-[8px] font-mono bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded print:text-[5px] shrink-0 font-bold">
-                        {med.routeAndDosing.split(':')[0]}
+                      <span className="text-[8px] font-mono bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing)}>
+                        {getRouteBadgeLabel(med.routeAndDosing)}
                       </span>
                     </div>
 

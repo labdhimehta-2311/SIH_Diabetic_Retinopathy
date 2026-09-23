@@ -62,7 +62,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               <button onClick={() => setSelectedZoomImage(images.originalUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-48 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.originalUrl} alt="Raw Fundus Capture" className="w-full h-full object-contain print:scale-100" />
@@ -79,7 +79,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               <button onClick={() => setSelectedZoomImage(images.enhancedUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-48 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.enhancedUrl} alt="CLAHE Enhanced Fundus" className="w-full h-full object-contain print:scale-100" />
@@ -96,7 +96,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               )}
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-48 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               {m3Executed && images.lesionMaskUrl ? (
@@ -122,11 +122,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               <button onClick={() => setSelectedZoomImage(images.heatmapUrl)} className="text-slate-400 p-1 print:hidden"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
-              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
+              className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-48 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               <img src={images.heatmapUrl} alt="Grad-CAM Neural Heatmap" className="w-full h-full object-contain print:scale-100" />
             </div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Attentive feature grading saliency.</div>
           </div>
         </div>
       </div>

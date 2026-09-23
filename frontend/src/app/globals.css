@@ -77,6 +77,13 @@
     page-break-after: avoid !important;
   }
 
+  /* Page break utilities */
+  .print-break-before-page,
+  .print\:break-before-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
   /* Prevent individual cards, table rows, and images from splitting across pages */
   .print-break-inside-avoid,
   .print-avoid-break,
