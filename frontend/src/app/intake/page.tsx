@@ -71,6 +71,7 @@ function IntakeFormInner() {
   }, [patientIdParam, doctor]);
 
   useEffect(() => {
+    // Fetch directly from Python backend port 8000
     fetch('http://127.0.0.1:8000/api/samples')
       .then(res => res.json())
       .then(data => {
@@ -148,43 +149,20 @@ function IntakeFormInner() {
         history: { otherSymptoms, medicalHistory, lifestyle, familyHistory }, screenings: existingScreenings, createdAt: originalCreatedAt || new Date().toISOString(), updatedAt: new Date().toISOString()
       };
 
-      if (!navigator.onLine) {
-        setSubmitStatusText('Network offline. Saving to persistent local cache and queuing for auto-sync...');
-        
-      let base64Img: string | undefined;
-      if (uploadedFile) {
-        base64Img = await new Promise((resolve) => {
-          const img = new window.Image();
-          img.src = URL.createObjectURL(uploadedFile);
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800; 
-            const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-            
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.6)); 
-          };
-        });
-      }
-        PatientService.savePatient(patientData).catch(() => console.log('Patient queued in local cache.'));
-        SyncQueue.enqueue({ patientId: pId, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, sampleId: isUsingSample ? selectedSample : undefined, imageFileBase64: base64Img, imageFileName: uploadedFile?.name });
-        AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, action: 'AI_SCREENING_RUN', summary: `Offline screening queued for patient ${name} (${pId}).`, details: { checkM3Setup, offline: true } }).catch(() => {});
-        
-        setIsSubmitting(false);
-        alert('Offline Mode Active: Your screening session is saved locally and queued.'); 
-        router.push('/'); 
-        return;
-      }
-
       await PatientService.savePatient(patientData);
 
-      let aiResult: any;
-      const startTime = performance.now(); // 1. START FRONTEND ROUND-TRIP CLOCK
+      if (!navigator.onLine) {
+        setSubmitStatusText('Network offline. Saving to persistent local cache and queuing for auto-sync...');
+        let base64Img: string | undefined;
+        if (uploadedFile) base64Img = await new Promise((res) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.readAsDataURL(uploadedFile); });
+        SyncQueue.enqueue({ patientId: pId, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, sampleId: isUsingSample ? selectedSample : undefined, imageFileBase64: base64Img, imageFileName: uploadedFile?.name });
+        await AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, action: 'AI_SCREENING_RUN', summary: `Offline screening queued for patient ${name} (${pId}).`, details: { checkM3Setup, offline: true } });
+        alert('Offline Mode Active: Your screening session is saved locally and queued.'); router.push('/'); return;
+      }
 
+      let aiResult: any;
       if (isUsingSample) {
+        // Send request to Python backend port 8000 directly
         const res = await fetch('http://127.0.0.1:8000/infer', { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' }, 
@@ -198,29 +176,20 @@ function IntakeFormInner() {
         formData.append('patient_id', pId); 
         formData.append('doctor_id', doctor.uid); 
         formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
+        // Send request to Python backend port 8000 directly
         const res = await fetch('http://127.0.0.1:8000/infer', { method: 'POST', body: formData });
         if (!res.ok) throw new Error('AI image screening failed');
         aiResult = await res.json();
       }
 
-      const endTime = performance.now(); // 2. STOP FRONTEND ROUND-TRIP CLOCK
-      const roundTripTimeMs = Math.round(endTime - startTime);
-
       if (aiResult && aiResult.success) {
-        // 3. ATTACH PERFORMANCE METRICS TO THE RESULT OBJECT
-        aiResult.totalRoundTrip_ms = roundTripTimeMs;
-        aiResult.networkOverhead_ms = Math.max(0, roundTripTimeMs - (aiResult.latency_ms || 0));
-
-        console.log(`⚡ AI Core Processing Time: ${aiResult.latency_ms} ms`);
-        console.log(`🌐 Total Round-Trip Latency: ${roundTripTimeMs} ms`);
-
         const screeningSession: ScreeningSession = {
           id: 'SCR-' + (aiResult.sessionId || Date.now().toString().slice(-4)), date: date, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, aiResults: aiResult,
-          clinicalNotes: `AI Diagnostic Screening completed using ${aiResult.engine || 'MATLAB ResNet-50'}. Result: ${aiResult.gradeLabel} (Confidence: ${aiResult.confidence}%). Inference executed in ${aiResult.latency_ms}ms with a total round-trip of ${roundTripTimeMs}ms.`,
+          clinicalNotes: `AI Diagnostic Screening completed using ${aiResult.engine || 'MATLAB ResNet-50'}. Result: ${aiResult.gradeLabel} (Confidence: ${aiResult.confidence}%).`,
           recommendation: aiResult.referable ? 'Refer to Vitreoretinal Specialist for detailed optical coherence tomography.' : 'Low risk. Continue routine metabolic control.', followUpInterval: aiResult.referable ? '1 to 3 Months' : '12 Months', finalized: false, createdAt: new Date().toISOString()
         };
         await PatientService.addScreeningSession(pId, doctor.uid, screeningSession);
-        await AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, screeningId: screeningSession.id, action: 'AI_SCREENING_RUN', summary: `AI screening executed for ${name}. Grade: ${aiResult.grade}.`, details: { checkM3Setup, engine: aiResult.engine, latency: aiResult.latency_ms } });
+        await AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, screeningId: screeningSession.id, action: 'AI_SCREENING_RUN', summary: `AI screening executed for ${name}. Grade: ${aiResult.grade}.`, details: { checkM3Setup, engine: aiResult.engine } });
         router.push(`/report/${pId}?screeningId=${screeningSession.id}`);
       } else throw new Error(aiResult?.error || 'Inference returned unsuccessful status');
     } catch (err: any) { setErrorText(err.message || 'Error occurred while triggering AI screening pipeline'); } finally { setIsSubmitting(false); }

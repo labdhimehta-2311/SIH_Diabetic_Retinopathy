@@ -9,7 +9,6 @@ import {
   GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth } from './firebase';
-import { SyncQueue } from './syncQueue'; // <-- NEW: Imported SyncQueue
 
 export interface DoctorProfile {
   uid: string;
@@ -43,24 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
   const [availableProfiles, setAvailableProfiles] = useState<Record<string, DoctorProfile>>({});
   const [loading, setLoading] = useState(true);
-
-  // --- NEW: Global Offline-to-Online Auto-Sync Listener ---
-  useEffect(() => {
-    const handleOnline = async () => {
-      console.log("Internet restored! Processing offline queue...");
-      try {
-        await SyncQueue.processQueue(); 
-        // Refresh the page so the clinician can immediately see the updated reports
-        window.location.reload(); 
-      } catch (error) {
-        console.error("Failed to process sync queue on reconnection:", error);
-      }
-    };
-
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, []);
-  // --------------------------------------------------------
 
   useEffect(() => {
     // Load all previously signed-in accounts from local storage
