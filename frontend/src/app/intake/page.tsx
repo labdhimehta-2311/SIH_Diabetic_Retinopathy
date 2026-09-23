@@ -215,9 +215,19 @@ function IntakeFormInner() {
         console.log(`🌐 Total Round-Trip Latency: ${roundTripTimeMs} ms`);
 
         const screeningSession: ScreeningSession = {
-          id: 'SCR-' + (aiResult.sessionId || Date.now().toString().slice(-4)), date: date, doctorId: doctor.uid, doctorName: doctor.displayName, visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, checkM3Setup, aiResults: aiResult,
+          id: 'SCR-' + (aiResult.sessionId || Date.now().toString().slice(-4)), 
+          visitNumber: existingScreenings.length + 1,
+          date: date, 
+          doctorId: doctor.uid, 
+          doctorName: doctor.displayName, 
+          visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, 
+          checkM3Setup, 
+          aiResults: aiResult,
           clinicalNotes: `AI Diagnostic Screening completed using ${aiResult.engine || 'MATLAB ResNet-50'}. Result: ${aiResult.gradeLabel} (Confidence: ${aiResult.confidence}%). Inference executed in ${aiResult.latency_ms}ms with a total round-trip of ${roundTripTimeMs}ms.`,
-          recommendation: aiResult.referable ? 'Refer to Vitreoretinal Specialist for detailed optical coherence tomography.' : 'Low risk. Continue routine metabolic control.', followUpInterval: aiResult.referable ? '1 to 3 Months' : '12 Months', finalized: false, createdAt: new Date().toISOString()
+          recommendation: aiResult.referable ? 'Refer to Vitreoretinal Specialist for detailed optical coherence tomography.' : 'Low risk. Continue routine metabolic control.', 
+          followUpInterval: aiResult.referable ? '1 to 3 Months' : '12 Months', 
+          finalized: false, 
+          createdAt: new Date().toISOString()
         };
         await PatientService.addScreeningSession(pId, doctor.uid, screeningSession);
         await AuditService.logAction({ doctorId: doctor.uid, doctorName: doctor.displayName, patientId: pId, screeningId: screeningSession.id, action: 'AI_SCREENING_RUN', summary: `AI screening executed for ${name}. Grade: ${aiResult.grade}.`, details: { checkM3Setup, engine: aiResult.engine, latency: aiResult.latency_ms } });
@@ -233,7 +243,16 @@ function IntakeFormInner() {
         
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/40 pb-5">
           <div>
-            <div className="text-[10px] font-bold text-teal-800 uppercase tracking-widest mb-1 drop-shadow-sm">{patientIdParam ? 'Returning Patient Follow-up' : 'New Patient Intake'}</div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-teal-800 uppercase tracking-widest drop-shadow-sm">
+                {patientIdParam ? 'Returning Patient Follow-up' : 'New Patient Intake'}
+              </span>
+              {existingScreenings.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-teal-100/90 text-teal-800 border border-teal-200/80 shadow-xs">
+                  Visit #{existingScreenings.length + 1} — Longitudinal Comparison with Visit #{existingScreenings.length} ({existingScreenings[0]?.date})
+                </span>
+              )}
+            </div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight drop-shadow-sm">Comprehensive Clinical Screening Intake</h1>
           </div>
         </div>

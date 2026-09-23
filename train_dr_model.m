@@ -69,7 +69,9 @@ FN = sum((predReferable == 0) & (trueReferable == 1));
 
 sensitivity = TP / (TP + FN);
 specificity = TN / (TN + FP);
+accuracy = (TP + TN) / (TP + TN + FP + FN);
 
 fprintf("\n--- CLINICAL BENCHMARKS (REFERABLE DR) ---\n");
-fprintf("Sensitivity: %.2f%% (Target: >90%%)\n", sensitivity * 100);
-fprintf("Specificity: %.2f%% (Target: >85%%)\n", specificity * 100);
+fprintf("Referable DR Accuracy: %.2f%% (Target: >=92%%)\n", accuracy * 100);
+fprintf("Sensitivity:           %.2f%% (Target: >=92%% / >90%%)\n", sensitivity * 100);
+fprintf("Specificity:           %.2f%% (Target: >=88%% / >85%%)\n", specificity * 100);

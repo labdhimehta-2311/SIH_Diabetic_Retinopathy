@@ -25,6 +25,12 @@ function [severityLevel, isReferable, confidence, reportPath] = M2_DR_Grading(en
     persistent net;
     if isempty(net)
         modelFile = fullfile(thisDir, 'trainedDRModel.mat');
+        if ~isfile(modelFile)
+            modelFile = fullfile(thisDir, '..', 'trainedDRModel.mat');
+        end
+        if ~isfile(modelFile)
+            modelFile = fullfile(thisDir, '..', '..', 'trainedDRModel.mat');
+        end
         if isfile(modelFile)
             load(modelFile, 'trainedNet'); 
             net = trainedNet;

@@ -38,6 +38,25 @@ const AuthContext = createContext<AuthContextType>({
   completeProfile: () => {}, selectActiveDoctor: () => {}, deactivateActiveDoctor: () => {}, logout: async () => {}
 });
 
+const DEFAULT_DEMO_PROFILES: Record<string, DoctorProfile> = {
+  'doc_sarah_rao_vitreo_01': {
+    uid: 'doc_sarah_rao_vitreo_01',
+    email: 'sarah.rao@retinx.org',
+    displayName: 'Dr. Sarah Rao, MD',
+    clinic: 'Apex Retina Institute & Metabolic Center',
+    role: 'Vitreoretinal Specialist',
+    medicalLicense: 'LIC-RAO-9012'
+  },
+  'doc_marcus_vance_rural_02': {
+    uid: 'doc_marcus_vance_rural_02',
+    email: 'marcus.vance@retinx.org',
+    displayName: 'Dr. Marcus Vance, DO',
+    clinic: 'Community Health Vision Network',
+    role: 'Comprehensive Outreach Ophthalmologist',
+    medicalLicense: 'LIC-VAN-4481'
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
@@ -50,7 +69,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Internet restored! Processing offline queue...");
       try {
         await SyncQueue.processQueue(); 
-        // Refresh the page so the clinician can immediately see the updated reports
         window.location.reload(); 
       } catch (error) {
         console.error("Failed to process sync queue on reconnection:", error);
@@ -60,12 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
   }, []);
-  // --------------------------------------------------------
 
   useEffect(() => {
     // Load all previously signed-in accounts from local storage
     const savedProfilesStr = localStorage.getItem('dr_profiles_v3');
-    const savedProfiles = savedProfilesStr ? JSON.parse(savedProfilesStr) : {};
+    let savedProfiles = savedProfilesStr ? JSON.parse(savedProfilesStr) : null;
+    if (!savedProfiles || Object.keys(savedProfiles).length === 0) {
+      savedProfiles = DEFAULT_DEMO_PROFILES;
+      localStorage.setItem('dr_profiles_v3', JSON.stringify(DEFAULT_DEMO_PROFILES));
+    }
     setAvailableProfiles(savedProfiles);
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

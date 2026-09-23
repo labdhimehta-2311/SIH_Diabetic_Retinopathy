@@ -3,7 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Users, Activity, AlertTriangle, Search, Plus, RefreshCw, FileText, Eye, Stethoscope, ChevronRight } from 'lucide-react';
+import { 
+  Users, Activity, AlertTriangle, Search, Plus, RefreshCw, 
+  FileText, Eye, Stethoscope, ChevronRight, ChevronDown, ChevronUp,
+  User, Calendar, Clock, MapPin, Briefcase, Phone, ClipboardList,
+  CheckCircle2, TrendingDown, TrendingUp, Minus, Heart
+} from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 import { PatientService, Patient } from '../lib/patientService';
 
@@ -14,8 +19,9 @@ export default function PatientDirectory() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
 
-  // THE FIX: Automatically redirect to login if no active doctor session exists
+  // Automatically redirect to login if no active doctor session exists
   useEffect(() => {
     if (!loading && !doctor) {
       router.replace('/login');
@@ -62,7 +68,6 @@ export default function PatientDirectory() {
     return <span className="px-2 py-0.5 border border-red-400/50 bg-red-100/50 backdrop-blur-sm text-red-900 text-[10px] font-bold uppercase tracking-wider rounded shadow-sm">Grade 4: Proliferative</span>;
   };
 
-  // Show a loading state instead of a blank screen while verifying auth
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-slate-500">
@@ -72,7 +77,6 @@ export default function PatientDirectory() {
     );
   }
 
-  // Prevent render before the redirect takes effect
   if (!doctor) return null;
 
   return (
@@ -148,49 +152,289 @@ export default function PatientDirectory() {
             filteredPatients.map((patient) => {
               const latestScreening = patient.screenings?.[0];
               const aiData = latestScreening?.aiResults;
+              const isExpanded = expandedPatientId === patient.id;
+              const screeningsList = patient.screenings || [];
+
               return (
-                <div key={patient.id} className="p-4 hover:bg-white/50 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-white/60 border border-white/80 shadow-inner px-1.5 py-0.5 rounded-md">{patient.id}</span>
-                      <h3 className="text-sm font-bold text-slate-900 truncate">{patient.name || 'Unnamed Record'}</h3>
+                <div key={patient.id} className="transition-colors">
+                  <div className="p-4 hover:bg-white/50 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-mono font-bold text-slate-600 bg-white/60 border border-white/80 shadow-inner px-1.5 py-0.5 rounded-md">{patient.id}</span>
+                        <h3 className="text-sm font-bold text-slate-900 truncate">{patient.name || 'Unnamed Record'}</h3>
+                        <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                          {screeningsList.length} {screeningsList.length === 1 ? 'Visit' : 'Visits'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span className="font-semibold">{patient.age || '--'}y / {String(patient.sex || 'U').charAt(0)}</span>
+                        <span>•</span><span>{patient.phone || 'No Phone'}</span>
+                        <span>•</span><span className="text-slate-800">Dx: {patient.clinicalVitals?.diabetesType || 'Unknown'}</span>
+                        <span>•</span><span>HbA1c: {patient.clinicalVitals?.bloodGlucose?.hba1cPercent || '--'}%</span>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="font-semibold">{patient.age || '--'}y / {String(patient.sex || 'U').charAt(0)}</span>
-                      <span>•</span><span>{patient.phone || 'No Phone'}</span>
-                      <span>•</span><span className="text-slate-800">Dx: {patient.clinicalVitals?.diabetesType || 'Unknown'}</span>
-                      <span>•</span><span>HbA1c: {patient.clinicalVitals?.bloodGlucose?.hba1cPercent || '--'}%</span>
+
+                    <div className="flex-shrink-0 w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
+                      {latestScreening ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            {getGradeBadge(aiData?.grade)}
+                            {aiData?.referable && (
+                              <span className="px-2 py-0.5 border border-rose-400/50 bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider rounded shadow-sm flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3" /> Refer
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[9px] text-slate-500 font-mono font-bold">Last Exam: {latestScreening.date}</div>
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-white/50 border border-white/60 shadow-inner rounded px-2 py-1">No Scans</span>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="flex-shrink-0 w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
-                    {latestScreening ? (
-                      <>
-                        <div className="flex items-center gap-2">
-                          {getGradeBadge(aiData?.grade)}
-                          {aiData?.referable && (
-                            <span className="px-2 py-0.5 border border-rose-400/50 bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider rounded shadow-sm flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" /> Refer
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[9px] text-slate-500 font-mono font-bold">Last Examination: {latestScreening.date}</div>
-                      </>
-                    ) : (
-                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-white/50 border border-white/60 shadow-inner rounded px-2 py-1">No Scans</span>
-                    )}
-                  </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 opacity-100 transition-opacity">
+                      {/* Expand Demographics, History & Timeline */}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedPatientId(isExpanded ? null : patient.id)}
+                        className={`px-3 py-1.5 border rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+                          isExpanded 
+                            ? 'bg-teal-50 border-teal-300 text-teal-800' 
+                            : 'bg-white/60 border-white/80 hover:bg-white/90 text-slate-700'
+                        }`}
+                        title="View Demographics, Family History & Screening Timeline"
+                      >
+                        <User className="w-3.5 h-3.5 text-teal-600" />
+                        <span>History & Timeline</span>
+                        {isExpanded ? <ChevronUp className="w-3 h-3 text-teal-700" /> : <ChevronDown className="w-3 h-3 text-slate-500" />}
+                      </button>
 
-                  <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
-                    <Link href={`/intake?patientId=${patient.id}`} className="flex-1 sm:flex-none px-3 py-1.5 bg-white/60 border border-white/80 hover:bg-white/90 shadow-sm text-slate-800 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all">
-                      <Eye className="w-3.5 h-3.5" /> Examine
-                    </Link>
-                    {latestScreening && (
-                      <Link href={`/report/${patient.id}?screeningId=${latestScreening.id}`} className="flex-1 sm:flex-none px-3 py-1.5 bg-slate-800/90 border border-slate-700/50 hover:bg-slate-900 shadow-md text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all">
-                        <FileText className="w-3.5 h-3.5" /> Report <ChevronRight className="w-3 h-3 opacity-50" />
+                      <Link href={`/intake?patientId=${patient.id}`} className="flex-1 sm:flex-none px-3 py-1.5 bg-white/60 border border-white/80 hover:bg-white/90 shadow-sm text-slate-800 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all">
+                        <Eye className="w-3.5 h-3.5" /> Examine
                       </Link>
-                    )}
+
+                      {latestScreening && (
+                        <Link href={`/report/${patient.id}?screeningId=${latestScreening.id}`} className="flex-1 sm:flex-none px-3 py-1.5 bg-slate-800/90 border border-slate-700/50 hover:bg-slate-900 shadow-md text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all">
+                          <FileText className="w-3.5 h-3.5" /> Latest Report <ChevronRight className="w-3 h-3 opacity-50" />
+                        </Link>
+                      )}
+                    </div>
                   </div>
+
+                  {/* ================================================================ */}
+                  {/* EXPANDED PATIENT RECORD: DEMOGRAPHICS, FAMILY HISTORY & TIMELINE  */}
+                  {/* ================================================================ */}
+                  {isExpanded && (
+                    <div className="bg-slate-50/80 border-t border-b border-slate-200/80 p-5 space-y-5 animate-fade-in-up">
+                      
+                      {/* Grid: Demographics + Medical/Family History */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        {/* Demographics Card */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                              <User className="w-4 h-4 text-teal-600" /> Full Patient Demographics
+                            </h4>
+                            <span className="text-[10px] font-mono text-slate-500 font-semibold">{patient.id}</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2.5 text-xs text-slate-700">
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Full Legal Name</span>
+                              <span className="font-semibold text-slate-900">{patient.name}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Age / Sex</span>
+                              <span className="font-semibold text-slate-900">{patient.age} years / {patient.sex}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Contact Phone</span>
+                              <span className="font-semibold text-slate-900 flex items-center gap-1">
+                                <Phone className="w-3 h-3 text-slate-400" /> {patient.phone || 'Not Provided'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Occupation</span>
+                              <span className="font-semibold text-slate-900 flex items-center gap-1">
+                                <Briefcase className="w-3 h-3 text-slate-400" /> {patient.occupation || 'General'}
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Residential Address</span>
+                              <span className="font-semibold text-slate-900 flex items-center gap-1">
+                                <MapPin className="w-3 h-3 text-slate-400" /> {patient.address || 'Not Provided'}
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Registration Date</span>
+                              <span className="font-semibold text-slate-900 flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-slate-400" /> {patient.dateOfRegistration || patient.createdAt?.split('T')[0] || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Clinical & Family Medical History Card */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                              <ClipboardList className="w-4 h-4 text-teal-600" /> Clinical & Family Medical History
+                            </h4>
+                            <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                              {patient.clinicalVitals?.diabetesType}
+                            </span>
+                          </div>
+
+                          <div className="space-y-2 text-xs text-slate-700">
+                            {/* Family Medical History (prominently displayed) */}
+                            <div className="bg-amber-50/70 border border-amber-200/80 p-2.5 rounded-lg">
+                              <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                                <Heart className="w-3 h-3 text-amber-700" /> Family Medical History
+                              </span>
+                              <p className="text-slate-800 font-medium text-[11px]">
+                                {patient.history?.familyHistory || 'No significant familial ocular or metabolic history recorded.'}
+                              </p>
+                            </div>
+
+                            {/* Vitals & Regimen */}
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              <div>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Diagnosis Year</span>
+                                <span className="font-semibold text-slate-900">{patient.clinicalVitals?.yearOfDiagnosis || 'N/A'}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Diabetes Management</span>
+                                <span className="font-semibold text-slate-900">{patient.clinicalVitals?.diabetesManagement || 'Diet'}</span>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Active Medications</span>
+                                <span className="font-semibold text-slate-800 text-[11px]">{patient.clinicalVitals?.medicationDetails || 'None listed'}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Fasting / PP Glucose</span>
+                                <span className="font-semibold text-slate-900">
+                                  {patient.clinicalVitals?.bloodGlucose?.fastingMgDl || '--'} / {patient.clinicalVitals?.bloodGlucose?.postPrandialMgDl || '--'} mg/dL
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">HbA1c Percent</span>
+                                <span className="font-bold text-slate-900">{patient.clinicalVitals?.bloodGlucose?.hba1cPercent || '--'}%</span>
+                              </div>
+                            </div>
+
+                            {/* Other Symptoms & Lifestyle */}
+                            {patient.history?.otherSymptoms && patient.history.otherSymptoms.length > 0 && (
+                              <div className="pt-1">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Reported Symptoms</span>
+                                <div className="flex flex-wrap gap-1 mt-0.5">
+                                  {patient.history.otherSymptoms.map((sym, idx) => (
+                                    <span key={idx} className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded border border-slate-200">
+                                      {sym}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Longitudinal Screening Timeline */}
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <Calendar className="w-4 h-4 text-teal-600" /> Longitudinal Screening Timeline ({screeningsList.length} Total Visits)
+                          </h4>
+                          <span className="text-[10px] text-slate-500 font-medium">Chronological progression record</span>
+                        </div>
+
+                        {screeningsList.length === 0 ? (
+                          <div className="text-center py-6 text-xs text-slate-500 font-medium">
+                            No screening examinations recorded for this patient yet.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {screeningsList.map((scr, idx) => {
+                              const visitNum = scr.visitNumber || (screeningsList.length - idx);
+                              const isLatest = idx === 0;
+                              const comp = scr.comparisonReport;
+
+                              return (
+                                <div 
+                                  key={scr.id}
+                                  className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                                    isLatest 
+                                      ? 'bg-teal-50/40 border-teal-200/80 shadow-xs' 
+                                      : 'bg-slate-50/60 border-slate-200'
+                                  }`}
+                                >
+                                  {/* Left: Visit Info */}
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                                        isLatest ? 'bg-teal-700 text-white' : 'bg-slate-700 text-white'
+                                      }`}>
+                                        Visit #{visitNum} {isLatest ? '(Latest)' : ''}
+                                      </span>
+                                      <span className="text-xs font-bold text-slate-900">{scr.date}</span>
+                                      <span className="text-[10px] font-mono text-slate-500 font-semibold">({scr.id})</span>
+                                      
+                                      {/* Comparison Status Indicator */}
+                                      {comp && (
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 ${
+                                          comp.gradeChangeStatus === 'Improved'
+                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                            : comp.gradeChangeStatus === 'Worsened'
+                                            ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                            : 'bg-slate-200 text-slate-800 border-slate-300'
+                                        }`}>
+                                          {comp.gradeChangeStatus === 'Improved' ? <TrendingDown className="w-2.5 h-2.5" /> :
+                                           comp.gradeChangeStatus === 'Worsened' ? <TrendingUp className="w-2.5 h-2.5" /> :
+                                           <Minus className="w-2.5 h-2.5" />}
+                                          {comp.gradeChangeStatus} vs Visit #{visitNum - 1}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Clinical Details */}
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-slate-600">
+                                      <span>Clinician: <strong>{scr.doctorName}</strong></span>
+                                      <span>•</span>
+                                      <span>Confidence: <strong>{scr.aiResults?.confidence}%</strong></span>
+                                      <span>•</span>
+                                      <span>Visual Acuity: OD <strong>{scr.visualExam?.vaRight || 'N/A'}</strong> / OS <strong>{scr.visualExam?.vaLeft || 'N/A'}</strong></span>
+                                      <span>•</span>
+                                      <span>IOP: OD <strong>{scr.visualExam?.iopRight || 'N/A'}</strong> / OS <strong>{scr.visualExam?.iopLeft || 'N/A'}</strong></span>
+                                    </div>
+
+                                    {/* Progression Summary Snippet if comparison exists */}
+                                    {comp && (
+                                      <p className="text-[10px] text-slate-600 italic line-clamp-1 mt-0.5">
+                                        "{comp.clinicalProgressionSummary}"
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Right: Badge & Action Links */}
+                                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                                    {getGradeBadge(scr.aiResults?.grade)}
+                                    
+                                    <Link
+                                      href={`/report/${patient.id}?screeningId=${scr.id}`}
+                                      className="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-[11px] font-bold rounded-lg shadow-xs flex items-center gap-1 transition-all"
+                                    >
+                                      <FileText className="w-3 h-3" /> View Report
+                                    </Link>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })

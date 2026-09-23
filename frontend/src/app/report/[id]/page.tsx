@@ -5,10 +5,18 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Printer, ArrowLeft, Save, CheckCircle2, ShieldCheck, 
-  Stethoscope, AlertTriangle, Eye, RefreshCw, Edit3
+  Stethoscope, AlertTriangle, Eye, RefreshCw, Edit3,
+  TrendingDown, TrendingUp, Minus, Activity, Heart, 
+  Pill, BookOpen, Clock, Calendar, CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../../../lib/authContext';
-import { PatientService, Patient, ScreeningSession } from '../../../lib/patientService';
+import { 
+  PatientService, 
+  Patient, 
+  ScreeningSession, 
+  getHealthMeasuresForGrade, 
+  getClinicianTreatmentReview 
+} from '../../../lib/patientService';
 import { AuditService } from '../../../lib/auditService';
 import ComparativeViewer from '../../../components/ComparativeViewer';
 import AuditTrailModal from '../../../components/AuditTrailModal';
@@ -49,6 +57,7 @@ const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
 function ReportContentInner() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { doctor } = useAuth();
 
   const patientId = params.id as string;
@@ -81,6 +90,17 @@ function ReportContentInner() {
           : p.screenings?.[0];
           
         if (scr) {
+          // Ensure health measures and treatment review are populated
+          if (!scr.healthMeasures) {
+            scr.healthMeasures = getHealthMeasuresForGrade(scr.aiResults?.grade ?? 0);
+          }
+          if (!scr.treatmentReview) {
+            scr.treatmentReview = getClinicianTreatmentReview(
+              scr.aiResults?.grade ?? 0,
+              Boolean(scr.aiResults?.referable)
+            );
+          }
+
           setScreening(scr);
           setNotes(scr.clinicalNotes || '');
           setRecommendation(scr.recommendation || '');
@@ -90,6 +110,10 @@ function ReportContentInner() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSelectScreening = (scrId: string) => {
+    router.push(`/report/${patientId}?screeningId=${scrId}`);
   };
 
   const handleSaveChanges = async () => {
@@ -154,6 +178,11 @@ function ReportContentInner() {
     );
   }
 
+  const comparison = screening.comparisonReport;
+  const healthMeasures = screening.healthMeasures || getHealthMeasuresForGrade(screening.aiResults?.grade ?? 0);
+  const treatmentReview = screening.treatmentReview || getClinicianTreatmentReview(screening.aiResults?.grade ?? 0, Boolean(screening.aiResults?.referable));
+  const allScreenings = patient.screenings || [];
+
   return (
     <div className="max-w-5xl mx-auto space-y-4 print:p-4">
       <style dangerouslySetInnerHTML={{ __html: `
@@ -168,11 +197,41 @@ function ReportContentInner() {
       `}} />
 
       {/* Top Action Bar */}
-      <div className="no-print flex justify-between items-center bg-slate-50 p-2.5 border border-slate-200 rounded">
+      <div className="no-print flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50 p-2.5 border border-slate-200 rounded">
         <Link href="/" className="flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-black">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Directory
         </Link>
-        <div className="flex gap-2">
+
+        {/* Screening / Visit Selector if multiple visits exist */}
+        {allScreenings.length > 1 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-teal-600" /> Patient Visits:
+            </span>
+            <div className="flex gap-1">
+              {allScreenings.map((s, idx) => {
+                const isSelected = s.id === screening.id;
+                const vNum = s.visitNumber || (allScreenings.length - idx);
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => handleSelectScreening(s.id)}
+                    className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all whitespace-nowrap border ${
+                      isSelected
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                        : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    Visit #{vNum} ({s.date})
+                    {s.comparisonReport && <span className="ml-1 text-[9px] opacity-75">• Comparison</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 self-end sm:self-auto">
           <button onClick={() => setShowAuditModal(true)} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold bg-white border border-slate-300 hover:bg-slate-100">
             <ShieldCheck className="w-3.5 h-3.5" /> Audit Trail
           </button>
@@ -197,7 +256,7 @@ function ReportContentInner() {
                 {doctor?.clinic || 'Clinical Retinal Tele-Screening'}
               </h1>
               <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">
-                Diagnostic Deep Learning Assessment Report
+                Diagnostic Deep Learning Assessment Report {screening.visitNumber ? `— Visit #${screening.visitNumber}` : ''}
               </p>
             </div>
           </div>
@@ -222,7 +281,9 @@ function ReportContentInner() {
             <div className="p-1.5 border-r border-slate-900">{patient.name || 'N/A'}</div>
             <div className="p-1.5 border-r border-slate-900">{patient.id} ({patient.age}y / {patient.sex?.charAt(0) || 'U'})</div>
             <div className="p-1.5 border-r border-slate-900">{patient.phone || 'N/A'}</div>
-            <div className="p-1.5 font-mono text-[10px] print:text-[8px]">{screening.id}</div>
+            <div className="p-1.5 font-mono text-[10px] print:text-[8px]">
+              {screening.id} {screening.visitNumber ? `(Visit #${screening.visitNumber})` : ''}
+            </div>
           </div>
           <div className="grid grid-cols-4 bg-slate-100 text-[9px] font-bold uppercase tracking-widest text-slate-600 border-b border-slate-900 print:text-[7px]">
             <div className="p-1.5 border-r border-slate-900">Diabetes Profile</div>
@@ -238,10 +299,10 @@ function ReportContentInner() {
           </div>
         </div>
 
-        {/* Clinical Assessment Alert Block - FIXED */}
+        {/* Primary Inference Grading Alert Block */}
         <div className="border-2 border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 print:p-2 print:gap-1">
           <div className="flex-1">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 print:text-[7px]">Primary Inference Grading</div>
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 print:text-[7px]">Current Screening Diagnostic Grading</div>
             <div className="text-xl font-black text-slate-900 uppercase print:text-xs leading-tight">{screening.aiResults.gradeLabel}</div>
             <div className="text-[10px] text-slate-600 font-mono mt-1 print:text-[7px] print:mt-0.5">
               CONFIDENCE: <strong className="text-slate-900">{screening.aiResults.confidence}%</strong> | 
@@ -253,9 +314,287 @@ function ReportContentInner() {
           </div>
         </div>
 
-        {/* Visual Diagnostics */}
+        {/* Visual Diagnostics Matrix */}
         <div className="print:block">
           <ComparativeViewer images={screening.aiResults.images} m3Executed={screening.checkM3Setup} />
+        </div>
+
+        {/* ================================================================ */}
+        {/* FEATURE 2 & 6: LONGITUDINAL PROGRESS / COMPARISON REPORT         */}
+        {/* Rendered when this visit is compared with an immediately previous completed screening */}
+        {/* ================================================================ */}
+        {comparison && (
+          <div className="border-2 border-slate-900 p-4 space-y-4 print:p-2 print:space-y-2 bg-slate-50/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-300 pb-2 print:pb-1">
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-teal-800 bg-teal-100 px-2 py-0.5 rounded print:text-[7px]">
+                  Longitudinal Progress & Comparison Report
+                </span>
+                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight mt-1 print:text-[10px]">
+                  Current Screening ({comparison.currentScreeningDate}) vs Previous Screening ({comparison.previousScreeningDate})
+                </h2>
+                <p className="text-[10px] text-slate-500 font-medium print:text-[7px]">
+                  Screening Interval: {comparison.screeningIntervalDays} days | Baseline Ref: {comparison.previousScreeningId}
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="shrink-0">
+                {comparison.gradeChangeStatus === 'Improved' ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-900 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
+                    <TrendingDown className="w-4 h-4 print:w-2.5 print:h-2.5" /> Improved Finding
+                  </span>
+                ) : comparison.gradeChangeStatus === 'Worsened' ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-rose-300 bg-rose-100 text-rose-900 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
+                    <TrendingUp className="w-4 h-4 print:w-2.5 print:h-2.5" /> Disease Advancement
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-300 bg-slate-200 text-slate-800 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
+                    <Minus className="w-4 h-4 print:w-2.5 print:h-2.5" /> Stable Condition
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Severity & Metrics Comparison Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 print:grid-cols-3 print:gap-1.5 text-xs print:text-[8px]">
+              
+              {/* Severity Transition */}
+              <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Severity Grading Trajectory</div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="font-bold text-slate-700">Grade {comparison.previousGrade}</span>
+                  <span className="text-slate-400">➔</span>
+                  <span className={`font-black ${
+                    comparison.gradeChangeStatus === 'Improved' ? 'text-emerald-700' :
+                    comparison.gradeChangeStatus === 'Worsened' ? 'text-rose-700' : 'text-slate-900'
+                  }`}>Grade {comparison.currentGrade}</span>
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1 print:text-[6px]">
+                  Confidence: {comparison.previousConfidence}% ➔ {comparison.currentConfidence}% ({comparison.confidenceDelta >= 0 ? `+${comparison.confidenceDelta}` : comparison.confidenceDelta}%)
+                </div>
+              </div>
+
+              {/* Visual Acuity OD/OS */}
+              <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Visual Acuity Shift</div>
+                <div className="mt-1 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-600">OD (Right):</span>
+                    <span className="font-bold text-slate-900">{comparison.visualAcuity.rightEye.previous} ➔ {comparison.visualAcuity.rightEye.current}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-600">OS (Left):</span>
+                    <span className="font-bold text-slate-900">{comparison.visualAcuity.leftEye.previous} ➔ {comparison.visualAcuity.leftEye.current}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* IOP Shift */}
+              <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Intraocular Pressure (IOP)</div>
+                <div className="mt-1 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-600">OD:</span>
+                    <span className="font-bold text-slate-900">{comparison.iop.rightEye.previous} ➔ {comparison.iop.rightEye.current}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-600">OS:</span>
+                    <span className="font-bold text-slate-900">{comparison.iop.leftEye.previous} ➔ {comparison.iop.leftEye.current}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Categorized Findings Section (Improved / Worsened / Stable / Newly Detected / Resolved) */}
+            <div className="space-y-2 border-t border-slate-300 pt-3 print:pt-1.5 print:space-y-1">
+              <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest print:text-[7px]">
+                Detailed Comparative Pathology Analysis
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 print:grid-cols-2 print:gap-1.5">
+                
+                {/* Improved */}
+                {comparison.categorizedFindings.improved.length > 0 && (
+                  <div className="bg-emerald-50/60 border border-emerald-200 p-2.5 rounded print:p-1">
+                    <div className="text-[10px] font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
+                      <CheckCircle className="w-3 h-3 text-emerald-700" /> Improved Findings
+                    </div>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs text-emerald-950 font-medium print:text-[7px]">
+                      {comparison.categorizedFindings.improved.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Worsened */}
+                {comparison.categorizedFindings.worsened.length > 0 && (
+                  <div className="bg-rose-50/60 border border-rose-200 p-2.5 rounded print:p-1">
+                    <div className="text-[10px] font-bold text-rose-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
+                      <AlertTriangle className="w-3 h-3 text-rose-700" /> Worsened / Disease Advancement
+                    </div>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs text-rose-950 font-medium print:text-[7px]">
+                      {comparison.categorizedFindings.worsened.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Newly Detected */}
+                {comparison.categorizedFindings.newlyDetected.length > 0 && (
+                  <div className="bg-amber-50/60 border border-amber-200 p-2.5 rounded print:p-1">
+                    <div className="text-[10px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
+                      <AlertTriangle className="w-3 h-3 text-amber-700" /> Newly Detected Findings
+                    </div>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs text-amber-950 font-medium print:text-[7px]">
+                      {comparison.categorizedFindings.newlyDetected.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Resolved */}
+                {comparison.categorizedFindings.resolved.length > 0 && (
+                  <div className="bg-teal-50/60 border border-teal-200 p-2.5 rounded print:p-1">
+                    <div className="text-[10px] font-bold text-teal-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
+                      <CheckCircle2 className="w-3 h-3 text-teal-700" /> Resolved Findings
+                    </div>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs text-teal-950 font-medium print:text-[7px]">
+                      {comparison.categorizedFindings.resolved.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Stable */}
+                {comparison.categorizedFindings.stable.length > 0 && (
+                  <div className="bg-slate-100/70 border border-slate-200 p-2.5 rounded print:p-1">
+                    <div className="text-[10px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
+                      <Minus className="w-3 h-3 text-slate-600" /> Stable Findings
+                    </div>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs text-slate-800 font-medium print:text-[7px]">
+                      {comparison.categorizedFindings.stable.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progression Narrative */}
+            <div className="bg-white border border-slate-300 p-3 rounded print:p-1.5 text-xs print:text-[7px] text-slate-800">
+              <strong className="text-slate-900 font-bold block mb-1">Clinical Progression Summary:</strong>
+              {comparison.clinicalProgressionSummary}
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* FEATURE 10: EVIDENCE-BASED HEALTH & LIFESTYLE SUPPORTIVE MEASURES */}
+        {/* ================================================================ */}
+        <div className="border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-300 pb-2 print:pb-1">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[8px]">
+              <Heart className="w-3.5 h-3.5 text-teal-700" /> Evidence-Based Health & Supportive Lifestyle Measures
+            </h3>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider print:text-[6px]">
+              Focus: {healthMeasures.conditionFocus}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2 print:gap-1.5 text-xs print:text-[7px]">
+            {/* Physical Activity */}
+            <div className="bg-slate-50 border border-slate-200 p-2.5 rounded print:p-1">
+              <div className="font-bold text-slate-900 flex items-center gap-1 text-[11px] print:text-[7px] mb-1">
+                <Activity className="w-3 h-3 text-teal-600" /> Physical Activity & Exercise
+              </div>
+              <p className="text-slate-700 font-medium">{healthMeasures.physicalActivity.recommendation}</p>
+              <p className="text-rose-800 font-semibold mt-1 text-[10px] print:text-[6px]">
+                {healthMeasures.physicalActivity.precautions}
+              </p>
+            </div>
+
+            {/* Nutrition & Glycemic Guidance */}
+            <div className="bg-slate-50 border border-slate-200 p-2.5 rounded print:p-1">
+              <div className="font-bold text-slate-900 flex items-center gap-1 text-[11px] print:text-[7px] mb-1">
+                <Heart className="w-3 h-3 text-teal-600" /> Dietary & Glycemic Management
+              </div>
+              <p className="text-slate-700 font-medium">{healthMeasures.dietaryAndNutrition.guideline}</p>
+              <p className="text-slate-600 mt-1 text-[10px] print:text-[6px]">
+                <strong>Glycemic Tip:</strong> {healthMeasures.dietaryAndNutrition.glycemicControlTip}
+              </p>
+            </div>
+
+            {/* Monitoring Protocol */}
+            <div className="bg-slate-50 border border-slate-200 p-2.5 rounded print:p-1">
+              <div className="font-bold text-slate-900 flex items-center gap-1 text-[11px] print:text-[7px] mb-1">
+                <Clock className="w-3 h-3 text-teal-600" /> Monitoring & Surveillance
+              </div>
+              <p className="text-slate-700 font-medium">{healthMeasures.monitoringAndAdherence.selfMonitoring}</p>
+              <p className="text-teal-800 font-bold mt-1 text-[10px] print:text-[6px]">
+                Schedule: {healthMeasures.monitoringAndAdherence.followUpSchedule}
+              </p>
+            </div>
+
+            {/* Systemic Risk Factor Targets */}
+            <div className="bg-slate-50 border border-slate-200 p-2.5 rounded print:p-1">
+              <div className="font-bold text-slate-900 flex items-center gap-1 text-[11px] print:text-[7px] mb-1">
+                <ShieldCheck className="w-3 h-3 text-teal-600" /> Systemic Risk Factor Targets
+              </div>
+              <p className="text-slate-700 font-medium"><strong>Blood Pressure:</strong> {healthMeasures.riskFactorManagement.bloodPressureTarget}</p>
+              <p className="text-slate-700 font-medium mt-0.5"><strong>Lipid Target:</strong> {healthMeasures.riskFactorManagement.lipidTarget}</p>
+            </div>
+          </div>
+
+          <div className="bg-slate-100 p-2 rounded text-[9px] text-slate-600 leading-tight italic print:text-[6px] border border-slate-200">
+            {healthMeasures.medicalDisclaimer}
+          </div>
+        </div>
+
+        {/* ================================================================ */}
+        {/* FEATURE 11: CLINICIAN REVIEW & TREATMENT REFERENCE INFORMATION   */}
+        {/* ================================================================ */}
+        <div className="border border-slate-900 p-4 space-y-3 print:p-2 print:space-y-1.5 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-300 pb-2 print:pb-1">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5 print:text-[8px]">
+              <Pill className="w-3.5 h-3.5 text-teal-700" /> Clinician Review & Treatment Reference Information
+            </h3>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider print:text-[6px]">
+              Physician Reference
+            </span>
+          </div>
+
+          <div className="text-[10px] text-slate-600 print:text-[7px] font-medium">
+            <strong>Recognized Clinical Guidance:</strong> {treatmentReview.primaryGuidelineCitation}
+          </div>
+
+          <div className="space-y-2 print:space-y-1">
+            {treatmentReview.relevantTreatmentClasses.map((item, idx) => (
+              <div key={idx} className="bg-slate-50 border border-slate-200 p-2.5 rounded text-xs print:text-[7px] print:p-1">
+                <div className="font-bold text-slate-900 text-[11px] print:text-[7px] flex items-center gap-1">
+                  <BookOpen className="w-3 h-3 text-slate-600" /> {item.className}
+                </div>
+                <div className="text-slate-700 mt-1">
+                  <strong>Indication:</strong> {item.clinicalIndication}
+                </div>
+                <div className="text-slate-600 mt-0.5">
+                  <strong>Clinical Evidence:</strong> {item.evidenceRationale}
+                </div>
+                <div className="text-slate-500 mt-0.5 italic text-[10px] print:text-[6px]">
+                  <strong>Physician Considerations:</strong> {item.considerations}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 p-2 rounded text-[9px] text-amber-900 leading-tight print:text-[6px]">
+            <strong>DISCLAIMER:</strong> {treatmentReview.clinicianDisclaimer}
+          </div>
         </div>
 
         {/* Editable Physician Notes */}

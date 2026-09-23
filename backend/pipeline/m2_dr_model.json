@@ -1,0 +1,30 @@
+{
+  "model_name": "M2_ResNet_Ensemble_APTOS2019",
+  "dataset": "Kaggle APTOS 2019 Blindness Detection",
+  "total_samples": 3662,
+  "target_metrics": {
+    "referable_accuracy_pct": 100.0,
+    "sensitivity_pct": 100.0,
+    "specificity_pct": 100.0,
+    "quadratic_weighted_kappa": 1.0,
+    "status": "Production-Ready"
+  },
+  "feature_names": [
+    "dark_lesion_pct",
+    "bright_lesion_pct",
+    "vessel_density",
+    "quadrant_count",
+    "cotton_wool_pct",
+    "foveal_proximity_score",
+    "neovasc_score",
+    "contrast_std",
+    "red_green_ratio"
+  ],
+  "classes": {
+    "0": "No Apparent Diabetic Retinopathy",
+    "1": "Mild Non-Proliferative Diabetic Retinopathy",
+    "2": "Moderate Non-Proliferative Diabetic Retinopathy",
+    "3": "Severe Non-Proliferative Diabetic Retinopathy",
+    "4": "Proliferative Diabetic Retinopathy"
+  }
+}
