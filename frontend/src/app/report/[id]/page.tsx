@@ -631,7 +631,7 @@ function ReportContentInner() {
         {/* RELEVANT CLINICAL MEDICATIONS & PHARMACOTHERAPY                   */}
         {/* Grounded in Goodman & Gilman 14th Ed., Katzung 15th Ed., AAO PPP */}
         {/* ================================================================ */}
-        <div className="border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-2 bg-white print:break-before-page print-break-before-page">
+        <div className="border border-slate-900 p-4 space-y-3 print:p-2.5 print:space-y-2 bg-white">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-300 pb-2 print:pb-1 gap-1">
             <div className="flex items-center gap-1.5">
               <Pill className="w-4 h-4 text-teal-700 shrink-0" />
