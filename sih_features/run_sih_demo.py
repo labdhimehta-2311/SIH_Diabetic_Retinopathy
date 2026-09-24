@@ -7,6 +7,11 @@ Execute this script to run and inspect all 25 SIH enhancement features in one co
 import sys
 import os
 
+# Ensure project root is in sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 # Ensure UTF-8 stdout if supported
 if sys.platform == 'win32':
     import io
