@@ -4,11 +4,69 @@ import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { User, Activity, ClipboardList, UploadCloud, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, Sparkles, RefreshCw, Sliders } from 'lucide-react';
+import { User, Activity, ClipboardList, UploadCloud, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, Sparkles, RefreshCw, Sliders, Flame, Clock, Check } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { PatientService, Patient, ScreeningSession } from '../../lib/patientService';
 import { AuditService } from '../../lib/auditService';
 import { SyncQueue } from '../../lib/syncQueue';
+
+const SAMPLE_FUNDUS_IMAGES = [
+  {
+    grade: 0,
+    title: 'Sample 1',
+    bracketGrade: '(Grade 0: Normal)',
+    fullLabel: 'Sample 1 (Grade 0: Normal / No DR)',
+    queueLabel: 'Normal FIFO',
+    isRisk: false,
+    url: '/samples/aptos/sample_g0_1.jpg',
+    fileName: 'sample_1_grade_0_normal.jpg',
+    queueBadgeColor: 'bg-teal-50 border-teal-200 text-teal-700'
+  },
+  {
+    grade: 1,
+    title: 'Sample 2',
+    bracketGrade: '(Grade 1: Mild)',
+    fullLabel: 'Sample 2 (Grade 1: Mild NPDR)',
+    queueLabel: 'Normal FIFO',
+    isRisk: false,
+    url: '/samples/aptos/sample_g1_1.jpg',
+    fileName: 'sample_2_grade_1_mild.jpg',
+    queueBadgeColor: 'bg-teal-50 border-teal-200 text-teal-700'
+  },
+  {
+    grade: 2,
+    title: 'Sample 3',
+    bracketGrade: '(Grade 2: Moderate)',
+    fullLabel: 'Sample 3 (Grade 2: Moderate NPDR)',
+    queueLabel: 'Normal FIFO',
+    isRisk: false,
+    url: '/samples/aptos/sample_g2_1.jpg',
+    fileName: 'sample_3_grade_2_moderate.jpg',
+    queueBadgeColor: 'bg-teal-50 border-teal-200 text-teal-700'
+  },
+  {
+    grade: 3,
+    title: 'Sample 4',
+    bracketGrade: '(Grade 3: Severe)',
+    fullLabel: 'Sample 4 (Grade 3: Severe NPDR)',
+    queueLabel: 'Risk Priority',
+    isRisk: true,
+    url: '/samples/aptos/sample_g3_1.jpg',
+    fileName: 'sample_4_grade_3_severe.jpg',
+    queueBadgeColor: 'bg-rose-50 border-rose-200 text-rose-700'
+  },
+  {
+    grade: 4,
+    title: 'Sample 5',
+    bracketGrade: '(Grade 4: Proliferative)',
+    fullLabel: 'Sample 5 (Grade 4: Proliferative DR)',
+    queueLabel: 'Risk Priority',
+    isRisk: true,
+    url: '/samples/aptos/sample_g4_1.jpg',
+    fileName: 'sample_5_grade_4_proliferative.jpg',
+    queueBadgeColor: 'bg-rose-50 border-rose-200 text-rose-700'
+  }
+];
 
 function IntakeFormInner() {
   const [submitLock, setSubmitLock] = useState(false);
@@ -53,6 +111,24 @@ function IntakeFormInner() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [validationError, setValidationError] = useState<{ isRejected: boolean; reason: string } | null>(null);
+  const [selectedSampleGrade, setSelectedSampleGrade] = useState<number | null>(null);
+
+  const handleSelectSample = async (sample: typeof SAMPLE_FUNDUS_IMAGES[0]) => {
+    try {
+      const res = await fetch(sample.url);
+      if (!res.ok) throw new Error('Sample fetch failed');
+      const blob = await res.blob();
+      const file = new File([blob], sample.fileName, { type: 'image/jpeg' });
+      setUploadedFile(file);
+      setPreviewUrl(sample.url);
+      setSelectedSampleGrade(sample.grade);
+      setValidationError(null);
+      setErrorText('');
+    } catch (err: any) {
+      console.error('Failed to load sample image:', err);
+      setErrorText('Failed to load sample image. Please upload a file directly.');
+    }
+  };
 
   const inputClass = "w-full px-3 py-2 bg-white/40 backdrop-blur-sm border border-white/60 rounded-xl text-xs focus:outline-none focus:bg-white/70 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-inner text-slate-800 font-medium placeholder-slate-500";
   const labelClass = "block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 ml-1 drop-shadow-sm";
@@ -85,6 +161,7 @@ function IntakeFormInner() {
     if (e.dataTransfer.files?.[0]) {
       setUploadedFile(e.dataTransfer.files[0]);
       setPreviewUrl(URL.createObjectURL(e.dataTransfer.files[0]));
+      setSelectedSampleGrade(null);
       setValidationError(null);
       setErrorText('');
     }
@@ -94,6 +171,7 @@ function IntakeFormInner() {
     if (e.target.files?.[0]) {
       setUploadedFile(e.target.files[0]);
       setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+      setSelectedSampleGrade(null);
       setValidationError(null);
       setErrorText('');
     }
@@ -448,6 +526,77 @@ function IntakeFormInner() {
                       </label>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Pre-loaded Sample Images Section (1 image of each grade with grade in brackets) */}
+              <div className="space-y-3 pt-2 border-t border-white/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">
+                      Attach Sample Fundus Images (1 of each Grade)
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
+                    Click to auto-load authentic APTOS 2019 test scan
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                  {SAMPLE_FUNDUS_IMAGES.map((sample) => {
+                    const isSelected = selectedSampleGrade === sample.grade && uploadedFile?.name === sample.fileName;
+                    return (
+                      <button
+                        key={sample.grade}
+                        type="button"
+                        onClick={() => handleSelectSample(sample)}
+                        className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-between gap-2 group cursor-pointer ${
+                          isSelected
+                            ? 'bg-teal-50/90 border-teal-500 ring-2 ring-teal-500/50 shadow-md scale-[1.02]'
+                            : 'bg-white/60 hover:bg-white/95 border-white/80 hover:border-teal-300 shadow-sm hover:scale-[1.01]'
+                        }`}
+                      >
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-black shrink-0 border border-slate-200 shadow-inner">
+                          <img
+                            src={sample.url}
+                            alt={sample.fullLabel}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-teal-900/50 backdrop-blur-[1px] flex items-center justify-center">
+                              <CheckCircle2 className="w-6 h-6 text-white drop-shadow" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="w-full space-y-1">
+                          <div className="text-[11px] font-bold text-slate-900 leading-tight">
+                            {sample.title}
+                          </div>
+                          <div className="text-[10px] font-bold text-teal-800">
+                            {sample.bracketGrade}
+                          </div>
+                          <div className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full border inline-flex items-center justify-center gap-1 ${sample.queueBadgeColor}`}>
+                            {sample.isRisk ? (
+                              <Flame className="w-2.5 h-2.5 text-rose-600 fill-rose-100" />
+                            ) : (
+                              <Clock className="w-2.5 h-2.5 text-teal-600" />
+                            )}
+                            <span>{sample.queueLabel}</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-full py-1 text-[10px] font-bold text-center rounded-lg transition-all ${
+                          isSelected 
+                            ? 'bg-teal-600 text-white shadow-xs' 
+                            : 'bg-slate-100 group-hover:bg-teal-50 text-slate-700 group-hover:text-teal-800 border border-slate-200'
+                        }`}>
+                          {isSelected ? '✓ Attached' : 'Attach'}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
