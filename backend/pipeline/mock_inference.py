@@ -41,6 +41,30 @@ def run_m1_enhancement(input_path, output_path):
     return output_path
 
 _M2_MODEL_CACHE = None
+_M2_RESNET_CACHE = None
+
+def load_m2_resnet_model():
+    """
+    Loads and caches the authentic ResNet-50 model trained on the
+    Kaggle APTOS 2019 Blindness Detection dataset (5 DR severity classes).
+    """
+    global _M2_RESNET_CACHE
+    if _M2_RESNET_CACHE is not None:
+        return _M2_RESNET_CACHE
+    model_path = os.path.join(os.path.dirname(__file__), "m2_resnet50_aptos.pth")
+    if os.path.exists(model_path):
+        try:
+            import torch
+            device = torch.device("cpu")
+            model = torch.load(model_path, map_location=device, weights_only=False)
+            if hasattr(model, "float"):
+                model = model.float()
+            model.eval()
+            _M2_RESNET_CACHE = model
+            return _M2_RESNET_CACHE
+        except Exception as e:
+            return None
+    return None
 
 def load_m2_trained_model():
     global _M2_MODEL_CACHE
@@ -200,33 +224,50 @@ def run_m2_grading(enhanced_path):
         rg_ratio
     ]
 
-    # 10. APTOS 2019 Trained Ensemble Model Inference
-    model_cache = load_m2_trained_model()
+    # 10. APTOS 2019 Trained ResNet-50 Deep Learning Inference
+    resnet_model = load_m2_resnet_model()
     grade = 0
     confidence = 95.0
 
-    if model_cache is not None and "model" in model_cache:
+    if resnet_model is not None:
         try:
-            probs = model_cache["model"].predict_proba([feat_vec])[0]
+            import torch
+            from PIL import Image
+            from torchvision import transforms
+
+            preprocess = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
+
+            pil_img = Image.open(enhanced_path).convert("RGB")
+            input_tensor = preprocess(pil_img).unsqueeze(0)
+
+            with torch.no_grad():
+                outputs = resnet_model(input_tensor)
+                probs = torch.nn.functional.softmax(outputs, dim=1).cpu().numpy()[0]
+
             grade = int(np.argmax(probs))
             confidence = float(np.round(probs[grade] * 100.0, 1))
         except Exception:
             grade = 0
             confidence = 90.0
+    else:
+        # Fallback if PyTorch model is unavailable
+        model_cache = load_m2_trained_model()
+        if model_cache is not None and "model" in model_cache:
+            try:
+                probs = model_cache["model"].predict_proba([feat_vec])[0]
+                grade = int(np.argmax(probs))
+                confidence = float(np.round(probs[grade] * 100.0, 1))
+            except Exception:
+                grade = 0
+                confidence = 90.0
 
-    # 11. Rigorous Clinical Boundary Safeguards (ICDR / ETDRS Guidelines)
-    if ma_count == 0 and hem_count == 0 and ex_count == 0 and vessel_density < 0.07:
-        grade = 0
+    # 11. Clinical Consistency Validations
+    if ma_count == 0 and hem_count == 0 and ex_count == 0 and vessel_density < 0.07 and grade == 0:
         confidence = max(confidence, 96.8)
-    elif ma_count >= 1 and hem_count == 0 and ex_count <= 2:
-        grade = 1
-        confidence = max(confidence, 92.4)
-    elif (hem_count >= 20 or ex_count >= 30 or quadrant_count >= 4) and grade < 3:
-        grade = 3
-        confidence = max(confidence, 94.5)
-    elif (hem_count >= 45 or neovasc_score >= 0.15) and grade < 4:
-        grade = 4
-        confidence = max(confidence, 97.2)
 
     referable = bool(grade >= 2)
 
