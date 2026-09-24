@@ -6,28 +6,34 @@ import {
   Activity, Clock, ChevronDown, ChevronUp, Layers, Cpu, 
   Lock, BarChart3, Wifi, Database, HeartPulse, Sparkles, AlertCircle,
   Wand2, SquareSlash, FileText, CheckCircle, Stethoscope, Share2,
-  VolumeX, Play, Square, Info
+  VolumeX, Play, Pause, Square, Info
 } from 'lucide-react';
 import { ScreeningSession, Patient } from '../lib/patientService';
 import { computeSihEnhancements, SihEnhancementsBundle } from '../lib/sihService';
-import { regionalVoice } from '../lib/regionalVoiceEngine';
+import { regionalVoice, VoiceStatus } from '../lib/regionalVoiceEngine';
 import { translations, SupportedLanguage, getFullReportSpokenNarrative } from '../lib/reportTranslations';
 
 interface SihEnhancementsProps {
   screening: ScreeningSession;
   patient?: Patient | null;
+  initialLanguage?: SupportedLanguage;
 }
 
-export default function SihEnhancements({ screening, patient }: SihEnhancementsProps) {
+export default function SihEnhancements({ screening, patient, initialLanguage = 'en' }: SihEnhancementsProps) {
   const data: SihEnhancementsBundle = computeSihEnhancements(screening, patient);
-  const [activeLang, setActiveLang] = useState<SupportedLanguage>('en');
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [activeLang, setActiveLang] = useState<SupportedLanguage>(initialLanguage);
+  const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>('idle');
   const [isReadingFullReport, setIsReadingFullReport] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [verifiedChain, setVerifiedChain] = useState<boolean>(true);
 
   // Counterfactual slider state
   const [cfSliderVal, setCfSliderVal] = useState<number>(50);
+
+  // Sync with prop when parent layout changes language
+  useEffect(() => {
+    setActiveLang(initialLanguage);
+  }, [initialLanguage]);
 
   // Ophthalmologist Override State (Feature 11)
   const aiGrade = screening.aiResults?.grade ?? 2;
@@ -62,9 +68,9 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
   ]);
 
   useEffect(() => {
-    regionalVoice.setOnStateChange((speaking) => {
-      setIsPlayingAudio(speaking);
-      if (!speaking) {
+    regionalVoice.setOnStateChange((status) => {
+      setVoiceStatus(status);
+      if (status === 'idle') {
         setIsReadingFullReport(false);
       }
     });
@@ -79,7 +85,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
     setExpandedSection(prev => prev === sectionName ? null : sectionName);
   };
 
-  // Play short regional voice summary
+  // Play short regional voice summary once
   const handlePlayVoice = async (lang: SupportedLanguage) => {
     setActiveLang(lang);
     setIsReadingFullReport(false);
@@ -87,11 +93,14 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
     await regionalVoice.speak(textToSpeak, lang);
   };
 
-  // Play FULL report narration
+  // Play FULL report narration once
   const handlePlayFullReport = async () => {
-    if (isPlayingAudio && isReadingFullReport) {
-      regionalVoice.stop();
-      setIsReadingFullReport(false);
+    if (voiceStatus === 'playing' && isReadingFullReport) {
+      regionalVoice.pause();
+      return;
+    }
+    if (voiceStatus === 'paused' && isReadingFullReport) {
+      regionalVoice.resume();
       return;
     }
     setIsReadingFullReport(true);
@@ -99,10 +108,17 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
     await regionalVoice.speak(fullText, activeLang);
   };
 
+  const handlePauseAudio = () => {
+    regionalVoice.pause();
+  };
+
+  const handleResumeAudio = () => {
+    regionalVoice.resume();
+  };
+
   const handleStopAudio = () => {
     regionalVoice.stop();
     setIsReadingFullReport(false);
-    setIsPlayingAudio(false);
   };
 
   const handleRecordOverride = (e: React.FormEvent) => {
@@ -138,13 +154,58 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
   const agreedCases = 10;
   const concordancePct = Math.round((agreedCases / totalReviews) * 100);
 
+  // Localized strings helper for SIH cards
+  const getLocalizedTriageReason = () => {
+    if (activeLang === 'hi') {
+      return t.tier === 'URGENT_REFERRAL' 
+        ? `उच्च-जोखिम रेटिना क्षति पाई गई (ग्रेड ${c.predictedGrade}: ${screening.aiResults?.gradeLabel || 'PDR'})। तत्काल चिकित्सीय देखभाल आवश्यक है।`
+        : `मध्यम रेटिनोपैथी के लक्षण। मानव विशेषज्ञ द्वारा नैदानिक सत्यापन की सलाह दी जाती है।`;
+    }
+    if (activeLang === 'gu') {
+      return t.tier === 'URGENT_REFERRAL'
+        ? `ઉચ્ચ જોખમ ધરાવતી રેટિના ક્ષતિ જણાઈ (ગ્રેડ ${c.predictedGrade}: ${screening.aiResults?.gradeLabel || 'PDR'}). તાત્કાલિક હોસ્પિટલ સારવાર જરૂરી છે.`
+        : `મધ્યમ રેટિનોપેથીના લક્ષણો. માનવ નેત્ર નિષ્ણાત દ્વારા તબીબી ચકાસણીની ભલામણ કરવામાં આવે છે.`;
+    }
+    return t.reason;
+  };
+
+  const getLocalizedDmeReason = () => {
+    if (activeLang === 'hi') {
+      return 'मैकुलर आर्क के समीप वसायुक्त एक्सुडेट्स एवं सूक्ष्म रक्तस्राव पाए गए हैं।';
+    }
+    if (activeLang === 'gu') {
+      return 'મેક્યુલા નજીક ચરબીયુક્ત એક્સ્યુડેટ્સ અને સૂક્ષ્મ રક્તવાહિની લિકેજ જોવા મળ્યું છે.';
+    }
+    return d.reason;
+  };
+
+  const getLocalizedPriorityRationale = () => {
+    if (activeLang === 'hi') {
+      return 'गंभीर क्षति एवं दृष्टि-बाधित करने वाले लक्षणों हेतु त्वरित समीक्षा प्राथमिकता दी गई है (< 15 मिनट लक्ष्य)।';
+    }
+    if (activeLang === 'gu') {
+      return 'ગંભીર રેટિના નુકસાન અને દ્રષ્ટિ જોખમ માટે ઝડપી સમીક્ષા અગ્રતા આપવામાં આવી છે (< 15 મિનિટ લક્ષ્યાંક).';
+    }
+    return p.rationale;
+  };
+
+  const getLocalizedInterval = () => {
+    if (activeLang === 'gu') {
+      return '૧ થી ૨ અઠવાડિયામાં તાત્કાલિક નિષ્ણાત ડૉક્ટર પાસે તપાસ';
+    }
+    if (activeLang === 'hi') {
+      return '1 से 2 सप्ताह में तत्काल विशेषज्ञ परामर्श';
+    }
+    return 'Urgent: Within 1 to 2 Weeks (Immediate Retinal Specialist Consult)';
+  };
+
   return (
     <div className="sih-enhancements-root border-2 border-slate-900 bg-white p-5 rounded-none space-y-5 print:border-t-2 print:border-slate-900 print:p-2 print:space-y-2">
       
       {/* ========================================================================= */}
       {/* TOP MASTER ACTION BAR: WHOLE-REPORT LANGUAGE & FULL AUDIO READOUT          */}
       {/* ========================================================================= */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between border-b-2 border-slate-900 pb-3 gap-3 bg-slate-50/70 p-3 -m-5 mb-3 border-x-0 border-t-0">
+      <div className="language-switcher-ignore flex flex-col lg:flex-row items-start lg:items-center justify-between border-b-2 border-slate-900 pb-3 gap-3 bg-slate-50/70 p-3 -m-5 mb-3 border-x-0 border-t-0">
         
         {/* Title & Badge */}
         <div className="flex items-center gap-2.5">
@@ -166,7 +227,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
           </div>
         </div>
 
-        {/* Language Selection & Full Audio Player Controls */}
+        {/* Language Selection & Audio Controls */}
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-between lg:justify-end">
           
           {/* Language Switcher */}
@@ -175,6 +236,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               🌐 Language:
             </span>
             <button
+              type="button"
               onClick={() => { setActiveLang('en'); regionalVoice.stop(); }}
               className={`px-2 py-1 text-xs font-bold rounded transition-all ${
                 activeLang === 'en' 
@@ -185,6 +247,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               English
             </button>
             <button
+              type="button"
               onClick={() => { setActiveLang('hi'); regionalVoice.stop(); }}
               className={`px-2 py-1 text-xs font-bold rounded transition-all ${
                 activeLang === 'hi' 
@@ -195,6 +258,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               हिन्दी
             </button>
             <button
+              type="button"
               onClick={() => { setActiveLang('gu'); regionalVoice.stop(); }}
               className={`px-2 py-1 text-xs font-bold rounded transition-all ${
                 activeLang === 'gu' 
@@ -206,30 +270,56 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
             </button>
           </div>
 
-          {/* Full Report Audio Player Button */}
+          {/* Full Report Audio Player Controls */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={handlePlayFullReport}
-              className={`px-3 py-1.5 text-xs font-bold rounded flex items-center gap-1.5 transition-all shadow-xs ${
-                isPlayingAudio && isReadingFullReport
-                  ? 'bg-rose-700 text-white animate-pulse'
-                  : 'bg-teal-700 text-white hover:bg-teal-800'
-              }`}
-              title="Listen to full diagnostic report narrated in selected language"
-            >
-              <Volume2 className="w-3.5 h-3.5" />
-              <span>{isPlayingAudio && isReadingFullReport ? tDict.speaking : tDict.readFullReport}</span>
-            </button>
-
-            {isPlayingAudio && (
+            {voiceStatus === 'idle' ? (
               <button
-                onClick={handleStopAudio}
-                className="px-2 py-1.5 text-xs font-bold rounded bg-slate-200 text-slate-800 hover:bg-slate-300 flex items-center gap-1"
-                title="Stop Audio"
+                type="button"
+                onClick={handlePlayFullReport}
+                className="px-3 py-1.5 text-xs font-bold rounded bg-teal-700 text-white hover:bg-teal-800 flex items-center gap-1.5 shadow-xs transition-all"
+                title="Listen to full diagnostic report narrated once in selected language"
               >
-                <Square className="w-3 h-3 fill-current" />
-                <span className="hidden sm:inline">{tDict.stopAudio}</span>
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>{tDict.readFullReport}</span>
               </button>
+            ) : voiceStatus === 'playing' ? (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handlePauseAudio}
+                  className="px-3 py-1.5 text-xs font-bold rounded bg-amber-500 text-slate-950 hover:bg-amber-400 flex items-center gap-1.5 shadow-xs"
+                >
+                  <Pause className="w-3.5 h-3.5" />
+                  <span>{tDict.pauseAudio}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStopAudio}
+                  className="px-2.5 py-1.5 text-xs font-bold rounded bg-rose-600 text-white hover:bg-rose-500 flex items-center gap-1 shadow-xs"
+                >
+                  <Square className="w-3 h-3 fill-current" />
+                  <span>{tDict.stopAudio}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handleResumeAudio}
+                  className="px-3 py-1.5 text-xs font-bold rounded bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5 shadow-xs"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>{tDict.resumeAudio}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStopAudio}
+                  className="px-2.5 py-1.5 text-xs font-bold rounded bg-rose-600 text-white hover:bg-rose-500 flex items-center gap-1 shadow-xs"
+                >
+                  <Square className="w-3 h-3 fill-current" />
+                  <span>{tDict.stopAudio}</span>
+                </button>
+              </div>
             )}
           </div>
 
@@ -258,15 +348,15 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               <span className={`text-xs font-black uppercase tracking-wide ${
                 t.tier === 'URGENT_REFERRAL' ? 'text-rose-800' : (t.tier === 'OPHTHALMOLOGIST_REVIEW' ? 'text-amber-800' : 'text-emerald-800')
               }`}>
-                {t.badgeLabel}
+                {activeLang === 'hi' ? 'अत्यंत आवश्यक रेफरल' : (activeLang === 'gu' ? 'તાત્કાલિક હોસ્પિટલ રેફરલ' : t.badgeLabel)}
               </span>
             </div>
             <p className="text-[10px] text-slate-700 font-medium leading-snug">
-              {t.reason}
+              {getLocalizedTriageReason()}
             </p>
           </div>
           <div className="mt-2 pt-1.5 border-t border-slate-200 text-[8.5px] text-slate-500 font-mono">
-            Directives: <span className="font-semibold text-slate-800">{t.actionDirective}</span>
+            Directives: <span className="font-semibold text-slate-800">{activeLang === 'hi' ? '48-72 घंटे में नेत्र विशेषज्ञ से संपर्क' : (activeLang === 'gu' ? '૪૮-૭૨ કલાકમાં રેટિના નિષ્ણાત પાસે તપાસ' : t.actionDirective)}</span>
           </div>
         </div>
 
@@ -286,15 +376,15 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               <span className={`text-xs font-black uppercase tracking-wide ${
                 d.status === 'HIGH' ? 'text-rose-800' : (d.status === 'MODERATE' ? 'text-amber-800' : 'text-emerald-800')
               }`}>
-                {d.title}
+                {activeLang === 'hi' ? 'उच्च मैकुलर एडिमा (DME) जोखिम' : (activeLang === 'gu' ? 'ઉચ્ચ મેક્યુલર એડીમા (DME) જોખમ' : d.title)}
               </span>
             </div>
             <p className="text-[10px] text-slate-700 font-medium leading-snug">
-              {d.reason}
+              {getLocalizedDmeReason()}
             </p>
           </div>
           <div className="mt-2 pt-1.5 border-t border-slate-200 text-[8.5px] text-slate-500 font-mono">
-            Advice: <span className="font-semibold text-slate-800">{d.recommendation}</span>
+            Advice: <span className="font-semibold text-slate-800">{activeLang === 'hi' ? 'प्राथमिकता ओसीटी (OCT) जाँच अनुशंसित' : (activeLang === 'gu' ? 'અગ્રતા ધોરણે ઓસીટી (OCT) તપાસની સલાહ' : d.recommendation)}</span>
           </div>
         </div>
 
@@ -314,11 +404,11 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               <span className={`text-xs font-black uppercase tracking-wide ${
                 p.priorityTier === 'HIGH PRIORITY' ? 'text-rose-800' : (p.priorityTier === 'REVIEW' ? 'text-amber-800' : 'text-emerald-800')
               }`}>
-                {p.priorityTier}
+                {activeLang === 'hi' ? 'उच्च प्राथमिकता समीक्षा' : (activeLang === 'gu' ? 'ઉચ્ચ અગ્રતા સમીક્ષા' : p.priorityTier)}
               </span>
             </div>
             <p className="text-[10px] text-slate-700 font-medium leading-snug">
-              {p.rationale}
+              {getLocalizedPriorityRationale()}
             </p>
           </div>
           <div className="mt-2 pt-1.5 border-t border-slate-200 text-[8.5px] text-slate-500 font-mono">
@@ -360,7 +450,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </span>
             </div>
             <div className="text-xs font-black text-slate-900">
-              Physiologic Cupping (Low Glaucoma Suspicion)
+              {activeLang === 'hi' ? 'सामान्य कप-टू-डिस्क अनुपात (कम ग्लूकोमा जोखिम)' : (activeLang === 'gu' ? 'સામાન્ય કપ-ટુ-ડિસ્ક રેશિયો (ઓછું ગ્લુકોમા જોખમ)' : 'Physiologic Cupping (Low Glaucoma Suspicion)')}
             </div>
             {/* Visual CDR Gauge Bar */}
             <div className="space-y-0.5">
@@ -377,7 +467,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </div>
             </div>
             <p className="text-[9.5px] text-slate-600 leading-snug">
-              Vertical cup-to-disc ratio is normal; neuroretinal rim intact without focal thinning or disc hemorrhage.
+              {activeLang === 'hi' ? 'ऑप्टिक डिस्क सामान्य है; न्यूरोरेटिनल रिम स्वस्थ है और कोई क्षति नहीं है।' : (activeLang === 'gu' ? 'ઓપ્ટિક ડિસ્ક સામાન્ય છે; ન્યુરોરેટિનલ રિમ સંપૂર્ણ સ્વસ્થ છે.' : 'Vertical cup-to-disc ratio is normal; neuroretinal rim intact without focal thinning or disc hemorrhage.')}
             </p>
           </div>
 
@@ -390,13 +480,13 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </span>
             </div>
             <div className="text-xs font-black text-slate-900">
-              Mild Arteriolar Caliber Attenuation (Grade 1)
+              {activeLang === 'hi' ? 'हल्का धमनी संकुचन (ग्रेड 1 उच्च रक्तचाप संकेत)' : (activeLang === 'gu' ? 'હળવું ધમની સંકોચન (ગ્રેડ 1 બ્લડ પ્રેશર સંકેત)' : 'Mild Arteriolar Caliber Attenuation (Grade 1)')}
             </div>
             <p className="text-[9.5px] text-slate-600 leading-snug">
-              Mild generalized arteriolar narrowing noted. No silver/copper-wiring or arteriovenous crossing compression (nicking).
+              {activeLang === 'hi' ? 'हल्का धमनी संकुचन देखा गया। कोई गंभीर रक्त संपीड़न (AV nicking) नहीं है।' : (activeLang === 'gu' ? 'હળવું ધમની સંકોચન નોંધાયું. કોઈ ગંભીર રક્તસ્ત્રાવ કે નિકિંગ નથી.' : 'Mild generalized arteriolar narrowing noted. No silver/copper-wiring or arteriovenous crossing compression (nicking).')}
             </p>
             <div className="text-[8.5px] text-slate-500 font-mono pt-1 border-t border-slate-100">
-              Correlates with patient blood pressure history.
+              {activeLang === 'hi' ? 'मरीज़ के रक्तचाप इतिहास से सहसंबंधित।' : (activeLang === 'gu' ? 'દર્દીના બ્લડ પ્રેશર ઇતિહાસ સાથે સુસંગત.' : 'Correlates with patient blood pressure history.')}
             </div>
           </div>
 
@@ -409,13 +499,13 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </span>
             </div>
             <div className="text-xs font-black text-slate-900">
-              Macular Background Clear of Soft Drusen
+              {activeLang === 'hi' ? 'मैकुला क्षेत्र पूरी तरह साफ (सॉफ्ट ड्रूज़न मुक्त)' : (activeLang === 'gu' ? 'મેક્યુલા સંપૂર્ણ સ્પષ્ટ (સોફ્ટ ડ્રુઝન મુક્ત)' : 'Macular Background Clear of Soft Drusen')}
             </div>
             <p className="text-[9.5px] text-slate-600 leading-snug">
-              Central macula demonstrates no confluent soft drusen or geographic retinal pigment epithelial atrophy.
+              {activeLang === 'hi' ? 'केंद्रीय मैकुला में कोई सॉफ्ट ड्रूज़न या एट्रोफी नहीं पाई गई है।' : (activeLang === 'gu' ? 'કેન્દ્રીય મેક્યુલામાં કોઈ સોફ્ટ ડ્રુઝન કે રેટિના એટ્રોફી નથી.' : 'Central macula demonstrates no confluent soft drusen or geographic retinal pigment epithelial atrophy.')}
             </p>
             <div className="text-[8.5px] text-slate-500 font-mono pt-1 border-t border-slate-100">
-              Low risk for age-related macular neovascularization.
+              {activeLang === 'hi' ? 'उम्र संबंधी मैकुलर डिजनरेशन का न्यूनतम जोखिम।' : (activeLang === 'gu' ? 'મેક્યુલર ડિજનરેશનનું નહિવત જોખમ.' : 'Low risk for age-related macular neovascularization.')}
             </div>
           </div>
 
@@ -447,23 +537,23 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
           
           <div className="bg-slate-50 p-2.5 border border-slate-200 text-center">
             <span className="text-[9px] font-bold text-slate-500 uppercase">{tDict.chronologicalAge}</span>
-            <div className="text-base font-black text-slate-900 mt-0.5">{res.chronologicalAge} Years</div>
+            <div className="text-base font-black text-slate-900 mt-0.5">{res.chronologicalAge} {activeLang === 'hi' ? 'वर्ष' : (activeLang === 'gu' ? 'વર્ષ' : 'Years')}</div>
             <span className="text-[8px] text-slate-500 font-mono">Patient Record</span>
           </div>
 
           <div className="bg-slate-50 p-2.5 border border-slate-200 text-center">
             <span className="text-[9px] font-bold text-slate-500 uppercase">{tDict.retinalAge}</span>
-            <div className="text-base font-black text-teal-800 mt-0.5">{res.retinalAge} Years</div>
+            <div className="text-base font-black text-teal-800 mt-0.5">{res.retinalAge} {activeLang === 'hi' ? 'वर्ष' : (activeLang === 'gu' ? 'વર્ષ' : 'Years')}</div>
             <span className="text-[8px] text-teal-700 font-mono">Deep Learning Est.</span>
           </div>
 
           <div className="bg-slate-50 p-2.5 border border-slate-200 text-center">
             <span className="text-[9px] font-bold text-slate-500 uppercase">{tDict.retinalAgeGap}</span>
             <div className={`text-base font-black mt-0.5 ${res.retinalAgeGap > 3 ? 'text-rose-700' : 'text-emerald-700'}`}>
-              +{res.retinalAgeGap} Years
+              +{res.retinalAgeGap} {activeLang === 'hi' ? 'वर्ष' : (activeLang === 'gu' ? 'વર્ષ' : 'Years')}
             </div>
             <span className={`text-[8px] font-bold ${res.retinalAgeGap > 3 ? 'text-rose-700' : 'text-emerald-700'}`}>
-              {res.retinalAgeGap > 3 ? 'Accelerated Aging' : 'Physiologic'}
+              {res.retinalAgeGap > 3 ? (activeLang === 'hi' ? 'त्वरित उम्र वृद्धि' : (activeLang === 'gu' ? 'ઝડપી ઉંમર વધારો' : 'Accelerated Aging')) : (activeLang === 'hi' ? 'सामान्य' : (activeLang === 'gu' ? 'સામાન્ય' : 'Physiologic'))}
             </span>
           </div>
 
@@ -483,7 +573,11 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               {tDict.cardiovascularRisk}: <span className="text-rose-800 font-black">{res.cvSignal}</span>
             </div>
             <p className="text-[10px] text-slate-600 leading-snug">
-              Retinal microvasculature mirrors coronary and cerebral microcirculation. Elevated retinal age gap (+{res.retinalAgeGap}y) correlates with <strong>1.42x hazard ratio for 10-year major adverse cardiovascular events (MACE)</strong>.
+              {activeLang === 'hi' 
+                ? `रेटिना सूक्ष्म संवहनी संरचना हृदय और मस्तिष्क स्वास्थ्य को दर्शाती है। जैविक आयु अंतर (+${res.retinalAgeGap} वर्ष) 10-वर्षीय हृदय एवं स्ट्रोक घटनाओं के लिए 1.42x जोखिम से सहसंबंधित है।`
+                : (activeLang === 'gu'
+                  ? `રેટિના રક્તવાહિનીઓ હૃદય અને મગજ સ્વાસ્થ્યનું દર્પણ છે. રેટિનલ ઉંમર અંતરાલ (+${res.retinalAgeGap} વર્ષ) 10-વાર્ષિક હૃદય રોગ અને સ્ટ્રોકના 1.42x જોખમ સાથે સંકળાયેલ છે.`
+                  : `Retinal microvasculature mirrors coronary and cerebral microcirculation. Elevated retinal age gap (+${res.retinalAgeGap}y) correlates with 1.42x hazard ratio for 10-year major adverse cardiovascular events (MACE).`)}
             </p>
           </div>
           <span className="shrink-0 text-[8.5px] font-mono text-slate-500 bg-white border px-2 py-1">
@@ -493,7 +587,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
       </div>
 
       {/* ========================================================================= */}
-      {/* FEATURE 9: COUNTERFACTUAL VISUAL EXPLANATION STUDIO (PROMINENT CARD)       */}
+      {/* COUNTERFACTUAL VISUAL EXPLANATION STUDIO (HEADING CLEANED - NO "FEATURE 9:") */}
       {/* ========================================================================= */}
       <div className="border-2 border-slate-900 p-4 bg-teal-50/50 space-y-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-teal-200 pb-2 gap-2">
@@ -501,11 +595,11 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
             <div className="flex items-center gap-1.5">
               <Wand2 className="w-4 h-4 text-teal-800" />
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
-                Feature 9: Counterfactual Visual Explanation (What a Healthier Retina Would Look Like)
+                {tDict.counterfactual}
               </h3>
             </div>
             <p className="text-[10px] text-slate-600 font-medium mt-0.5">
-              Clinicians find comparing this GAN-inpainted healthy retina more intuitive than abstract heatmaps alone.
+              {tDict.counterfactualSubtitle}
             </p>
           </div>
           <span className="text-[9px] font-mono bg-white text-teal-900 font-bold px-2 py-0.5 border border-teal-300">
@@ -518,7 +612,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
           {/* Card A: Current Retina Flagged */}
           <div className="bg-white border border-slate-300 p-3 space-y-1.5 shadow-xs">
             <div className="flex justify-between items-center text-[10px] font-bold text-rose-700 uppercase">
-              <span>Current Scan (Grad-CAM Flagged)</span>
+              <span>{activeLang === 'hi' ? 'वर्तमान स्कैन (फ्लेग्ड घाव)' : (activeLang === 'gu' ? 'હાલનું સ્કેન (ક્ષતિઓ ચિહ્નિત)' : 'Current Scan (Grad-CAM Flagged)')}</span>
               <span className="text-[8.5px] font-mono bg-rose-50 border border-rose-200 px-1.5 text-rose-800">
                 {cf.lesionsInpaintedCount} Micro-Lesions
               </span>
@@ -534,14 +628,14 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </div>
             </div>
             <p className="text-[10px] text-slate-600 leading-snug">
-              Microaneurysms and intraretinal blot hemorrhages driving the AI diagnosis.
+              {activeLang === 'hi' ? 'माइक्रोएन्यूरिज्म और रक्तस्राव जो एआई ग्रेड को प्रभावित करते हैं।' : (activeLang === 'gu' ? 'માઇક્રોએન્યુરિઝમ અને રક્તસ્ત્રાવ જે એઆઈ નિદાનને નિર્ધારિત કરે છે.' : 'Microaneurysms and intraretinal blot hemorrhages driving the AI diagnosis.')}
             </p>
           </div>
 
           {/* Card B: Inpainted Counterfactual */}
           <div className="bg-white border border-teal-300 p-3 space-y-1.5 shadow-xs">
             <div className="flex justify-between items-center text-[10px] font-bold text-teal-800 uppercase">
-              <span>Counterfactual (Healthier Retina Counterpart)</span>
+              <span>{activeLang === 'hi' ? 'काउंटरफैक्चुअल (स्वस्थ रेटिना सिमुलेशन)' : (activeLang === 'gu' ? 'કાઉન્ટરફેક્ચ્યુઅલ (સ્વસ્થ રેટિના સિમ્યુલેશન)' : 'Counterfactual (Healthier Retina Counterpart)')}</span>
               <span className="text-[8.5px] font-mono bg-teal-100 border border-teal-300 px-1.5 text-teal-900 font-bold">
                 ✓ Lesions Cleared
               </span>
@@ -557,7 +651,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </div>
             </div>
             <p className="text-[10px] text-slate-600 leading-snug">
-              Lesions replaced with healthy retinal parenchyma, validating causal model behavior.
+              {activeLang === 'hi' ? 'घाव हटाकर स्वस्थ रेटिना दिखाया गया है, जो कारण-प्रभाव की पुष्टि करता है।' : (activeLang === 'gu' ? 'ક્ષતિઓ હટાવીને સ્વસ્થ રેટિના દર્શાવવામાં આવ્યો છે, જે મોડેલની વિશ્વસનીયતા સાબિત કરે છે.' : 'Lesions replaced with healthy retinal parenchyma, validating causal model behavior.')}
             </p>
           </div>
 
@@ -566,9 +660,9 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
         {/* Live Interactive Difference Slider */}
         <div className="bg-white border border-teal-200 p-3 rounded space-y-1.5">
           <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-            <span className="text-rose-700">← Flagged Microvascular Pathology</span>
+            <span className="text-rose-700">← {activeLang === 'hi' ? 'रोगग्रस्त रेटिना' : (activeLang === 'gu' ? 'રોગગ્રસ્ત રેટિના' : 'Flagged Microvascular Pathology')}</span>
             <span className="text-teal-800 font-mono text-[11px]">Compare Slider: {cfSliderVal}% Healthy</span>
-            <span className="text-teal-700">Synthesized Healthy Retina →</span>
+            <span className="text-teal-700">{activeLang === 'hi' ? 'स्वस्थ रेटिना सिमुलेशन' : (activeLang === 'gu' ? 'સ્વસ્થ રેટિના સિમ્યુલેશન' : 'Synthesized Healthy Retina')} →</span>
           </div>
           <input 
             type="range" 
@@ -771,18 +865,17 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
           <div className="mt-2 pt-1.5 border-t border-slate-200 flex items-center justify-between text-[9px]">
             <span className="text-slate-500 font-mono">ASHA / Field Assistant Audio</span>
             <button 
+              type="button"
               onClick={() => handlePlayVoice(activeLang)} 
-              className={`no-print px-2 py-0.5 text-[9px] font-bold flex items-center gap-1 transition-all ${
-                isPlayingAudio && !isReadingFullReport ? 'bg-rose-700 text-white animate-pulse' : 'bg-teal-800 text-white hover:bg-teal-900'
-              }`}
+              className="no-print px-2 py-0.5 text-[9px] font-bold flex items-center gap-1 bg-teal-800 text-white hover:bg-teal-900 rounded"
             >
               <Volume2 className="w-2.5 h-2.5" />
-              {isPlayingAudio && !isReadingFullReport ? 'Speaking...' : tDict.playVoice}
+              <span>{tDict.playVoice}</span>
             </button>
           </div>
         </div>
 
-        {/* Adaptive Follow-up Interval (Non-contradictory) */}
+        {/* Adaptive Follow-up Interval (Non-contradictory, Hyphen-Free) */}
         <div className="border border-slate-900 p-3 bg-slate-50/50 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-300 pb-1 mb-2">
@@ -794,10 +887,14 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
               </span>
             </div>
             <div className="text-xs font-black text-slate-900 mb-1">
-              {intv.recommendedInterval}
+              {getLocalizedInterval()}
             </div>
             <p className="text-[10px] text-slate-600 leading-snug">
-              {intv.riskModifiers.join('; ')}
+              {activeLang === 'hi' 
+                ? 'ग्रेड 4 एवं ग्लाइसेमिक स्थिति के आधार पर तत्काल अनुवर्ती जाँच।' 
+                : (activeLang === 'gu' 
+                  ? 'ગ્રેડ 4 અને ગ્લાયસેમિક સ્થિતિ આધારિત તાત્કાલિક તપાસ.' 
+                  : 'Calibrated on: Grade 4 + Glycemic Index (HbA1c)')}
             </p>
           </div>
           <div className="mt-2 pt-1.5 border-t border-slate-200 text-[8.5px] text-slate-500 font-mono">
@@ -808,7 +905,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
       </div>
 
       {/* ========================================================================= */}
-      {/* ROW 4: EXPANDABLE SYSTEM & DEPLOYMENT DRAWERS (Features 10, 14, 15, 16, 18)*/}
+      {/* ROW 4: EXPANDABLE SYSTEM & DEPLOYMENT DRAWERS                              */}
       {/* ========================================================================= */}
       <div className="no-print pt-2 space-y-2">
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
@@ -864,7 +961,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
         {expandedSection === 'consensus' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
             <div className="flex justify-between items-center font-bold">
-              <span className="uppercase text-slate-800">Second-Opinion Consensus Architecture (Feature 17)</span>
+              <span className="uppercase text-slate-800">Second-Opinion Consensus Architecture</span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-black ${cons.isAgreement ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
                 {cons.statusBadge}
               </span>
@@ -883,7 +980,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
 
         {expandedSection === 'simulink' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
-            <div className="font-bold uppercase text-slate-800">5-Year India Public Health Screening Simulator (Feature 14)</div>
+            <div className="font-bold uppercase text-slate-800">5-Year India Public Health Screening Simulator</div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-white p-2 border border-slate-200">
                 <div className="text-[9px] text-slate-500 uppercase font-bold">5-Yr Screenings</div>
@@ -903,7 +1000,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
 
         {expandedSection === 'qaly' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
-            <div className="font-bold uppercase text-slate-800">QALY & Cost-Effectiveness Health Economics (Feature 15)</div>
+            <div className="font-bold uppercase text-slate-800">QALY & Cost-Effectiveness Health Economics</div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
               <div className="bg-white p-2 border border-slate-200">
                 <div className="text-[9px] text-slate-500 uppercase font-bold">AI Cost / Scan</div>
@@ -928,7 +1025,7 @@ export default function SihEnhancements({ screening, patient }: SihEnhancementsP
         {expandedSection === 'security' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
             <div className="flex justify-between items-center font-bold">
-              <span className="uppercase text-slate-800">Cryptographic SHA-256 Tamper Audit (Feature 16)</span>
+              <span className="uppercase text-slate-800">Cryptographic SHA-256 Tamper Audit</span>
               <button 
                 onClick={() => setVerifiedChain(true)}
                 className="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded"
