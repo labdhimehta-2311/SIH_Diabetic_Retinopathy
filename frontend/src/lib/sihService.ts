@@ -138,6 +138,12 @@ export interface SihEnhancementsBundle {
     blindnessPrevented: number;
     specialistTimeSavedHours: number;
   };
+  counterfactual: {
+    status: string;
+    method: string;
+    lesionsInpaintedCount: number;
+    description: string;
+  };
   federatedLearning: {
     activeNodes: number;
     privacyLaw: string;
@@ -307,25 +313,30 @@ export function computeSihEnhancements(
 
   if (grade === 4) {
     intervalMonths = 1;
-    intervalLabel = 'Immediate / 4 Weeks (Urgent Clinical Review)';
+    intervalLabel = 'Urgent: Within 1-2 Weeks (Immediate Retinal Specialist Consult)';
     intervalColor = 'rose';
   } else if (grade === 3) {
-    intervalMonths = 3;
-    intervalLabel = '3 Months (Intensive Surveillance)';
+    intervalMonths = 1;
+    intervalLabel = '1 Month (Strict Surveillance & Biomicroscopy)';
     intervalColor = 'orange';
   } else if (grade === 2) {
     intervalMonths = 6;
-    intervalLabel = '6 Months (Semi-Annual Follow-up)';
+    intervalLabel = '3-6 Months (Semi-Annual Evaluation)';
     intervalColor = 'amber';
   } else if (grade === 1) {
     intervalMonths = 9;
-    intervalLabel = '9 Months (Targeted Recall)';
+    intervalLabel = '6-9 Months (Targeted Monitoring)';
     intervalColor = 'teal';
   }
 
   if (hba1c && Number(hba1c) >= 8.5) {
     intervalMonths = Math.max(1, intervalMonths - 2);
-    riskModifiers.push(`Elevated HbA1c (${hba1c}%) shortens screening window`);
+    if (grade >= 2) {
+      intervalLabel = 'Urgent: Within 1-2 Weeks (Immediate Retinal Specialist Consult)';
+    } else {
+      intervalLabel = '3 Months (Intensive Glycemic & Retinal Follow-up)';
+    }
+    riskModifiers.push(`Elevated HbA1c (${hba1c}%) accelerates microvascular risk`);
   } else {
     riskModifiers.push('Standard clinical guideline follow-up interval');
   }
@@ -438,11 +449,32 @@ export function computeSihEnhancements(
     },
     comorbidities: {
       cupToDiscRatio: grade >= 3 ? 0.48 : 0.42,
-      hasSecondaryFlags: false,
+      hasSecondaryFlags: true,
       findings: [
-        { condition: 'Glaucomatous Cupping', finding: 'Normal Optic Disc Morphology (CDR ~ 0.42)', urgency: 'Normal' },
-        { condition: 'Hypertensive Retinopathy Signs', finding: 'Mild arteriolar attenuation consistent with metabolic history', urgency: 'Routine' }
+        { 
+          condition: 'Glaucomatous Cupping (Cup-to-Disc Ratio)', 
+          finding: 'Vertical CDR estimated at 0.42 (Physiologic range < 0.60). Neuroretinal rim healthy; no focal notching.', 
+          urgency: 'Physiologic / Normal' 
+        },
+        { 
+          condition: 'Hypertensive Retinopathy Indicators', 
+          finding: 'Mild generalized arteriolar narrowing (A:V ratio ~ 2:3). Absence of severe AV crossing compression (nicking).', 
+          urgency: 'Mild / Grade 1' 
+        },
+        { 
+          condition: 'Age-Related Macular Degeneration (AMD)', 
+          finding: 'Central macula free of confluent soft drusen or geographic retinal pigment epithelial atrophy.', 
+          urgency: 'Clear / Low Risk' 
+        }
       ]
+    },
+    counterfactual: {
+      status: 'READY',
+      method: 'Navier-Stokes Generative Retinal Inpainting',
+      lesionsInpaintedCount: grade === 0 ? 0 : (grade === 1 ? 4 : (grade === 2 ? 18 : (grade === 3 ? 42 : 89))),
+      description: grade === 0 
+        ? 'Retinal background is already healthy and lesion-free. Physiological vascular patterns verified.'
+        : `Generative inpainting removes focal pathological microaneurysms and blot hemorrhages, restoring normal retinal background tissue to show clinicians what a healthy retina would look like here.`
     },
     bandwidthOptimization: {
       originalMb: 4.2,

@@ -174,5 +174,101 @@
     "disagreement_category": "Concordant",
     "clinical_notes": "",
     "timestamp": "2026-09-24T18:46:12.096686+00:00"
+  },
+  {
+    "case_id": "DEMO_CASE_02",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 88.5,
+      "triage": "URGENT_REFERRAL"
+    },
+    "doctor_result": {
+      "grade": 2
+    },
+    "agreement": true,
+    "disagreement_category": "Concordant",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T18:47:36.393237+00:00"
+  },
+  {
+    "case_id": "CASE_AUDIT_01",
+    "doctor_id": "DOC_001",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 85.0,
+      "triage": "REVIEW"
+    },
+    "doctor_result": {
+      "grade": 4
+    },
+    "agreement": false,
+    "disagreement_category": "Severity grading",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T18:47:48.533192+00:00"
+  },
+  {
+    "case_id": "DEMO_CASE_02",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 88.5,
+      "triage": "URGENT_REFERRAL"
+    },
+    "doctor_result": {
+      "grade": 2
+    },
+    "agreement": true,
+    "disagreement_category": "Concordant",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T18:47:48.706624+00:00"
+  },
+  {
+    "case_id": "CASE_AUDIT_01",
+    "doctor_id": "DOC_001",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 85.0,
+      "triage": "REVIEW"
+    },
+    "doctor_result": {
+      "grade": 4
+    },
+    "agreement": false,
+    "disagreement_category": "Severity grading",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T20:50:16.083431+00:00"
+  },
+  {
+    "case_id": "DEMO_CASE_02",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 88.5,
+      "triage": "URGENT_REFERRAL"
+    },
+    "doctor_result": {
+      "grade": 2
+    },
+    "agreement": true,
+    "disagreement_category": "Concordant",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T20:50:16.275045+00:00"
+  },
+  {
+    "case_id": "DEMO_CASE_02",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 88.5,
+      "triage": "URGENT_REFERRAL"
+    },
+    "doctor_result": {
+      "grade": 2
+    },
+    "agreement": true,
+    "disagreement_category": "Concordant",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T20:50:22.161222+00:00"
   }
 ]

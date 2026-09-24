@@ -68,7 +68,7 @@ def recommend_screening_interval(normalized_case):
         risk_adjustments.append(f"Borderline classification certainty ({confidence:.1f}%) suggests earlier re-evaluation")
         
     if recommended_months <= 1:
-        interval_label = "Immediate / 4 Weeks (Urgent Clinical Review)"
+        interval_label = "Urgent: Within 1-2 Weeks (Immediate Retinal Specialist Consult)"
         status_color = "rose"
     elif recommended_months <= 3:
         interval_label = f"{recommended_months} Months (Intensive Surveillance)"
