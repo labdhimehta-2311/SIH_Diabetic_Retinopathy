@@ -1,0 +1,86 @@
+{
+  "triage": {
+    "auto_clear_max_grade": 0,
+    "auto_clear_min_confidence": 90.0,
+    "urgent_referral_min_grade": 3,
+    "urgent_referral_dme_risk": "HIGH",
+    "review_min_confidence": 75.0,
+    "bounded_fnr_target": 0.02
+  },
+  "review_queue": {
+    "weights": {
+      "grade_weight": 0.45,
+      "confidence_uncertainty_weight": 0.20,
+      "dme_risk_weight": 0.20,
+      "symptom_urgency_weight": 0.15
+    },
+    "high_priority_threshold": 0.65,
+    "review_priority_threshold": 0.35
+  },
+  "dme": {
+    "macular_radius_ratio": 0.22,
+    "fovea_proximity_threshold": 0.4,
+    "high_risk_exudate_count": 8,
+    "moderate_risk_exudate_count": 3
+  },
+  "voice": {
+    "supported_languages": ["en", "hi", "gu"],
+    "default_language": "en",
+    "speech_rate": 1.0
+  },
+  "quality": {
+    "sharpness_threshold": 45.0,
+    "exposure_low": 25.0,
+    "exposure_high": 215.0,
+    "aperture_coverage_min": 0.45
+  },
+  "bandwidth": {
+    "compression_levels": {
+      "low": 85,
+      "medium": 65,
+      "rural_low_bandwidth": 40
+    },
+    "roi_scale": 1.0,
+    "periphery_scale": 0.5
+  },
+  "epidemiology": {
+    "default_district_population": 1500000,
+    "diabetes_prevalence": 0.115,
+    "dr_prevalence_in_diabetes": 0.18,
+    "sight_threatening_dr_ratio": 0.22,
+    "annual_screening_coverage_current": 0.12,
+    "annual_screening_coverage_target": 0.65,
+    "projection_years": 5
+  },
+  "cost_effectiveness": {
+    "screening_cost_per_patient_inr": 120.0,
+    "ophthalmologist_visit_cost_inr": 750.0,
+    "tertiary_treatment_cost_inr": 15000.0,
+    "blindness_economic_burden_annual_inr": 240000.0,
+    "qaly_value_inr": 350000.0
+  },
+  "screening_interval": {
+    "grade_0_interval_months": 12,
+    "grade_1_interval_months": 9,
+    "grade_2_interval_months": 6,
+    "grade_3_interval_months": 3,
+    "grade_4_interval_months": 1,
+    "hba1c_risk_threshold": 8.0
+  },
+  "camera_profiles": {
+    "forus_3nethra": { "contrast_gamma": 1.1, "clahe_clip": 2.0, "vignette_corr": true },
+    "remidio_nm_fop": { "contrast_gamma": 1.05, "clahe_clip": 2.2, "vignette_corr": false },
+    "volk_inview": { "contrast_gamma": 1.2, "clahe_clip": 2.5, "vignette_corr": true },
+    "zeiss_visucam": { "contrast_gamma": 1.0, "clahe_clip": 1.8, "vignette_corr": false },
+    "topcon_trc": { "contrast_gamma": 1.0, "clahe_clip": 2.0, "vignette_corr": false }
+  },
+  "demo_mode": {
+    "enabled": true,
+    "synthetic_watermark": "DEMO DATA — NOT A VALIDATED CLINICAL RECORD"
+  },
+  "storage_paths": {
+    "audit_trail_db": "sih_features/audit/audit_trail.json",
+    "tamper_log_db": "sih_features/security/tamper_chain.json",
+    "offline_queue_db": "sih_features/offline/offline_sync_queue.json"
+  }
+}
