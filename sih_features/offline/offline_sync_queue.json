@@ -202,6 +202,164 @@
     "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
     "confidence": 88.5,
     "created_at": "2026-09-24T18:28:21.641897+00:00",
+    "sync_status": "SYNCED",
+    "sync_attempts": 1,
+    "payload": {
+      "case_id": "DEMO_CASE_02",
+      "session_id": "DEMO_CASE_02",
+      "patient_id": "PAT_DEMO_02",
+      "patient_name": "Sunita Sharma",
+      "grade": 2,
+      "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+      "confidence": 88.5,
+      "referable": true,
+      "m1_result": {
+        "status": "success",
+        "enhanced_url": "/samples/sample_grade2_moderate.png",
+        "filter": "CLAHE_GreenChannel"
+      },
+      "m2_result": {
+        "grade": 2,
+        "label": "Moderate Non-Proliferative Diabetic Retinopathy",
+        "confidence": 88.5,
+        "referable": true,
+        "engine": "python_cv_engine"
+      },
+      "m3_result": {
+        "executed": true,
+        "mask_url": "/samples/sample_grade2_moderate.png",
+        "lesions": {
+          "microaneurysms_count": 1,
+          "hemorrhages_count": 1,
+          "hard_exudates_count": 6,
+          "cotton_wool_spots_detected": true,
+          "affected_quadrants": 4,
+          "macular_involvement": true
+        }
+      },
+      "m4_result": {
+        "executed": true,
+        "heatmap_url": "/samples/sample_grade2_moderate.png",
+        "focus_region": "Macula & Peripapillary Arcade"
+      },
+      "image_quality": {
+        "score": 85.0,
+        "is_assessable": true,
+        "clarity": "Good",
+        "illumination": "Adequate",
+        "blur_metric": 60.0
+      },
+      "vitals": {
+        "hba1c": null,
+        "year_of_diagnosis": null,
+        "diabetes_type": "Type 2"
+      },
+      "raw_images": {
+        "original": "/samples/sample_grade2_moderate.png",
+        "enhanced": "/samples/sample_grade2_moderate.png",
+        "heatmap": "/samples/sample_grade2_moderate.png",
+        "lesion_mask": "/samples/sample_grade2_moderate.png"
+      }
+    },
+    "synced_at": "2026-09-24T18:43:44.141318+00:00"
+  },
+  {
+    "sync_id": "SYNC_1790274648451",
+    "case_id": "DEMO_CASE_02",
+    "patient_id": "PAT_DEMO_02",
+    "patient_name": "Sunita Sharma",
+    "grade": 2,
+    "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+    "confidence": 88.5,
+    "created_at": "2026-09-24T18:30:48.451453+00:00",
+    "sync_status": "SYNCED",
+    "sync_attempts": 1,
+    "payload": {
+      "case_id": "DEMO_CASE_02",
+      "session_id": "DEMO_CASE_02",
+      "patient_id": "PAT_DEMO_02",
+      "patient_name": "Sunita Sharma",
+      "grade": 2,
+      "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+      "confidence": 88.5,
+      "referable": true,
+      "m1_result": {
+        "status": "success",
+        "enhanced_url": "/samples/sample_grade2_moderate.png",
+        "filter": "CLAHE_GreenChannel"
+      },
+      "m2_result": {
+        "grade": 2,
+        "label": "Moderate Non-Proliferative Diabetic Retinopathy",
+        "confidence": 88.5,
+        "referable": true,
+        "engine": "python_cv_engine"
+      },
+      "m3_result": {
+        "executed": true,
+        "mask_url": "/samples/sample_grade2_moderate.png",
+        "lesions": {
+          "microaneurysms_count": 1,
+          "hemorrhages_count": 1,
+          "hard_exudates_count": 6,
+          "cotton_wool_spots_detected": true,
+          "affected_quadrants": 4,
+          "macular_involvement": true
+        }
+      },
+      "m4_result": {
+        "executed": true,
+        "heatmap_url": "/samples/sample_grade2_moderate.png",
+        "focus_region": "Macula & Peripapillary Arcade"
+      },
+      "image_quality": {
+        "score": 85.0,
+        "is_assessable": true,
+        "clarity": "Good",
+        "illumination": "Adequate",
+        "blur_metric": 60.0
+      },
+      "vitals": {
+        "hba1c": null,
+        "year_of_diagnosis": null,
+        "diabetes_type": "Type 2"
+      },
+      "raw_images": {
+        "original": "/samples/sample_grade2_moderate.png",
+        "enhanced": "/samples/sample_grade2_moderate.png",
+        "heatmap": "/samples/sample_grade2_moderate.png",
+        "lesion_mask": "/samples/sample_grade2_moderate.png"
+      }
+    },
+    "synced_at": "2026-09-24T18:43:44.141318+00:00"
+  },
+  {
+    "sync_id": "SYNC_1790275424120",
+    "case_id": "TEST_OFFLINE_99",
+    "patient_id": "ANON",
+    "patient_name": "Anonymous",
+    "grade": 1,
+    "grade_label": "Normal",
+    "confidence": 93.0,
+    "created_at": "2026-09-24T18:43:44.120972+00:00",
+    "sync_status": "SYNCED",
+    "sync_attempts": 1,
+    "payload": {
+      "case_id": "TEST_OFFLINE_99",
+      "grade": 1,
+      "confidence": 93.0
+    },
+    "synced_at": "2026-09-24T18:43:44.141318+00:00"
+  },
+  {
+    "sync_id": "SYNC_1790275424324",
+    "case_id": "DEMO_CASE_02",
+    "patient_id": "PAT_DEMO_02",
+    "patient_name": "Sunita Sharma",
+    "grade": 2,
+    "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+    "confidence": 88.5,
+    "created_at": "2026-09-24T18:43:44.324087+00:00",
     "sync_status": "PENDING",
     "sync_attempts": 0,
     "payload": {
@@ -263,14 +421,83 @@
     }
   },
   {
-    "sync_id": "SYNC_1790274648451",
+    "sync_id": "SYNC_1790275444433",
     "case_id": "DEMO_CASE_02",
     "patient_id": "PAT_DEMO_02",
     "patient_name": "Sunita Sharma",
     "grade": 2,
     "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
     "confidence": 88.5,
-    "created_at": "2026-09-24T18:30:48.451453+00:00",
+    "created_at": "2026-09-24T18:44:04.433809+00:00",
+    "sync_status": "PENDING",
+    "sync_attempts": 0,
+    "payload": {
+      "case_id": "DEMO_CASE_02",
+      "session_id": "DEMO_CASE_02",
+      "patient_id": "PAT_DEMO_02",
+      "patient_name": "Sunita Sharma",
+      "grade": 2,
+      "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+      "confidence": 88.5,
+      "referable": true,
+      "m1_result": {
+        "status": "success",
+        "enhanced_url": "/samples/sample_grade2_moderate.png",
+        "filter": "CLAHE_GreenChannel"
+      },
+      "m2_result": {
+        "grade": 2,
+        "label": "Moderate Non-Proliferative Diabetic Retinopathy",
+        "confidence": 88.5,
+        "referable": true,
+        "engine": "python_cv_engine"
+      },
+      "m3_result": {
+        "executed": true,
+        "mask_url": "/samples/sample_grade2_moderate.png",
+        "lesions": {
+          "microaneurysms_count": 1,
+          "hemorrhages_count": 1,
+          "hard_exudates_count": 6,
+          "cotton_wool_spots_detected": true,
+          "affected_quadrants": 4,
+          "macular_involvement": true
+        }
+      },
+      "m4_result": {
+        "executed": true,
+        "heatmap_url": "/samples/sample_grade2_moderate.png",
+        "focus_region": "Macula & Peripapillary Arcade"
+      },
+      "image_quality": {
+        "score": 85.0,
+        "is_assessable": true,
+        "clarity": "Good",
+        "illumination": "Adequate",
+        "blur_metric": 60.0
+      },
+      "vitals": {
+        "hba1c": null,
+        "year_of_diagnosis": null,
+        "diabetes_type": "Type 2"
+      },
+      "raw_images": {
+        "original": "/samples/sample_grade2_moderate.png",
+        "enhanced": "/samples/sample_grade2_moderate.png",
+        "heatmap": "/samples/sample_grade2_moderate.png",
+        "lesion_mask": "/samples/sample_grade2_moderate.png"
+      }
+    }
+  },
+  {
+    "sync_id": "SYNC_1790275572154",
+    "case_id": "DEMO_CASE_02",
+    "patient_id": "PAT_DEMO_02",
+    "patient_name": "Sunita Sharma",
+    "grade": 2,
+    "grade_label": "Moderate Non-Proliferative Diabetic Retinopathy",
+    "confidence": 88.5,
+    "created_at": "2026-09-24T18:46:12.154201+00:00",
     "sync_status": "PENDING",
     "sync_attempts": 0,
     "payload": {

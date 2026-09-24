@@ -68,5 +68,45 @@
     "timestamp": "2026-09-24T18:30:48.418040+00:00",
     "previous_hash": "074d8c97b2790000959a0b7c29b31b86ca9d4a3b191cf17ac2b5e768dc7a06a4",
     "hash": "b84e7bd1870e44c25233b17805356796464e834597a39be608d0a3976e1613bf"
+  },
+  {
+    "index": 7,
+    "case_id": "CASE_CHAIN_01",
+    "grade": 1,
+    "triage": "ROUTINE",
+    "doctor_id": "SYSTEM",
+    "timestamp": "2026-09-24T18:43:44.239793+00:00",
+    "previous_hash": "b84e7bd1870e44c25233b17805356796464e834597a39be608d0a3976e1613bf",
+    "hash": "ce8d99c35700923ad51906290b2a0fd7d97b9bbba9f5d1dbc2b27dce4f1f68ba"
+  },
+  {
+    "index": 8,
+    "case_id": "DEMO_CASE_02",
+    "grade": 2,
+    "triage": "URGENT_REFERRAL",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "timestamp": "2026-09-24T18:43:44.282749+00:00",
+    "previous_hash": "ce8d99c35700923ad51906290b2a0fd7d97b9bbba9f5d1dbc2b27dce4f1f68ba",
+    "hash": "a81a94ae5cd874d68639b756d392638fbb0c48c140e6d397f7ae10d24b213f0c"
+  },
+  {
+    "index": 9,
+    "case_id": "DEMO_CASE_02",
+    "grade": 2,
+    "triage": "URGENT_REFERRAL",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "timestamp": "2026-09-24T18:44:04.395622+00:00",
+    "previous_hash": "a81a94ae5cd874d68639b756d392638fbb0c48c140e6d397f7ae10d24b213f0c",
+    "hash": "0f068866608ef9ddcce1a9dce75d76be10924f8ce1a7665363ec86c03aee251d"
+  },
+  {
+    "index": 10,
+    "case_id": "DEMO_CASE_02",
+    "grade": 2,
+    "triage": "URGENT_REFERRAL",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "timestamp": "2026-09-24T18:46:12.098890+00:00",
+    "previous_hash": "0f068866608ef9ddcce1a9dce75d76be10924f8ce1a7665363ec86c03aee251d",
+    "hash": "9ee455b19a392c8bdc82164d10d47eb79aa6d5faec62c6357664f25b1c16a22f"
   }
 ]
