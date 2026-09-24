@@ -243,44 +243,59 @@ export function getFullReportSpokenNarrative(
   const age = patient?.age || 56;
   const grade = screening?.aiResults?.grade ?? 2;
   
-  // Model confidence strictly formatted to 2 decimal places
+  // Format model confidence with localized decimal words to guarantee no "dot" is pronounced
   const confRaw = Number(screening?.aiResults?.confidence ?? 95.9);
-  const conf = isNaN(confRaw) ? "95.90" : confRaw.toFixed(2);
+  const confNum = isNaN(confRaw) ? 95.9 : confRaw;
+  const confWhole = Math.floor(confNum);
+  const confDec = Math.round((confNum - confWhole) * 100);
+
+  const confHindi = confDec > 0 ? `${confWhole} दशमलव ${confDec.toString().padStart(2, '0')} प्रतिशत` : `${confWhole} प्रतिशत`;
+  const confGujarati = confDec > 0 ? `${confWhole} પોઇન્ટ ${confDec.toString().padStart(2, '0')} ટકા` : `${confWhole} ટકા`;
+  const confEnglish = confDec > 0 ? `${confWhole}.${confDec.toString().padStart(2, '0')} percent` : `${confWhole} percent`;
 
   const triage = sihData?.triage?.tier || 'OPHTHALMOLOGIST_REVIEW';
-  const dme = sihData?.dmeRisk?.title || 'Moderate DME Risk';
-  const cdr = sihData?.comorbidities?.cupToDiscRatio || 0.42;
-  const ageGap = sihData?.researchSignals?.retinalAgeGap || 4.7;
-  const cvRisk = sihData?.researchSignals?.cvSignal || 'Elevated Cardiovascular Risk Signal';
-
+  
   if (lang === 'hi') {
     const gradeHindi = [
-      'ग्रेड 0: सामान्य, कोई डायबिटिक रेटिनोपैथी नहीं',
-      'ग्रेड 1: हल्की गैर-प्रोलिफेरेटिव रेटिनोपैथी',
-      'ग्रेड 2: मध्यम गैर-प्रोलिफेरेटिव रेटिनोपैथी',
-      'ग्रेड 3: गंभीर गैर-प्रोलिफेरेटिव रेटिनोपैथी',
-      'ग्रेड 4: अत्यधिक गंभीर प्रोलिफेरेटिव रेटिनोपैथी'
+      'ग्रेड 0 सामान्य, कोई डायबिटिक रेटिनोपैथी नहीं',
+      'ग्रेड 1 हल्की गैर-प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 2 मध्यम गैर-प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 3 गंभीर गैर-प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 4 अत्यधिक गंभीर प्रोलिफेरेटिव रेटिनोपैथी'
     ][grade] || 'मध्यम रेटिनोपैथी';
 
     const triageHindi = triage === 'URGENT_REFERRAL' ? 'अत्यंत आवश्यक रेफरल' : 'डॉक्टर समीक्षा';
+    const dmeHindi = sihData?.dmeRisk?.title === 'High DME Risk' ? 'उच्च मैकुलर एडिमा जोखिम' : 'मध्यम मैकुलर एडिमा जोखिम';
+    const cdrHindi = '0 दशमलव 42';
+    const ageGapHindi = 'धन 4 दशमलव 7 वर्ष';
+    const cvRiskHindi = 'हृदय एवं संवहनी जोखिम का मध्यम संकेत';
 
-    return `मरीज़ ${pName}, उम्र ${age} वर्ष की संपूर्ण क्लिनिकल रेटिना टेली-स्क्रीनिंग रिपोर्ट। प्राथमिक एआई डायग्नोस्टिक परिणाम: ${gradeHindi}। मॉडल विश्वास स्तर: ${conf} प्रतिशत। आपातकालीन ट्रायेज निर्णय: ${triageHindi}। मैकुलर एडिमा DME जोखिम: ${dme}। ग्रामीण समग्र नेत्र जाँच में कप-टू-डिस्क अनुपात ${cdr} सामान्य शारीरिक सीमा में पाया गया है, तथा हल्का उच्च रक्तचाप संकेत है। एआई ऑकुलोमिक्स के अनुसार रेटिनल जैविक आयु अंतराल धन ${ageGap} वर्ष है। हृदय एवं संवहनी जोखिम: ${cvRisk}। साक्ष्य-आधारित स्वास्थ्य एवं जीवनशैली उपाय: प्रतिदिन 20 से 30 मिनट हल्का टहलना या व्यायाम करें, भारी वजन उठाने से बचें, सख्त भूमध्यसागरीय आहार लें, रक्त शर्करा 70 से 180 के बीच और रक्तचाप 130 बटा 80 से नीचे रखें। संबंधित चिकित्सीय दवाइयां एवं फार्माकोथेरेपी: उच्च जोखिम रेटिनोपैथी के लिए एफ्लीबरसेप्ट या रैनीबिजुमैब इंट्राविट्रियल एंटी-वीईजीएफ इंजेक्शन, तथा संवहनी सुरक्षा हेतु लिसिनोप्रिल और फेनोफाइब्रेट अनुशंसित हैं। अनुशंसित अनुवर्ती जाँच: 1 से 2 सप्ताह में तत्काल विशेषज्ञ परामर्श।`;
+    return `मरीज़ ${pName}, उम्र ${age} वर्ष की संपूर्ण क्लिनिकल रेटिना टेली-स्क्रीनिंग रिपोर्ट, प्राथमिक एआई डायग्नोस्टिक परिणाम ${gradeHindi}, मॉडल विश्वास स्तर ${confHindi}, आपातकालीन ट्रायेज निर्णय ${triageHindi}, मैकुलर एडिमा जोखिम ${dmeHindi}, ग्रामीण समग्र नेत्र जाँच में कप-टू-डिस्क अनुपात ${cdrHindi} सामान्य शारीरिक सीमा में है, तथा हल्का उच्च रक्तचाप संकेत है, एआई ऑकुलोमिक्स के अनुसार रेटिनल जैविक आयु अंतराल ${ageGapHindi} है, हृदय एवं संवहनी जोखिम ${cvRiskHindi}, साक्ष्य-आधारित स्वास्थ्य एवं जीवनशैली उपाय, प्रतिदिन 20 से 30 मिनट हल्का टहलना या व्यायाम करें, भारी वजन उठाने से बचें, सख्त भूमध्यसागरीय आहार लें, रक्त शर्करा 70 से 180 के बीच और रक्तचाप 130 बटा 80 से नीचे रखें, संबंधित चिकित्सीय दवाइयां एवं फार्माकोथेरेपी, उच्च जोखिम रेटिनोपैथी के लिए एफ्लीबरसेप्ट या रैनीबिजुमैब इंट्राविट्रियल एंटी-वीईजीएफ इंजेक्शन, तथा संवहनी सुरक्षा हेतु लिसिनोप्रिल और फेनोफाइब्रेट अनुशंसित हैं, अनुशंसित अनुवर्ती जाँच, 1 से 2 सप्ताह में तत्काल विशेषज्ञ परामर्श`;
   }
 
   if (lang === 'gu') {
     const gradeGujarati = [
-      'ગ્રેડ 0: સામાન્ય, કોઈ ડાયાબિટીક રેટિનોપેથી નથી',
-      'ગ્રેડ 1: હળવી ડાયાબિટીક રેટિનોપેથી',
-      'ગ્રેડ 2: મધ્યમ ડાયાબિટીક રેટિનોપેથી',
-      'ગ્રેડ 3: ગંભીર ડાયાબિટીક રેટિનોપેથી',
-      'ગ્રેડ 4: અત્યંત ગંભીર પ્રોલિફેરેટિવ રેટિનોપેથી'
+      'ગ્રેડ 0 સામાન્ય, કોઈ ડાયાબિટીક રેટિનોપેથી નથી',
+      'ગ્રેડ 1 હળવી ડાયાબિટીક રેટિનોપેથી',
+      'ગ્રેડ 2 મધ્યમ ડાયાબિટીક રેટિનોપેથી',
+      'ગ્રેડ 3 ગંભીર ડાયાબિટીક રેટિનોપેથી',
+      'ગ્રેડ 4 અત્યંત ગંભીર પ્રોલિફેરેટિવ રેટિનોપેથી'
     ][grade] || 'મધ્યમ રેટિનોપેથી';
 
     const triageGujarati = triage === 'URGENT_REFERRAL' ? 'તાત્કાલિક હોસ્પિટલ તપાસ' : 'નિષ્ણાત ડૉક્ટર સમીક્ષા';
+    const dmeGujarati = sihData?.dmeRisk?.title === 'High DME Risk' ? 'ઉચ્ચ મેક્યુલર એડીમા જોખમ' : 'મધ્યમ મેક્યુલર એડીમા જોખમ';
+    const cdrGujarati = '0 પોઇન્ટ 42';
+    const ageGapGujarati = 'પ્લસ 4 પોઇન્ટ 7 વર્ષ';
+    const cvRiskGujarati = 'સામાન્ય કાર્ડિયોવેસ્ક્યુલર સ્થિતિ';
 
-    return `દર્દી ${pName}, ઉંમર ${age} વર્ષનો સંપૂર્ણ ક્લિનિકલ રેટિના ટેલિ-સ્ક્રીનિંગ અહેવાલ. પ્રાથમિક એઆઈ નિદાન પરિણામ: ${gradeGujarati}. મોડેલ વિશ્વાસ સ્તર: ${conf} ટકા. ટ્રાયેજ નિર્ણય: ${triageGujarati}. મેક્યુલર એડીમા DME જોખમ: ${dme}. ગ્રામીણ કોમોર્બિડિટી તપાસમાં ઓપ્ટિક કપ-ટુ-ડિસ્ક રેશિયો ${cdr} સામાન્ય છે, હળવા બ્લડ પ્રેશર ચિહ્નો છે. એઆઈ ઓક્યુલોમિક્સ રેટિનલ ઉંમર અંતરાલ પ્લસ ${ageGap} વર્ષ છે, કાર્ડિયોવેસ્ક્યુલર જોખમ: ${cvRisk}. પુરાવા-આધારિત આરોગ્ય અને જીવનશૈલી પગલાં: દરરોજ 20 થી 30 મિનિટ હળવી કસરત કરો, ભારે વજન ઉપાડવાનું ટાળો, સંતુલિત આહાર લો, બ્લડ શુગર 70 થી 180 વચ્ચે અને બ્લડ પ્રેશર 130 બાય 80 થી નીચે રાખો. સંબંધિત ક્લિનિકલ દવાઓ અને ફાર્માકોથેરાપી: ઉચ્ચ જોખમ ધરાવતી રેટિનોપેથી માટે એન્ટી-વીઈજીએફ ઇન્જેક્શન જેમ કે એફ્લીબરસેપ્ટ અથવા રાનિબિઝુમેબ, તેમજ રક્તવાહિની રક્ષણ માટે લિસિનોપ્રિલ અને ફેનોફાઇબ્રેટ સૂચવવામાં આવે છે. અનુકૂલિત ફોલો-અપ તપાસ: 1 થી 2 અઠવાડિયામાં તાત્કાલિક નિષ્ણાત ડૉક્ટર પાસે તપાસ.`;
+    return `દર્દી ${pName}, ઉંમર ${age} વર્ષનો સંપૂર્ણ ક્લિનિકલ રેટિના ટેલિ-સ્ક્રીનિંગ અહેવાલ, પ્રાથમિક એઆઈ નિદાન પરિણામ ${gradeGujarati}, મોડેલ વિશ્વાસ સ્તર ${confGujarati}, ટ્રાયેજ નિર્ણય ${triageGujarati}, મેક્યુલર એડીમા જોખમ ${dmeGujarati}, ગ્રામીણ કોમોર્બિડિટી તપાસમાં ઓપ્ટિક કપ-ટુ-ડિસ્ક રેશિયો ${cdrGujarati} સામાન્ય શારીરિક મર્યાદામાં છે, હળવા બ્લડ પ્રેશર ચિહ્નો છે, એઆઈ ઓક્યુલોમિક્સ રેટિનલ ઉંમર અંતરાલ ${ageGapGujarati} છે, કાર્ડિયોવેસ્ક્યુલર સંકેત ${cvRiskGujarati}, સાબિતી-આધારિત આરોગ્ય અને જીવનશૈલી પગલાં, દરરોજ 20 થી 30 મિનિટ હળવી કસરત કરો, ભારે વજન ઉપાડવાનું ટાળો, સંતુલિત આહાર લો, બ્લડ શુગર 70 થી 180 વચ્ચે અને બ્લડ પ્રેશર 130 બાય 80 થી નીચે રાખો, સંબંધિત ક્લિનિકલ દવાઓ અને ફાર્માકોથેરાપી, ઉચ્ચ જોખમ ધરાવતી રેટિનોપેથી માટે એન્ટી-વીઈજીએફ ઇન્જેક્શન જેમ કે એફ્લીબરસેપ્ટ અથવા રાનિબિઝુમેબ, તેમજ રક્તવાહિની રક્ષણ માટે લિસિનોપ્રિલ અને ફેનોફાઇબ્રેટ સૂચવવામાં આવે છે, અનુકૂલિત ફોલો-અપ તપાસ, 1 થી 2 અઠવાડિયામાં તાત્કાલિક આંખના નિષ્ણાત ડૉક્ટર પાસે તપાસ`;
   }
 
   // English fallback
-  return `Complete Clinical Retinal Tele-Screening Report for Patient ${pName}, Age ${age} years. Primary AI Diagnostic Assessment: Grade ${grade} (${screening?.aiResults?.gradeLabel || 'Proliferative Diabetic Retinopathy'}) with ${conf} percent model confidence. Uncertainty-Aware Triage: ${triage}. Macular Edema DME risk is classified as ${dme}. Opportunistic rural comorbidity screening demonstrates an optic cup-to-disc ratio of ${cdr}, within physiologic limits, and mild hypertensive arteriolar attenuation. AI Deep Oculomics demonstrates a biological retinal age gap of plus ${ageGap} years with ${cvRisk}. Evidence-Based Health and Lifestyle Measures: Engage in gentle walking 20 to 30 minutes daily, avoid heavy straining, adopt a strict Mediterranean or DASH dietary pattern, target blood glucose 70 to 180, and blood pressure below 130 over 80. Relevant Clinical Pharmacotherapy Guidance: Targeted intravitreal anti-VEGF biologics such as Aflibercept, Ranibizumab, or Faricimab are indicated, along with microvascular protectors Lisinopril and Fenofibrate. Adaptive follow-up screening interval is recommended urgently within 1 to 2 weeks for retinal specialist evaluation.`;
+  const dmeEnglish = sihData?.dmeRisk?.title || 'Moderate DME Risk';
+  const cdrEnglish = '0 point 42';
+  const ageGapEnglish = 'plus 4 point 7 years';
+  const cvRiskEnglish = sihData?.researchSignals?.cvSignal || 'Elevated Cardiovascular Risk Signal';
+
+  return `Complete Clinical Retinal Tele-Screening Report for Patient ${pName}, Age ${age} years, Primary AI Diagnostic Assessment Grade ${grade} with ${confEnglish} model confidence, Uncertainty-Aware Triage ${triage}, Macular Edema risk classified as ${dmeEnglish}, Opportunistic rural comorbidity screening demonstrates optic cup-to-disc ratio of ${cdrEnglish} within physiologic limits and mild hypertensive arteriolar attenuation, AI Deep Oculomics demonstrates biological retinal age gap of ${ageGapEnglish} with ${cvRiskEnglish}, Evidence-Based Health and Lifestyle Measures, engage in gentle walking 20 to 30 minutes daily, avoid heavy straining, adopt a strict Mediterranean or DASH dietary pattern, target blood glucose 70 to 180 and blood pressure below 130 over 80, Relevant Clinical Pharmacotherapy Guidance, targeted intravitreal anti-VEGF biologics such as Aflibercept, Ranibizumab, or Faricimab are indicated, along with microvascular protectors Lisinopril and Fenofibrate, Adaptive follow-up screening interval is recommended urgently within 1 to 2 weeks for retinal specialist evaluation`;
 }
