@@ -68,14 +68,14 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
   ]);
 
   useEffect(() => {
-    regionalVoice.setOnStateChange((status) => {
+    const unsubscribe = regionalVoice.setOnStateChange((status) => {
       setVoiceStatus(status);
       if (status === 'idle') {
         setIsReadingFullReport(false);
       }
     });
     return () => {
-      regionalVoice.stop();
+      unsubscribe();
     };
   }, []);
 

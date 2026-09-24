@@ -302,5 +302,37 @@
     "disagreement_category": "Concordant",
     "clinical_notes": "",
     "timestamp": "2026-09-24T21:25:09.251524+00:00"
+  },
+  {
+    "case_id": "CASE_AUDIT_01",
+    "doctor_id": "DOC_001",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 85.0,
+      "triage": "REVIEW"
+    },
+    "doctor_result": {
+      "grade": 4
+    },
+    "agreement": false,
+    "disagreement_category": "Severity grading",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T21:56:21.968870+00:00"
+  },
+  {
+    "case_id": "DEMO_CASE_02",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "ai_result": {
+      "grade": 2,
+      "confidence": 88.5,
+      "triage": "URGENT_REFERRAL"
+    },
+    "doctor_result": {
+      "grade": 2
+    },
+    "agreement": true,
+    "disagreement_category": "Concordant",
+    "clinical_notes": "",
+    "timestamp": "2026-09-24T21:56:22.158835+00:00"
   }
 ]

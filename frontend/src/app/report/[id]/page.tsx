@@ -24,6 +24,7 @@ import ComparativeViewer from '../../../components/ComparativeViewer';
 import AuditTrailModal from '../../../components/AuditTrailModal';
 import QueueAssignmentCard from '../../../components/QueueAssignmentCard';
 import { computeQueueSystem } from '../../../lib/queueService';
+import { useReportLanguage } from '../../../lib/reportLanguageContext';
 
 // Custom Print Badge to force smaller text and hide the Referable/Non-Referable box
 const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
@@ -75,6 +76,7 @@ function ReportContentInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { doctor } = useAuth();
+  const { activeLang } = useReportLanguage();
 
   const patientId = params.id as string;
   const screeningIdParam = searchParams.get('screeningId');
@@ -209,8 +211,13 @@ function ReportContentInner() {
   }
 
   const comparison = screening.comparisonReport;
-  const healthMeasures = screening.healthMeasures || getHealthMeasuresForGrade(screening.aiResults?.grade ?? 0);
-  const medicationsGuidance = screening.relevantMedications || getOfficialMedicationsGuidance(screening.aiResults?.grade ?? 0, Boolean(screening.aiResults?.referable), patient.clinicalVitals);
+  const healthMeasures = getHealthMeasuresForGrade(screening.aiResults?.grade ?? 0, activeLang);
+  const medicationsGuidance = getOfficialMedicationsGuidance(
+    screening.aiResults?.grade ?? 0, 
+    Boolean(screening.aiResults?.referable), 
+    patient.clinicalVitals,
+    activeLang
+  );
   const allScreenings = patient.screenings || [];
 
   const patientUniverse = allPatients.length > 0 ? allPatients : [patient];

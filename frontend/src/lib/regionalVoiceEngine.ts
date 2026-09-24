@@ -3,35 +3,48 @@
  * --------------------------------
  * Robust sentence-queued audio synthesis for English, Hindi, and Gujarati.
  * 
- * Features:
- * 1. Queue-based sentence-by-sentence playback ensuring long reports are spoken
- *    fluently without browser timeout or silence.
- * 2. Stops automatically after reading the full report once. Never loops.
- * 3. Supports Play, Pause, Resume, and Stop controls with live state events.
- * 4. Multi-tier Gujarati fallback: Native speech voice -> Google Translate TTS audio -> Devanagari phonetic.
- * 5. Replaces hyphens in numeric ranges (e.g., "1-2") with natural words ("1 થી 2" in GU, "1 से 2" in HI, "1 to 2" in EN)
- *    to prevent the TTS engine from pronouncing "minus".
+ * Invariants:
+ * 1. Concurrency-guarded: strictly only ONE active loop can ever run via session token.
+ * 2. Pauses and resumes at the exact sentence where stopped.
+ * 3. Never loops or repeats: reads sequentially from first to last sentence and stops.
+ * 4. Punctuation sanitization: transforms numeric ranges (e.g. "1-2") to "1 થી 2" in GU,
+ *    "1 से 2" in HI, and "1 to 2" in EN so TTS never speaks "minus".
+ * 5. Garbage-collection immune: retains active SpeechSynthesisUtterance references.
+ * 6. Multi-subscriber listener support for synchronized UI control states.
  */
 
 export type VoiceStatus = 'idle' | 'playing' | 'paused';
 
+type StateChangeCallback = (status: VoiceStatus, currentSentence: number, totalSentences: number) => void;
+
 class RegionalVoiceEngine {
   private currentAudio: HTMLAudioElement | null = null;
+  private activeUtterance: SpeechSynthesisUtterance | null = null;
   private queue: string[] = [];
   private currentQueueIndex: number = 0;
   private currentLang: 'en' | 'hi' | 'gu' = 'en';
   private status: VoiceStatus = 'idle';
-  private onStateChangeCallback: ((status: VoiceStatus, currentSentence: number, totalSentences: number) => void) | null = null;
+  private playbackSessionId: number = 0;
+  private listeners: Set<StateChangeCallback> = new Set();
 
-  public setOnStateChange(cb: (status: VoiceStatus, currentSentence: number, totalSentences: number) => void) {
-    this.onStateChangeCallback = cb;
+  public setOnStateChange(cb: StateChangeCallback): () => void {
+    this.listeners.add(cb);
+    return () => {
+      this.listeners.delete(cb);
+    };
   }
 
-  private updateStatus(status: VoiceStatus) {
+  private notifyListeners(status: VoiceStatus) {
     this.status = status;
-    if (this.onStateChangeCallback) {
-      this.onStateChangeCallback(status, this.currentQueueIndex + 1, this.queue.length);
-    }
+    const current = Math.min(this.currentQueueIndex + 1, Math.max(this.queue.length, 1));
+    const total = this.queue.length;
+    this.listeners.forEach(cb => {
+      try {
+        cb(status, current, total);
+      } catch (err) {
+        console.error('Regional voice listener error:', err);
+      }
+    });
   }
 
   public getStatus(): VoiceStatus {
@@ -46,22 +59,19 @@ class RegionalVoiceEngine {
     return this.status === 'paused';
   }
 
-  /**
-   * Sanitizes text to prevent TTS from reading hyphens as subtraction ("minus").
-   */
   public sanitizePunctuation(text: string, lang: 'en' | 'hi' | 'gu'): string {
     let sanitized = text;
 
     if (lang === 'gu') {
-      // Replace "1-2" or "1 - 2" with "1 થી 2"
+      // Replace hyphen in ranges like "1-2" or "1 - 2" with "1 થી 2"
       sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 થી $2');
       sanitized = sanitized.replace(/[-–]/g, ' ');
     } else if (lang === 'hi') {
-      // Replace "1-2" with "1 से 2"
+      // Replace hyphen in ranges like "1-2" or "1 - 2" with "1 से 2"
       sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 से $2');
       sanitized = sanitized.replace(/[-–]/g, ' ');
     } else {
-      // Replace "1-2" with "1 to 2"
+      // Replace hyphen in ranges like "1-2" or "1 - 2" with "1 to 2"
       sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 to $2');
       sanitized = sanitized.replace(/[-–]/g, ' ');
     }
@@ -69,9 +79,6 @@ class RegionalVoiceEngine {
     return sanitized;
   }
 
-  /**
-   * Transliterates Gujarati unicode glyphs to Devanagari glyphs for offline TTS fallback.
-   */
   public gujaratiToDevanagari(text: string): string {
     return text.split('').map(char => {
       const code = char.charCodeAt(0);
@@ -82,9 +89,6 @@ class RegionalVoiceEngine {
     }).join('');
   }
 
-  /**
-   * Splits a long text into clean sentences for chunked playback.
-   */
   private splitIntoSentences(text: string): string[] {
     const rawSentences = text.split(/([।\.!\?]+[\s\n]+)/);
     const result: string[] = [];
@@ -107,84 +111,82 @@ class RegionalVoiceEngine {
   }
 
   /**
-   * Starts reading the given text once from start to finish.
+   * Starts a brand new sequential readout from the very first sentence.
    */
   public async speak(text: string, lang: 'en' | 'hi' | 'gu'): Promise<void> {
     this.stop();
     if (!text || text.trim().length === 0) return;
 
+    this.playbackSessionId++;
+    const currentSession = this.playbackSessionId;
+
     this.currentLang = lang;
     const sanitized = this.sanitizePunctuation(text, lang);
     this.queue = this.splitIntoSentences(sanitized);
     this.currentQueueIndex = 0;
-    this.updateStatus('playing');
+    this.notifyListeners('playing');
 
-    await this.playNextQueueItem();
+    await this.playQueueFromCurrent(currentSession);
   }
 
-  private async playNextQueueItem(): Promise<void> {
-    if (this.status !== 'playing') return;
+  private async playQueueFromCurrent(sessionId: number): Promise<void> {
+    while (this.status === 'playing' && sessionId === this.playbackSessionId && this.currentQueueIndex < this.queue.length) {
+      const sentence = this.queue[this.currentQueueIndex];
+      this.notifyListeners('playing');
 
-    if (this.currentQueueIndex >= this.queue.length) {
-      // Completed full text once!
-      this.stop();
-      return;
-    }
+      if (this.currentLang === 'gu') {
+        await this.speakGujaratiSentence(sentence, sessionId);
+      } else if (this.currentLang === 'hi') {
+        await this.speakHindiSentence(sentence, sessionId);
+      } else {
+        await this.speakEnglishSentence(sentence, sessionId);
+      }
 
-    const sentence = this.queue[this.currentQueueIndex];
-    if (this.onStateChangeCallback) {
-      this.onStateChangeCallback('playing', this.currentQueueIndex + 1, this.queue.length);
-    }
+      // Check if paused, stopped, or session superseded during sentence playback
+      if (sessionId !== this.playbackSessionId || this.status !== 'playing') {
+        return;
+      }
 
-    if (this.currentLang === 'gu') {
-      await this.speakGujaratiSentence(sentence);
-    } else if (this.currentLang === 'hi') {
-      await this.speakHindiSentence(sentence);
-    } else {
-      await this.speakEnglishSentence(sentence);
-    }
-
-    if (this.status === 'playing') {
       this.currentQueueIndex++;
-      await this.playNextQueueItem();
+    }
+
+    // Finished entire report once sequentially! Stop completely and reset. Never loop.
+    if (sessionId === this.playbackSessionId && this.currentQueueIndex >= this.queue.length) {
+      this.stop();
     }
   }
 
   public pause(): void {
     if (this.status !== 'playing') return;
 
+    this.status = 'paused';
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.pause();
+      window.speechSynthesis.cancel();
+      this.activeUtterance = null;
     }
     if (this.currentAudio) {
       this.currentAudio.pause();
     }
-    this.updateStatus('paused');
+    this.notifyListeners('paused');
   }
 
   public resume(): void {
     if (this.status !== 'paused') return;
 
-    this.updateStatus('playing');
+    this.playbackSessionId++;
+    const currentSession = this.playbackSessionId;
+    this.status = 'playing';
+    this.notifyListeners('playing');
 
-    if (this.currentAudio && this.currentAudio.paused) {
-      this.currentAudio.play().catch(() => {
-        this.playNextQueueItem();
-      });
-      return;
-    }
-
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      return;
-    }
-
-    this.playNextQueueItem();
+    // Resume execution starting at the exact sentence index where stopped
+    this.playQueueFromCurrent(currentSession);
   }
 
   public stop(): void {
+    this.playbackSessionId++;
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      this.activeUtterance = null;
     }
     if (this.currentAudio) {
       this.currentAudio.pause();
@@ -193,17 +195,17 @@ class RegionalVoiceEngine {
     }
     this.queue = [];
     this.currentQueueIndex = 0;
-    this.updateStatus('idle');
+    this.status = 'idle';
+    this.notifyListeners('idle');
   }
 
-  private speakGujaratiSentence(sentence: string): Promise<void> {
+  private speakGujaratiSentence(sentence: string, sessionId: number): Promise<void> {
     return new Promise((resolve) => {
-      if (typeof window === 'undefined') {
+      if (typeof window === 'undefined' || sessionId !== this.playbackSessionId) {
         resolve();
         return;
       }
 
-      // Check native voice first
       const voices = 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : [];
       const nativeGuVoice = voices.find(v => 
         v.lang.toLowerCase().startsWith('gu') || 
@@ -212,26 +214,37 @@ class RegionalVoiceEngine {
 
       if (nativeGuVoice && 'speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(sentence);
+        this.activeUtterance = utterance;
         utterance.voice = nativeGuVoice;
         utterance.lang = 'gu-IN';
         utterance.rate = 0.95;
-        utterance.onend = () => resolve();
-        utterance.onerror = () => this.streamGujaratiAudio(sentence, resolve);
+        utterance.onend = () => {
+          this.activeUtterance = null;
+          resolve();
+        };
+        utterance.onerror = () => {
+          this.activeUtterance = null;
+          this.streamGujaratiAudio(sentence, sessionId, resolve);
+        };
         window.speechSynthesis.speak(utterance);
         return;
       }
 
-      // Stream via audio
-      this.streamGujaratiAudio(sentence, resolve);
+      this.streamGujaratiAudio(sentence, sessionId, resolve);
     });
   }
 
-  private streamGujaratiAudio(sentence: string, resolve: () => void) {
+  private streamGujaratiAudio(sentence: string, sessionId: number, resolve: () => void) {
+    if (sessionId !== this.playbackSessionId) {
+      resolve();
+      return;
+    }
+
     try {
       const sanitized = sentence.slice(0, 180);
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=gu&client=tw-ob&q=${encodeURIComponent(sanitized)}`;
       const audio = new Audio(audioUrl);
-      audio.loop = false; // NEVER LOOP
+      audio.loop = false; // Strictly non-looping
       this.currentAudio = audio;
 
       audio.onended = () => {
@@ -240,44 +253,56 @@ class RegionalVoiceEngine {
       };
       audio.onerror = () => {
         this.currentAudio = null;
-        this.speakPhoneticGujarati(sentence, resolve);
+        this.speakPhoneticGujarati(sentence, sessionId, resolve);
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          this.speakPhoneticGujarati(sentence, resolve);
+          this.speakPhoneticGujarati(sentence, sessionId, resolve);
         });
       }
     } catch {
-      this.speakPhoneticGujarati(sentence, resolve);
+      this.speakPhoneticGujarati(sentence, sessionId, resolve);
     }
   }
 
-  private speakPhoneticGujarati(sentence: string, resolve: () => void) {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+  private speakPhoneticGujarati(sentence: string, sessionId: number, resolve: () => void) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || sessionId !== this.playbackSessionId) {
       resolve();
       return;
     }
 
     const devanagariText = this.gujaratiToDevanagari(sentence);
     const utterance = new SpeechSynthesisUtterance(devanagariText);
+    this.activeUtterance = utterance;
     const voices = window.speechSynthesis.getVoices();
     const indVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN')) || voices[0];
     
     if (indVoice) utterance.voice = indVoice;
     utterance.lang = 'hi-IN';
     utterance.rate = 0.92;
-    utterance.onend = () => resolve();
-    utterance.onerror = () => resolve();
+    utterance.onend = () => {
+      this.activeUtterance = null;
+      resolve();
+    };
+    utterance.onerror = () => {
+      this.activeUtterance = null;
+      resolve();
+    };
 
     window.speechSynthesis.speak(utterance);
   }
 
-  private speakHindiSentence(sentence: string): Promise<void> {
+  private speakHindiSentence(sentence: string, sessionId: number): Promise<void> {
     return new Promise((resolve) => {
-      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-        this.streamAudioFallback(sentence, 'hi', resolve);
+      if (typeof window === 'undefined' || sessionId !== this.playbackSessionId) {
+        resolve();
+        return;
+      }
+
+      if (!('speechSynthesis' in window)) {
+        this.streamAudioFallback(sentence, 'hi', sessionId, resolve);
         return;
       }
 
@@ -285,39 +310,63 @@ class RegionalVoiceEngine {
       const hiVoice = voices.find(v => v.lang.toLowerCase().startsWith('hi') || v.name.toLowerCase().includes('hindi'));
 
       const utterance = new SpeechSynthesisUtterance(sentence);
+      this.activeUtterance = utterance;
       if (hiVoice) utterance.voice = hiVoice;
       utterance.lang = 'hi-IN';
       utterance.rate = 0.95;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => this.streamAudioFallback(sentence, 'hi', resolve);
+      utterance.onend = () => {
+        this.activeUtterance = null;
+        resolve();
+      };
+      utterance.onerror = () => {
+        this.activeUtterance = null;
+        this.streamAudioFallback(sentence, 'hi', sessionId, resolve);
+      };
 
       window.speechSynthesis.speak(utterance);
     });
   }
 
-  private speakEnglishSentence(sentence: string): Promise<void> {
+  private speakEnglishSentence(sentence: string, sessionId: number): Promise<void> {
     return new Promise((resolve) => {
-      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-        this.streamAudioFallback(sentence, 'en', resolve);
+      if (typeof window === 'undefined' || sessionId !== this.playbackSessionId) {
+        resolve();
+        return;
+      }
+
+      if (!('speechSynthesis' in window)) {
+        this.streamAudioFallback(sentence, 'en', sessionId, resolve);
         return;
       }
 
       const utterance = new SpeechSynthesisUtterance(sentence);
+      this.activeUtterance = utterance;
       utterance.lang = 'en-US';
       utterance.rate = 1.0;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => this.streamAudioFallback(sentence, 'en', resolve);
+      utterance.onend = () => {
+        this.activeUtterance = null;
+        resolve();
+      };
+      utterance.onerror = () => {
+        this.activeUtterance = null;
+        this.streamAudioFallback(sentence, 'en', sessionId, resolve);
+      };
 
       window.speechSynthesis.speak(utterance);
     });
   }
 
-  private streamAudioFallback(sentence: string, lang: string, resolve: () => void) {
+  private streamAudioFallback(sentence: string, lang: string, sessionId: number, resolve: () => void) {
+    if (sessionId !== this.playbackSessionId) {
+      resolve();
+      return;
+    }
+
     try {
       const sanitized = sentence.slice(0, 180);
       const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(sanitized)}`;
       const audio = new Audio(audioUrl);
-      audio.loop = false; // NEVER LOOP
+      audio.loop = false; // Strictly non-looping
       this.currentAudio = audio;
 
       audio.onended = () => {

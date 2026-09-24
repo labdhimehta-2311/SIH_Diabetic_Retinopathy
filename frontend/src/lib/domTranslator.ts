@@ -8,6 +8,8 @@
  *   - English (Original)
  *   - हिन्दी (Hindi)
  *   - ગુજરાતી (Gujarati)
+ * 
+ * Invariant: Preserves core medicine names and scientific acronyms in English.
  */
 
 import { SupportedLanguage } from './reportTranslations';
@@ -25,6 +27,14 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
   "Report Date:": {
     hi: "रिपोर्ट दिनांक:",
     gu: "અહેવાલ તારીખ:"
+  },
+  "Verification Reference:": {
+    hi: "सत्यापन संदर्भ:",
+    gu: "ચકાસણી સંદર્ભ:"
+  },
+  "Clinical Center:": {
+    hi: "क्लिनिकल सेंटर:",
+    gu: "ક્લિનિકલ કેન્દ્ર:"
   },
 
   // 2. Patient Demographics & Profile
@@ -57,8 +67,8 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
     gu: "શુગર સ્થિતિ"
   },
   "Visual Acuity": {
-    hi: "दृष्टि तीक्ष्णता",
-    gu: "દ્રષ્ટિ ક્ષમતા"
+    hi: "दृष्टि तीक्ष्णता (Visual Acuity)",
+    gu: "દ્રષ્ટિ ક્ષમતા (Visual Acuity)"
   },
   "Oral Medication": {
     hi: "मौखिक दवा (Oral)",
@@ -67,6 +77,34 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
   "Insulin": {
     hi: "इंसुलिन (Insulin)",
     gu: "ઇન્સ્યુલિન (Insulin)"
+  },
+  "Type 2 Diabetes": {
+    hi: "टाइप 2 डायबिटीज (T2D)",
+    gu: "ટાઇપ 2 ડાયાબિટીસ (T2D)"
+  },
+  "Type 1 Diabetes": {
+    hi: "टाइप 1 डायबिटीज (T1D)",
+    gu: "ટાઇપ 1 ડાયાબિટીસ (T1D)"
+  },
+  "Fast:": {
+    hi: "उपवास (Fasting):",
+    gu: "ભૂખ્યા પેટે (Fasting):"
+  },
+  "PP:": {
+    hi: "भोजन उपरांत (PP):",
+    gu: "જમ્યા પછી (PP):"
+  },
+  "OD (Right):": {
+    hi: "दाहिनी आंख (OD):",
+    gu: "જમણી આંખ (OD):"
+  },
+  "OS (Left):": {
+    hi: "बाईं आंख (OS):",
+    gu: "ડાબી આંખ (OS):"
+  },
+  "Patient Visits:": {
+    hi: "मरीज़ विज़िट्स:",
+    gu: "દર્દી મુલાકાતો:"
   },
 
   // 3. Primary Diagnostic Grade Alert
@@ -102,151 +140,123 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
     hi: "ग्रेड 4: अत्यधिक गंभीर प्रोलिफेरेटिव रेटिनोपैथी",
     gu: "ગ્રેડ 4: અત્યંત ગંભીર પ્રોલિફેરેટિવ રેટિનોપેથી"
   },
-  "PROLIFERATIVE DIABETIC RETINOPATHY": {
-    hi: "प्रोलिफेरेटिव डायबिटिक रेटिनोपैथी (PDR)",
-    gu: "પ્રોલિફેરેટિવ ડાયાબિટીક રેટિનોપેથી (PDR)"
+  "NON-REFERABLE (Observe)": {
+    hi: "नॉन-रेफ़रेबल (निगरानी रखें)",
+    gu: "બિન-રેફરેબલ (દેખરેખ રાખો)"
   },
-  "MODERATE NON-PROLIFERATIVE DIABETIC RETINOPATHY": {
-    hi: "मध्यम गैर-प्रोलिफेरेटिव रेटिनोपैथी",
-    gu: "મધ્યમ નોન-પ્રોલિફેરેટિવ રેટિનોપેથી"
+  "REFERABLE (Referral Required)": {
+    hi: "रेफ़रेबल (विशेषज्ञ परामर्श आवश्यक)",
+    gu: "રેફરેબલ (નિષ્ણાત સારવાર જરૂરી)"
   },
-  "SEVERE NON-PROLIFERATIVE DIABETIC RETINOPATHY": {
-    hi: "गंभीर गैर-प्रोलिफेरेटिव रेटिनोपैथी",
-    gu: "ગંભીર નોન-પ્રોલિફેરેટિવ રેટિનોપેથી"
+  "CLINICAL ACTION TRIGGERED:": {
+    hi: "सक्रिय क्लिनिकल निर्देश:",
+    gu: "સક્રિય ક્લિનિકલ નિર્દેશ:"
   },
-
-  // 4. Clinical Queue System
-  "CLINICAL QUEUE ASSIGNMENT & WAITING TIME ESTIMATE": {
-    hi: "क्लिनिकल कतार आवंटन एवं प्रतीक्षा समय अनुमान",
-    gu: "ક્લિનિકલ કતાર ફાળવણી અને રાહ જોવાનો અંદાજિત સમય"
-  },
-  "Discrete-Event Queue Model": {
-    hi: "डिस्क्रीट-इवेंट कतार मॉडल",
-    gu: "ડિસ્ક્રીટ-ઇવેન્ટ કતાર મોડેલ"
-  },
-  "RISK PRIORITY QUEUE": {
-    hi: "जोखिम प्राथमिकता कतार",
-    gu: "જોખમ અગ્રતા કતાર"
-  },
-  "HIGH-PRIORITY REFERRAL (GRADE 4: PROLIFERATIVE DIABETIC RETINOPATHY)": {
-    hi: "उच्च प्राथमिकता रेफरल (ग्रेड 4: प्रोलिफेरेटिव डायबिटिक रेटिनोपैथी)",
-    gu: "ઉચ્ચ અગ્રતા રેફરલ (ગ્રેડ 4: પ્રોલિફેરેટિવ ડાયાબિટીક રેટિનોપેથી)"
-  },
-  "YOUR POSITION": {
-    hi: "आपकी स्थिति",
-    gu: "તમારો ક્રમ"
-  },
-  "Rank in Risk Queue": {
-    hi: "जोखिम कतार में रैंक",
-    gu: "જોખમ કતારમાં ક્રમ"
-  },
-  "PATIENTS AHEAD": {
-    hi: "आगे मरीज़",
-    gu: "આગળ દર્દીઓ"
-  },
-  "0 patients ahead": {
-    hi: "आगे 0 मरीज़",
-    gu: "આગળ 0 દર્દીઓ"
-  },
-  "ESTIMATED WAIT TIME": {
-    hi: "अनुमानित प्रतीक्षा समय",
-    gu: "અંદાજિત પ્રતીક્ષા સમય"
-  },
-  "0 minutes": {
-    hi: "0 मिनट",
-    gu: "0 મિનિટ"
-  },
-  "Based on 60s/case review (Est.)": {
-    hi: "60 सेकंड/केस समीक्षा पर आधारित (अनुमानित)",
-    gu: "60 સેકન્ડ/કેસ સમીક્ષા આધારિત (અંદાજિત)"
-  },
-  "High-risk cases fast-tracked ahead of routine screenings for rapid specialist review.": {
-    hi: "त्वरित विशेषज्ञ समीक्षा हेतु उच्च जोखिम मामलों को प्राथमिकता दी गई है।",
-    gu: "ઝડપી નિષ્ણાત તપાસ માટે ઉચ્ચ જોખમ ધરાવતા કેસોને અગ્રતા આપવામાં આવી છે."
-  },
-  "1 Doctor Active (60s/case)": {
-    hi: "1 डॉक्टर सक्रिय (60 सेकंड/केस)",
-    gu: "1 ડૉક્ટર સક્રિય (60 સેકન્ડ/કેસ)"
+  "IMMEDIATE VITREORETINAL CONSULTATION MANDATORY": {
+    hi: "तत्काल रेटिना विशेषज्ञ परामर्श अनिवार्य",
+    gu: "તાત્કાલિક રેટિના નિષ્ણાત તપાસ અનિવાર્ય"
   },
 
-  // 5. Diagnostic Matrix
-  "Comparative Fundus Diagnostic Matrix": {
-    hi: "तुलनात्मक रेटिना डायग्नोस्टिक मैट्रिक्स",
-    gu: "તુલનાત્મક રેટિના ડાયગ્નોસ્ટિક મેટ્રિક્સ"
+  // 4. Clinical Imaging & AI Diagnostic Findings
+  "Primary Retinal Biomarker & Heatmap Visualization": {
+    hi: "प्राथमिक रेटिना बायोमार्कर एवं हीटमैप विज़ुअलाइज़ेशन",
+    gu: "પ્રાથમિક રેટિના બાયોમાર્કર અને હીટમેપ ચિત્રણ"
   },
-  "Synchronized clinical side-by-side inspection": {
-    hi: "समानांतर क्लिनिकल रेटिना तुलनात्मक परीक्षण",
-    gu: "સમાંતર ક્લિનિકલ રેટિના તુલનાત્મક તપાસ"
+  "Deep Learning Attention Map (Grad-CAM)": {
+    hi: "डीप लर्निंग अटेंशन मैप (Grad-CAM)",
+    gu: "ડીપ લર્નિંગ અટેન્શન મેપ (Grad-CAM)"
   },
-  "1. Raw Fundus Capture": {
-    hi: "1. मूल फंडस छवि (Raw)",
-    gu: "1. મૂળ ફંડસ ફોટો (Raw)"
+  "Fundus Angiography Simulation / Green Channel": {
+    hi: "फंडस एंजियोग्राफी सिमुलेशन / ग्रीन चैनल",
+    gu: "ફંડસ એન્જિયોગ્રાફી સિમ્યુલેશન / ગ્રીન ચેનલ"
   },
-  "Unmodified 45° macular retinal field.": {
-    hi: "अपरिवर्तित 45° मैकुलर रेटिना क्षेत्र।",
-    gu: "મૂળભૂત 45° મેક્યુલર રેટિના ક્ષેત્ર."
+  "Bilateral Comparison & Longitudinal Progression": {
+    hi: "तुलनात्मक विश्लेषण एवं अनुदैर्ध्य प्रगति",
+    gu: "તુલનાત્મક વિશ્લેષણ અને સમય આધારિત પ્રગતિ"
   },
-  "2. CLAHE Contrast": {
-    hi: "2. एन्हांस्ड कन्ट्रास्ट (CLAHE)",
-    gu: "2. ઉન્નત કોન્ટ્રાસ્ટ (CLAHE)"
+  "Baseline Fundus (Reference)": {
+    hi: "बेसलाइन फंडस (प्रारंभिक संदर्भ)",
+    gu: "બેઝલાઇન ફંડસ (પ્રારંભિક સંદર્ભ)"
   },
-  "Green-channel microvascular boost.": {
-    hi: "ग्रीन-चैनल सूक्ष्म संवहनी संवर्धन।",
-    gu: "ગ્રીન-ચેનલ સૂક્ષ્મ રક્તવાહિની ઉન્નતીકરણ."
+  "Current Scan (Follow-Up)": {
+    hi: "वर्तमान स्कैन (अनुवर्ती जाँच)",
+    gu: "હાલનું સ્કેન (ફોલો-અપ તપાસ)"
   },
-  "3. U-Net Lesion Mask": {
-    hi: "3. घाव विभाजन मास्क (U-Net)",
-    gu: "3. ક્ષતિ વિભાજન માસ્ક (U-Net)"
+  "Progression Analysis:": {
+    hi: "प्रगति विश्लेषण:",
+    gu: "પ્રગતિ વિશ્લેષણ:"
   },
-  "Microaneurysms, hemorrhages & exudates.": {
-    hi: "माइक्रोएन्यूरिज्म, रक्तस्राव एवं एक्सुडेट्स।",
-    gu: "માઇક્રોએન્યુરિઝમ, રક્તસ્ત્રાવ અને એક્સ્યુડેટ્સ."
+  "No significant microvascular degradation detected compared to baseline.": {
+    hi: "बेसलाइन की तुलना में कोई महत्वपूर्ण सूक्ष्म संवहनी गिरावट नहीं पाई गई।",
+    gu: "બેઝલાઇનની સરખામણીમાં કોઈ નોંધપાત્ર સૂક્ષ્મ રક્તવાહિની બગાડ જોવા મળ્યો નથી."
   },
-  "4. Grad-CAM Activation": {
-    hi: "4. ग्रेड-कैम हीटमैप (Grad-CAM)",
-    gu: "4. ગ્રેડ-કેમ હીટમેપ (Grad-CAM)"
+  "Vascular Changes:": {
+    hi: "रक्तवाहिका परिवर्तन:",
+    gu: "રક્તવાહિની ફેરફાર:"
   },
-  "Attentive feature grading saliency.": {
-    hi: "मॉडल ध्यान एवं वर्गीकरण प्रमुखता।",
-    gu: "મોડેલ ફોકસ અને વર્ગીકરણ પ્રાધાન્યતા."
+  "Stable caliber and arcade branch distribution.": {
+    hi: "स्थिर व्यास और शाखा वितरण।",
+    gu: "સ્થિર વ્યાસ અને નળીઓનું યોગ્ય વિતરણ."
   },
-  "Quantitative Lesion Distribution & Optical Assessment": {
-    hi: "मात्रात्मक घाव वितरण एवं ऑप्टिकल मूल्यांकन",
-    gu: "જથ્થાત્મક ક્ષતિ વિતરણ અને ઓપ્ટિકલ મૂલ્યાંકન"
+  "Microaneurysm Turnover:": {
+    hi: "माइक्रोएन्यूरिज्म टर्नओवर:",
+    gu: "માઇક્રોએન્યુરિઝમ ટર્નઓવર:"
   },
-  "Microaneurysms (MA)": {
-    hi: "माइक्रोएन्यूरिज्म (MA)",
-    gu: "માઇક્રોએન્યુરિઝમ (MA)"
+  "Turnover Rate:": {
+    hi: "टर्नओवर दर:",
+    gu: "ટર્નઓવર દર:"
   },
-  "Focal Vascular Dilations": {
-    hi: "सूक्ष्म रक्तवाहिका फैलाव",
-    gu: "સૂક્ષ્મ રક્તવાહિની વિસ્તરણ"
+  "Hemorrhage Count:": {
+    hi: "रक्तस्राव गणना:",
+    gu: "હેમરેજ ગણતરી:"
   },
-  "Isolated capillary outpouchings": {
-    hi: "अलग-थलग केशिका फैलाव",
-    gu: "છૂટાછવાયા રક્તવાહિની ફુલાવા"
+  "Exudate Burden:": {
+    hi: "एक्सयूडेट भार:",
+    gu: "એક્સ્યુડેટ જથ્થો:"
   },
-  "Hemorrhages (HEM)": {
-    hi: "रक्तस्राव (Hemorrhages)",
-    gu: "રેટિના હેમરેજ"
+
+  // 5. Macular Health & Clinical Findings Table
+  "Biomarker / Finding": {
+    hi: "बायोमार्कर / नैदानिक निष्कर्ष",
+    gu: "બાયોમાર્કર / ક્લિનિકલ તારણો"
   },
-  "Intra-Retinal Micro-Bleeds": {
-    hi: "रेटिना भीतर सूक्ष्म रक्तस्राव",
-    gu: "રેટિના અંદર સૂક્ષ્મ રક્તસ્ત્રાવ"
+  "Observed Status": {
+    hi: "परीक्षित स्थिति",
+    gu: "તપાસાયેલ સ્થિતિ"
   },
-  "Blot, dot & flame patterns": {
-    hi: "ब्लॉट, डॉट एवं फ्लेम पैटर्न",
-    gu: "બ્લોટ, ડોટ અને ફ્લેમ પેટર્ન"
+  "Clinical Significance": {
+    hi: "नैदानिक महत्व",
+    gu: "ક્લિનિકલ મહત્વ"
   },
-  "Hard Exudates (EX)": {
-    hi: "हार्ड एक्सुडेट्स (वसा जमाव)",
-    gu: "હાર્ડ એક્સ્યુડેટ્સ"
+  "Optic Disc & Cup-to-Disc Ratio": {
+    hi: "ऑप्टिक डिस्क एवं कप-टू-डिस्क अनुपात (CDR)",
+    gu: "ઓપ્ટિક ડિસ્ક અને કપ-ટુ-ડિસ્ક રેશિયો (CDR)"
   },
-  "Lipoprotein Deposition": {
-    hi: "लाइपोप्रोटीन वसा जमाव",
-    gu: "લિપોપ્રોટીન ચરબી જમાવટ"
+  "Optic Cup-to-Disc Ratio (CDR)": {
+    hi: "ऑप्टिक कप-टू-डिस्क अनुपात (CDR)",
+    gu: "ઓપ્ટિક કપ-ટુ-ડિસ્ક રેશિયો (CDR)"
   },
-  "Macular edema risk assessment": {
+  "Normal Physiologic Margins": {
+    hi: "सामान्य शारीरिक सीमा",
+    gu: "સામાન્ય શારીરિક મર્યાદા"
+  },
+  "Neuroretinal rim intact; no glaucomatous excavation": {
+    hi: "न्यूरोरेटिनल रिम सुरक्षित; ग्लूकोमा संकेत अनुपस्थित",
+    gu: "ન્યુરોરેટિનલ રિમ અકબંધ; ગ્લુકોમાના લક્ષણ નથી"
+  },
+  "Macular Integrity & Foveal Reflex": {
+    hi: "मैकुलर अखंडता एवं फोवियल रिफ्लेक्स",
+    gu: "મેક્યુલર અખંડિતતા અને ફોવિયલ પ્રતિબિંબ"
+  },
+  "Intact Foveal Avascular Zone": {
+    hi: "सुरक्षित फोवियल एवास्कुलर ज़ोन (FAZ)",
+    gu: "સુરક્ષિત ફોવિયલ એવાસ્ક્યુલર ઝોન (FAZ)"
+  },
+  "No clinically evident exudation or cystic elevation in center": {
+    hi: "केंद्र में कोई स्पष्ट एक्सयूडेशन या सिस्टिक सूजन नहीं",
+    gu: "કેન્દ્રમાં કોઈ સોજો કે પ્રવાહી જમાવટ નથી"
+  },
+  "Macular Edema Risk Assessment": {
     hi: "मैकुलर एडिमा जोखिम मूल्यांकन",
     gu: "મેક્યુલર એડીમા જોખમ આકલન"
   },
@@ -261,6 +271,30 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
   "Optic disc & foveal centration": {
     hi: "ऑप्टिक डिस्क एवं फोविया संरेखण",
     gu: "ઓપ્ટિક ડિસ્ક અને ફોવિયા કેન્દ્રીકરણ"
+  },
+  "Normal arborization without focal arteriolar narrowing": {
+    hi: "सामान्य संरचना, कोई संकुचन नहीं",
+    gu: "સામાન્ય સંરચના, કોઈ સંકોચન નથી"
+  },
+  "Hard Exudates": {
+    hi: "हार्ड एक्सयूडेट्स (Hard Exudates)",
+    gu: "હાર્ડ એક્સ્યુડેટ્સ (Hard Exudates)"
+  },
+  "Microaneurysms": {
+    hi: "माइक्रोएन्यूरिज्म (Microaneurysms)",
+    gu: "માઇક્રોએન્યુરિઝમ (Microaneurysms)"
+  },
+  "Hemorrhages": {
+    hi: "रेटिनल रक्तस्राव (Hemorrhages)",
+    gu: "રેટિનલ રક્તસ્રાવ (Hemorrhages)"
+  },
+  "Cotton Wool Spots": {
+    hi: "कॉटन वूल स्पॉट्स (Cotton Wool Spots)",
+    gu: "કોટન વૂલ સ્પોટ્સ (Cotton Wool Spots)"
+  },
+  "Neovascularization": {
+    hi: "नियोवैस्कुलराइजेशन (Neovascularization)",
+    gu: "નિયોવેસ્ક્યુલરાઇઝેશન (Neovascularization)"
   },
 
   // 6. Evidence-Based Health & Lifestyle Measures
@@ -299,6 +333,10 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
   "Lipid Target:": {
     hi: "लिपिड/कोलेस्ट्रॉल लक्ष्य:",
     gu: "લિપિડ/કોલેસ્ટ્રોલ લક્ષ્યાંક:"
+  },
+  "Focus:": {
+    hi: "रोग फोकस:",
+    gu: "રોગ ફોકસ:"
   },
 
   // 7. Relevant Clinical Medications & Pharmacotherapy
@@ -384,9 +422,17 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
     hi: "डिजिटल रूप से सत्यापित",
     gu: "ડિજિટલ રીતે પ્રમાણિત"
   },
+  "Signed and verified by licensed specialist": {
+    hi: "लाइसेंस प्राप्त विशेषज्ञ द्वारा हस्ताक्षरित एवं सत्यापित",
+    gu: "પ્રમાણિત નિષ્ણાત દ્વારા હસ્તાક્ષરિત અને ચકાસાયેલ"
+  },
   "Save & Sign": {
     hi: "सहेजें एवं हस्ताक्षर करें",
     gu: "સાચવો અને સહી કરો"
+  },
+  "Signed & Logged": {
+    hi: "सत्यापित एवं दर्ज किया गया",
+    gu: "પ્રમાણિત અને સાચવેલ"
   },
   "Audit Trail": {
     hi: "ऑडिट ट्रेल",
@@ -403,8 +449,14 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
   "Back to Directory": {
     hi: "वापस सूची में जाएं",
     gu: "પાછા ડિરેક્ટરી પર જાઓ"
+  },
+  "Enter clinical examination notes, pathology remarks...": {
+    hi: "क्लिनिकल परीक्षण नोट्स, पैथोलॉजी टिप्पणियां दर्ज करें...",
+    gu: "ક્લિનિકલ તપાસ નોંધો, પેથોલોજી વિગતો દાખલ કરો..."
   }
 };
+
+const originalTextMap = new WeakMap<Node, string>();
 
 export function applyLanguageToDOM(container: HTMLElement, targetLang: SupportedLanguage) {
   if (!container) return;
@@ -425,38 +477,41 @@ export function applyLanguageToDOM(container: HTMLElement, targetLang: Supported
     const parentEl = node.parentElement;
     if (!parentEl) continue;
 
-    // Do not translate code blocks, script tags, or the language switcher itself
-    if (parentEl.closest('.language-switcher-ignore') || parentEl.tagName === 'SCRIPT' || parentEl.tagName === 'STYLE') {
+    // Do not translate code blocks, script tags, style, or the language switcher itself
+    if (
+      parentEl.closest('.language-switcher-ignore') || 
+      parentEl.tagName === 'SCRIPT' || 
+      parentEl.tagName === 'STYLE' ||
+      parentEl.tagName === 'TEXTAREA' ||
+      parentEl.tagName === 'INPUT'
+    ) {
       continue;
     }
 
-    const originalText = parentEl.getAttribute('data-original-text') || text;
+    let orig = originalTextMap.get(node);
+    if (!orig) {
+      orig = rawText;
+      originalTextMap.set(node, orig);
+    }
 
     if (targetLang === 'en') {
-      if (parentEl.hasAttribute('data-original-text')) {
-        node.nodeValue = parentEl.getAttribute('data-original-text');
-        parentEl.removeAttribute('data-original-text');
-      }
+      node.nodeValue = orig;
     } else {
-      // 1. Direct exact match
-      if (COMPREHENSIVE_TRANSLATION_MAP[originalText]) {
-        const translated = COMPREHENSIVE_TRANSLATION_MAP[originalText][targetLang];
+      const trimmedOrig = orig.trim();
+      
+      // 1. Direct exact dictionary match
+      if (COMPREHENSIVE_TRANSLATION_MAP[trimmedOrig]) {
+        const translated = COMPREHENSIVE_TRANSLATION_MAP[trimmedOrig][targetLang];
         if (translated) {
-          if (!parentEl.hasAttribute('data-original-text')) {
-            parentEl.setAttribute('data-original-text', originalText);
-          }
-          node.nodeValue = translated;
+          node.nodeValue = orig.replace(trimmedOrig, translated);
           continue;
         }
       }
 
-      // 2. Substring matching for labels
+      // 2. Exact match against known dictionary keys
       for (const [key, val] of Object.entries(COMPREHENSIVE_TRANSLATION_MAP)) {
-        if (text === key) {
-          if (!parentEl.hasAttribute('data-original-text')) {
-            parentEl.setAttribute('data-original-text', originalText);
-          }
-          node.nodeValue = val[targetLang];
+        if (trimmedOrig === key) {
+          node.nodeValue = orig.replace(trimmedOrig, val[targetLang]);
           break;
         }
       }

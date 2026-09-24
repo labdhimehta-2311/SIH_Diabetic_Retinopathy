@@ -188,5 +188,25 @@
     "timestamp": "2026-09-24T21:25:09.254772+00:00",
     "previous_hash": "3f83eb7ed1ca7681ad875d817dd5c783bc633430a975b52733a5ac9e616185c0",
     "hash": "5001a4e708e1f37661b0888c1a739465d26e965a2834071f85580236dac5d7b0"
+  },
+  {
+    "index": 19,
+    "case_id": "CASE_CHAIN_01",
+    "grade": 1,
+    "triage": "ROUTINE",
+    "doctor_id": "SYSTEM",
+    "timestamp": "2026-09-24T21:56:22.113912+00:00",
+    "previous_hash": "5001a4e708e1f37661b0888c1a739465d26e965a2834071f85580236dac5d7b0",
+    "hash": "04eb78a1c4c45bc896761e9eb376e899fe3643c495f7aba1fab1fc623079be2b"
+  },
+  {
+    "index": 20,
+    "case_id": "DEMO_CASE_02",
+    "grade": 2,
+    "triage": "URGENT_REFERRAL",
+    "doctor_id": "DOC_OPHTHAL_DEMO",
+    "timestamp": "2026-09-24T21:56:22.162167+00:00",
+    "previous_hash": "04eb78a1c4c45bc896761e9eb376e899fe3643c495f7aba1fab1fc623079be2b",
+    "hash": "40323aa1cc5bfe0bd98063f47a8294741e81aa0d38247f188248c3bead993932"
   }
 ]
