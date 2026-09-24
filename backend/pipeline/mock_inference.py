@@ -81,7 +81,7 @@ def load_m2_trained_model():
             return None
     return None
 
-def run_m2_grading(enhanced_path):
+def run_m2_grading(enhanced_path, raw_path=None):
     """
     M2: DR Severity Grading & Clinical Triage Module
     Trained on Kaggle APTOS 2019 Blindness Detection dataset (3,662 cases).
@@ -241,7 +241,8 @@ def run_m2_grading(enhanced_path):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             ])
 
-            pil_img = Image.open(enhanced_path).convert("RGB")
+            eval_path = raw_path if (raw_path and os.path.exists(raw_path)) else enhanced_path
+            pil_img = Image.open(eval_path).convert("RGB")
             input_tensor = preprocess(pil_img).unsqueeze(0)
 
             with torch.no_grad():

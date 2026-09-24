@@ -7,10 +7,12 @@ import {
   Users, Activity, AlertTriangle, Search, Plus, RefreshCw, 
   FileText, Eye, Stethoscope, ChevronRight, ChevronDown, ChevronUp,
   User, Calendar, Clock, MapPin, Briefcase, Phone, ClipboardList,
-  CheckCircle2, TrendingDown, TrendingUp, Minus, Heart
+  CheckCircle2, TrendingDown, TrendingUp, Minus, Heart, Flame
 } from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 import { PatientService, Patient } from '../lib/patientService';
+import { computeQueueSystem, QueueSystemState } from '../lib/queueService';
+import ClinicalQueueMonitor from '../components/ClinicalQueueMonitor';
 
 export default function PatientDirectory() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function PatientDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
+  const [showTriageQueues, setShowTriageQueues] = useState(true);
 
   // Automatically redirect to login if no active doctor session exists
   useEffect(() => {
@@ -47,6 +50,8 @@ export default function PatientDirectory() {
       setIsLoading(false);
     }
   };
+
+  const queueState = computeQueueSystem(patients);
 
   const filteredPatients = patients.filter(p => {
     if (!p) return false;
@@ -95,6 +100,20 @@ export default function PatientDirectory() {
             </p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
+            <button 
+              onClick={() => setShowTriageQueues(!showTriageQueues)} 
+              className="px-3 py-1.5 border border-white/60 bg-white/40 hover:bg-white/60 backdrop-blur-sm text-slate-700 shadow-sm rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all"
+            >
+              {showTriageQueues ? (
+                <>
+                  <Eye className="w-3.5 h-3.5 text-teal-600" /> Hide Triage Queues
+                </>
+              ) : (
+                <>
+                  <Clock className="w-3.5 h-3.5 text-teal-600" /> Live Triage Queues
+                </>
+              )}
+            </button>
             <button onClick={loadPatients} className="px-3 py-1.5 border border-white/60 bg-white/40 hover:bg-white/60 backdrop-blur-sm text-slate-700 shadow-sm rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Sync
             </button>
@@ -105,16 +124,17 @@ export default function PatientDirectory() {
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Stats Row - 4 Cards Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { icon: Users, val: patients.length, label: 'Total Enrolled', color: 'slate' },
-          { icon: Activity, val: totalScreenings, label: 'Screening Exams', color: 'teal' },
-          { icon: AlertTriangle, val: referableCases, label: 'Active Referrals', color: 'rose' }
+          { icon: Flame, val: queueState.riskQueue.length, label: 'Risk Priority Queue', color: 'rose' },
+          { icon: Clock, val: queueState.normalQueue.length, label: 'Normal FIFO Queue', color: 'teal' },
+          { icon: AlertTriangle, val: queueState.activeReferrals, label: 'Active Referrals', color: 'amber' }
         ].map((stat, i) => (
-          <div key={i} className="bg-white/50 backdrop-blur-lg border border-white/60 p-4 rounded-2xl shadow-lg flex items-center gap-4 relative overflow-hidden">
-            <div className={`w-10 h-10 rounded-xl bg-white/60 border border-white/80 shadow-inner flex items-center justify-center text-${stat.color}-600 backdrop-blur-sm`}>
-              <stat.icon className="w-5 h-5" />
+          <div key={i} className="bg-white/50 backdrop-blur-lg border border-white/60 p-4 rounded-2xl shadow-lg flex items-center gap-3.5 relative overflow-hidden">
+            <div className={`w-10 h-10 rounded-xl bg-white/60 border border-white/80 shadow-inner flex items-center justify-center text-${stat.color}-600 backdrop-blur-sm shrink-0`}>
+              <stat.icon className={`w-5 h-5 ${stat.color === 'rose' ? 'fill-rose-500 text-rose-600' : ''}`} />
             </div>
             <div>
               <div className="text-2xl font-black text-slate-800 leading-none drop-shadow-sm">{stat.val}</div>
@@ -123,6 +143,14 @@ export default function PatientDirectory() {
           </div>
         ))}
       </div>
+
+      {/* Live Clinical Triage & Specialist Queue Monitor */}
+      {showTriageQueues && (
+        <ClinicalQueueMonitor 
+          riskQueue={queueState.riskQueue} 
+          normalQueue={queueState.normalQueue} 
+        />
+      )}
 
       {fetchError && (
         <div className="bg-rose-100/80 backdrop-blur-md border border-rose-200/60 p-4 text-rose-800 text-xs font-bold rounded-2xl shadow-lg flex items-center gap-2">
@@ -154,6 +182,7 @@ export default function PatientDirectory() {
               const aiData = latestScreening?.aiResults;
               const isExpanded = expandedPatientId === patient.id;
               const screeningsList = patient.screenings || [];
+              const qItem = queueState.allQueuedPatients.get(patient.id);
 
               return (
                 <div key={patient.id} className="transition-colors">
@@ -177,15 +206,28 @@ export default function PatientDirectory() {
                     <div className="flex-shrink-0 w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
                       {latestScreening ? (
                         <>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap justify-end">
                             {getGradeBadge(aiData?.grade)}
                             {aiData?.referable && (
                               <span className="px-2 py-0.5 border border-rose-400/50 bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider rounded shadow-sm flex items-center gap-1">
                                 <AlertTriangle className="w-3 h-3" /> Refer
                               </span>
                             )}
+                            {qItem && (
+                              qItem.queueType === 'RISK_PRIORITY' ? (
+                                <span className="px-2 py-0.5 border border-rose-300 bg-rose-50/90 text-rose-700 text-[10px] font-bold rounded shadow-2xs flex items-center gap-1 whitespace-nowrap">
+                                  <Flame className="w-3 h-3 text-rose-600 fill-rose-100" />
+                                  <span>Risk #{qItem.rank} ({qItem.waitDisplay.startsWith('~') ? qItem.waitDisplay : `~${qItem.waitDisplay}`})</span>
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 border border-teal-300 bg-teal-50/90 text-teal-700 text-[10px] font-bold rounded shadow-2xs flex items-center gap-1 whitespace-nowrap">
+                                  <Clock className="w-3 h-3 text-teal-600" />
+                                  <span>Normal #{qItem.rank} ({qItem.waitDisplay.startsWith('~') ? qItem.waitDisplay : `~${qItem.waitDisplay}`})</span>
+                                </span>
+                              )
+                            )}
                           </div>
-                          <div className="text-[9px] text-slate-500 font-mono font-bold">Last Exam: {latestScreening.date}</div>
+                          <div className="text-[9px] text-slate-500 font-mono font-bold">Last Examination: {latestScreening.date}</div>
                         </>
                       ) : (
                         <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-white/50 border border-white/60 shadow-inner rounded px-2 py-1">No Scans</span>

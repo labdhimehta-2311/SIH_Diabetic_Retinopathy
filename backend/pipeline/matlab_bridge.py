@@ -81,7 +81,7 @@ class MatlabPipelineBridge:
         
         # Fallback Python Pipeline
         mock_inference.run_m1_enhancement(input_image_path, enhanced_path)
-        m2_res = mock_inference.run_m2_grading(enhanced_path)
+        m2_res = mock_inference.run_m2_grading(enhanced_path, raw_path=input_image_path)
         
         m3_executed = bool(check_m3_setup)
         if m3_executed:

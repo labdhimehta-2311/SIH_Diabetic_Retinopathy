@@ -22,6 +22,8 @@ import {
 import { AuditService } from '../../../lib/auditService';
 import ComparativeViewer from '../../../components/ComparativeViewer';
 import AuditTrailModal from '../../../components/AuditTrailModal';
+import QueueAssignmentCard from '../../../components/QueueAssignmentCard';
+import { computeQueueSystem } from '../../../lib/queueService';
 
 // Custom Print Badge to force smaller text and hide the Referable/Non-Referable box
 const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
@@ -87,6 +89,7 @@ function ReportContentInner() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [showAuditModal, setShowAuditModal] = useState(false);
+  const [allPatients, setAllPatients] = useState<Patient[]>([]);
 
   useEffect(() => {
     if (patientId && doctor) loadReport();
@@ -96,7 +99,13 @@ function ReportContentInner() {
     if (!doctor) return;
     setIsLoading(true);
     try {
-      const p = await PatientService.getPatientById(patientId, doctor.uid);
+      const [p, patientsList] = await Promise.all([
+        PatientService.getPatientById(patientId, doctor.uid),
+        PatientService.getPatientsByDoctor(doctor.uid).catch(() => [])
+      ]);
+      if (patientsList && patientsList.length > 0) {
+        setAllPatients(patientsList);
+      }
       if (p) {
         setPatient(p);
         const scr = screeningIdParam 
@@ -203,6 +212,10 @@ function ReportContentInner() {
   const healthMeasures = screening.healthMeasures || getHealthMeasuresForGrade(screening.aiResults?.grade ?? 0);
   const medicationsGuidance = screening.relevantMedications || getOfficialMedicationsGuidance(screening.aiResults?.grade ?? 0, Boolean(screening.aiResults?.referable), patient.clinicalVitals);
   const allScreenings = patient.screenings || [];
+
+  const patientUniverse = allPatients.length > 0 ? allPatients : [patient];
+  const queueState = computeQueueSystem(patientUniverse);
+  const currentQueueItem = queueState.allQueuedPatients.get(patient.id);
 
   return (
     <div className="max-w-5xl mx-auto space-y-4 print:p-0">
@@ -384,6 +397,18 @@ function ReportContentInner() {
             <PrintGradeBadge grade={screening.aiResults.grade} />
           </div>
         </div>
+
+        {/* Clinical Queue Assignment & Waiting Time Estimate */}
+        {screening.aiResults && (
+          <QueueAssignmentCard
+            grade={screening.aiResults.grade}
+            gradeLabel={screening.aiResults.gradeLabel || `Grade ${screening.aiResults.grade}`}
+            rank={currentQueueItem?.rank || 1}
+            patientsAhead={currentQueueItem?.patientsAhead || 0}
+            estimatedWaitMinutes={currentQueueItem?.estimatedWaitMinutes}
+            queueTypeOverride={currentQueueItem?.queueType}
+          />
+        )}
 
         {/* Visual Diagnostics Matrix */}
         <div className="print-break-inside-avoid print:block">

@@ -149,7 +149,7 @@ def execute_pipeline(input_image_path: str, run_m3_bool: bool, session_id: str):
 
     # High-Fidelity Python CV / AI Pipeline Fallback
     mock_inference.run_m1_enhancement(input_image_path, enhanced_path)
-    m2_res = mock_inference.run_m2_grading(enhanced_path)
+    m2_res = mock_inference.run_m2_grading(enhanced_path, raw_path=input_image_path)
     
     if run_m3_bool:
         mock_inference.run_m3_segmentation(enhanced_path, lesion_mask_path, check_m3_setup=True)
