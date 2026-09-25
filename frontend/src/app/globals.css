@@ -87,6 +87,9 @@
   /* Prevent individual cards, table rows, and images from splitting across pages */
   .print-break-inside-avoid,
   .print-avoid-break,
+  .print\:break-inside-avoid,
+  .print\:page-break-inside-avoid,
+  .counterfactual-print-container,
   .print-card,
   table,
   tr,

@@ -25,6 +25,7 @@ import AuditTrailModal from '../../../components/AuditTrailModal';
 import QueueAssignmentCard from '../../../components/QueueAssignmentCard';
 import { computeQueueSystem } from '../../../lib/queueService';
 import { useReportLanguage } from '../../../lib/reportLanguageContext';
+import { localizeComparisonFinding, localizeComparisonSummary } from '../../../lib/domTranslator';
 
 // Custom Print Badge to force smaller text and hide the Referable/Non-Referable box
 const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
@@ -60,15 +61,106 @@ const PrintGradeBadge = ({ grade }: { grade: number | string }) => {
 };
 
 // Safe and bulletproof route badge formatter (prevents overflowing or text slicing)
-const getRouteBadgeLabel = (routeAndDosing: string) => {
-  if (!routeAndDosing) return 'Clinical Rx';
+const getRouteBadgeLabel = (routeAndDosing: string, lang: 'en' | 'hi' | 'gu' = 'en') => {
+  if (!routeAndDosing) {
+    if (lang === 'hi') return 'क्लिनिकल दवा';
+    if (lang === 'gu') return 'ક્લિનિકલ દવા';
+    return 'Clinical Rx';
+  }
   const lower = routeAndDosing.toLowerCase();
-  if (lower.includes('implant')) return 'Intravitreal Implant';
-  if (lower.includes('injection')) return 'Intravitreal Injection';
-  if (lower.includes('topical')) return 'Topical Ophthalmic';
-  if (lower.includes('oral')) return 'Oral Administration';
+  if (lower.includes('implant') || lower.includes('इम्प्लांट') || lower.includes('ઇમ્પ્લાન્ટ')) {
+    if (lang === 'hi') return 'इंट्राविट्रियल इम्प्लांट';
+    if (lang === 'gu') return 'ઇન્ટ્રાવિટ્રીયલ ઇમ્પ્લાન્ટ';
+    return 'Intravitreal Implant';
+  }
+  if (lower.includes('injection') || lower.includes('इंजेक्शन') || lower.includes('ઇન્જેક્શન')) {
+    if (lang === 'hi') return 'इंट्राविट्रियल इंजेक्शन';
+    if (lang === 'gu') return 'ઇન્ટ્રાવિટ્રીયલ ઇન્જેક્શન';
+    return 'Intravitreal Injection';
+  }
+  if (lower.includes('topical') || lower.includes('ऑप्थेलमिक') || lower.includes('ઓપ્થેલ્મિક')) {
+    if (lang === 'hi') return 'टॉपिकल ऑप्थेलमिक';
+    if (lang === 'gu') return 'ટોપિકલ ઓપ્થેલ્મિક';
+    return 'Topical Ophthalmic';
+  }
+  if (lower.includes('oral') || lower.includes('मौखिक') || lower.includes('મૌખિક')) {
+    if (lang === 'hi') return 'मौखिक सेवन (Oral)';
+    if (lang === 'gu') return 'મૌખિક સેવન (Oral)';
+    return 'Oral Administration';
+  }
   const firstPart = routeAndDosing.split(':')[0].trim();
-  return firstPart.length > 22 ? 'Prescription Rx' : firstPart;
+  if (firstPart.length > 22) {
+    if (lang === 'hi') return 'प्रिस्क्रिप्शन दवा';
+    if (lang === 'gu') return 'પ્રિસ્ક્રિપ્શન દવા';
+    return 'Prescription Rx';
+  }
+  return firstPart;
+};
+
+const MEDICATION_SECTION_LABELS: Record<'en' | 'hi' | 'gu', {
+  sectionTitle: string;
+  officialRefBadge: string;
+  stageTarget: string;
+  ophthalmicTitle: string;
+  systemicTitle: string;
+  classLabel: string;
+  dosingRouteLabel: string;
+  dosingRegimenLabel: string;
+  bioMechLabel: string;
+  targetMechLabel: string;
+  citationLabel: string;
+  trialEvidenceLabel: string;
+  validationLabel: string;
+  disclaimerLabel: string;
+}> = {
+  en: {
+    sectionTitle: 'Relevant Clinical Medications & Pharmacotherapy',
+    officialRefBadge: 'Official Medical Books Reference',
+    stageTarget: 'Stage Pharmacological Target:',
+    ophthalmicTitle: 'Targeted Ophthalmic Biologics & Intravitreal Pharmacotherapy:',
+    systemicTitle: 'Systemic Microvascular & Endothelial Protective Pharmacotherapy:',
+    classLabel: 'Class:',
+    dosingRouteLabel: 'Dosing & Route:',
+    dosingRegimenLabel: 'Dosing & Regimen:',
+    bioMechLabel: 'Biological Mechanism:',
+    targetMechLabel: 'Target Mechanism:',
+    citationLabel: 'Official Medical Textbook Citation:',
+    trialEvidenceLabel: 'Trial Evidence:',
+    validationLabel: 'Validation:',
+    disclaimerLabel: 'OFFICIAL PHARMACOTHERAPY DISCLAIMER:'
+  },
+  hi: {
+    sectionTitle: 'संबंधित चिकित्सीय दवाइयां एवं फार्माकोथेरेपी',
+    officialRefBadge: 'आधिकारिक मेडिकल पाठ्यपुस्तक संदर्भ',
+    stageTarget: 'रोग अवस्था औषधीय लक्ष्य:',
+    ophthalmicTitle: 'लक्षित नेत्र बायोलॉजिक्स एवं इंट्राविट्रियल दवाइयां:',
+    systemicTitle: 'प्रणालीगत सूक्ष्म संवहनी एवं एंडोथेलियल सुरक्षा दवाइयां:',
+    classLabel: 'दवा वर्ग (Class):',
+    dosingRouteLabel: 'खुराक एवं मार्ग (Dosing & Route):',
+    dosingRegimenLabel: 'खुराक एवं नियम (Dosing & Regimen):',
+    bioMechLabel: 'जैविक क्रियाविधि (Mechanism):',
+    targetMechLabel: 'लक्षित क्रियाविधि (Target Mechanism):',
+    citationLabel: 'आधिकारिक मेडिकल पाठ्यपुस्तक संदर्भ:',
+    trialEvidenceLabel: 'क्लिनिकल ट्रायल साक्ष्य:',
+    validationLabel: 'क्लिनिकल सत्यापन:',
+    disclaimerLabel: 'आधिकारिक फार्माकोथेरेपी अस्वीकरण:'
+  },
+  gu: {
+    sectionTitle: 'સંબંધિત ક્લિનિકલ દવાઓ અને ફાર્માકોથેરાપી',
+    officialRefBadge: 'સત્તાવાર મેડિકલ પુસ્તક સંદર્ભ',
+    stageTarget: 'રોગ તબક્કા ઔષધીય લક્ષ્યાંક:',
+    ophthalmicTitle: 'લક્ષિત નેત્ર બાયોલોજિક્સ અને ઇન્ટ્રાવિટ્રીયલ દવાઓ:',
+    systemicTitle: 'પ્રણાલીગત સૂક્ષ્મ રક્તવાહિની રક્ષણાત્મક દવાઓ:',
+    classLabel: 'દવા વર્ગ (Class):',
+    dosingRouteLabel: 'ડોઝ અને રીત (Dosing & Route):',
+    dosingRegimenLabel: 'ડોઝ અને સમયપત્રક (Dosing & Regimen):',
+    bioMechLabel: 'જૈવિક કાર્યપદ્ધતિ (Mechanism):',
+    targetMechLabel: 'લક્ષિત કાર્યપદ્ધતિ (Target Mechanism):',
+    citationLabel: 'સત્તાવાર મેડિકલ પાઠ્યપુસ્તક સંદર્ભ:',
+    trialEvidenceLabel: 'ક્લિનિકલ ટ્રાયલ પુરાવા:',
+    validationLabel: 'ક્લિનિકલ ચકાસણી:',
+    disclaimerLabel: 'સત્તાવાર ફાર્માકોથેરાપી ડિસ્ક્લેમર:'
+  }
 };
 
 function ReportContentInner() {
@@ -218,6 +310,7 @@ function ReportContentInner() {
     patient.clinicalVitals,
     activeLang
   );
+  const medLabels = MEDICATION_SECTION_LABELS[activeLang] || MEDICATION_SECTION_LABELS.en;
   const allScreenings = patient.screenings || [];
 
   const patientUniverse = allPatients.length > 0 ? allPatients : [patient];
@@ -431,13 +524,21 @@ function ReportContentInner() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-300 pb-2 print:pb-1">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-teal-800 bg-teal-100 px-2 py-0.5 rounded print:text-[7px]">
-                  Longitudinal Progress & Comparison Report
+                  {activeLang === 'hi' ? 'अनुदैर्ध्य प्रगति एवं तुलनात्मक रिपोर्ट' : activeLang === 'gu' ? 'સમય આધારિત પ્રગતિ અને તુલનાત્મક અહેવાલ' : 'Longitudinal Progress & Comparison Report'}
                 </span>
                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight mt-1 print:text-[10px]">
-                  Current Screening ({comparison.currentScreeningDate}) vs Previous Screening ({comparison.previousScreeningDate})
+                  {activeLang === 'hi' 
+                    ? `वर्तमान स्क्रीनिंग (${comparison.currentScreeningDate}) बनाम पिछली स्क्रीनिंग (${comparison.previousScreeningDate})`
+                    : activeLang === 'gu'
+                    ? `હાલનું સ્ક્રીનિંગ (${comparison.currentScreeningDate}) વિરુદ્ધ અગાઉનું સ્ક્રીનિંગ (${comparison.previousScreeningDate})`
+                    : `Current Screening (${comparison.currentScreeningDate}) vs Previous Screening (${comparison.previousScreeningDate})`}
                 </h2>
                 <p className="text-[10px] text-slate-500 font-medium print:text-[7px]">
-                  Screening Interval: {comparison.screeningIntervalDays} days | Baseline Ref: {comparison.previousScreeningId}
+                  {activeLang === 'hi'
+                    ? `स्क्रीनिंग अंतराल: ${comparison.screeningIntervalDays} दिन | बेसलाइन संदर्भ: ${comparison.previousScreeningId}`
+                    : activeLang === 'gu'
+                    ? `સ્ક્રીનિંગ ગાળો: ${comparison.screeningIntervalDays} દિવસ | બેઝલાઇન સંદર્ભ: ${comparison.previousScreeningId}`
+                    : `Screening Interval: ${comparison.screeningIntervalDays} days | Baseline Ref: ${comparison.previousScreeningId}`}
                 </p>
               </div>
 
@@ -445,15 +546,18 @@ function ReportContentInner() {
               <div className="shrink-0">
                 {comparison.gradeChangeStatus === 'Improved' ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-900 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
-                    <TrendingDown className="w-4 h-4 print:w-2.5 print:h-2.5" /> Improved Finding
+                    <TrendingDown className="w-4 h-4 print:w-2.5 print:h-2.5" /> 
+                    {activeLang === 'hi' ? 'सुधार के संकेत' : activeLang === 'gu' ? 'સુધારાના સંકેત' : 'Improved Finding'}
                   </span>
                 ) : comparison.gradeChangeStatus === 'Worsened' ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-rose-300 bg-rose-100 text-rose-900 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
-                    <TrendingUp className="w-4 h-4 print:w-2.5 print:h-2.5" /> Disease Advancement
+                    <TrendingUp className="w-4 h-4 print:w-2.5 print:h-2.5" /> 
+                    {activeLang === 'hi' ? 'रोग में वृद्धि' : activeLang === 'gu' ? 'રોગમાં વધારો' : 'Disease Advancement'}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-300 bg-slate-200 text-slate-800 text-xs font-black uppercase tracking-wider print:text-[8px] print:px-1.5 print:py-0.5">
-                    <Minus className="w-4 h-4 print:w-2.5 print:h-2.5" /> Stable Condition
+                    <Minus className="w-4 h-4 print:w-2.5 print:h-2.5" /> 
+                    {activeLang === 'hi' ? 'स्थिर स्थिति' : activeLang === 'gu' ? 'સ્થિર સ્થિતિ' : 'Stable Condition'}
                   </span>
                 )}
               </div>
@@ -464,30 +568,42 @@ function ReportContentInner() {
               
               {/* Severity Transition */}
               <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
-                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Severity Grading Trajectory</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">
+                  {activeLang === 'hi' ? 'गंभीरता ग्रेडिंग प्रक्षेपवक्र' : activeLang === 'gu' ? 'ગંભીરતા ગ્રેડિંગ પ્રગતિ' : 'Severity Grading Trajectory'}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="font-bold text-slate-700">Grade {comparison.previousGrade}</span>
+                  <span className="font-bold text-slate-700">
+                    {activeLang === 'hi' ? `ग्रेड ${comparison.previousGrade}` : activeLang === 'gu' ? `ગ્રેડ ${comparison.previousGrade}` : `Grade ${comparison.previousGrade}`}
+                  </span>
                   <span className="text-slate-400">➔</span>
                   <span className={`font-black ${
                     comparison.gradeChangeStatus === 'Improved' ? 'text-emerald-700' :
                     comparison.gradeChangeStatus === 'Worsened' ? 'text-rose-700' : 'text-slate-900'
-                  }`}>Grade {comparison.currentGrade}</span>
+                  }`}>
+                    {activeLang === 'hi' ? `ग्रेड ${comparison.currentGrade}` : activeLang === 'gu' ? `ગ્રેડ ${comparison.currentGrade}` : `Grade ${comparison.currentGrade}`}
+                  </span>
                 </div>
                 <div className="text-[10px] text-slate-500 mt-1 print:text-[6px]">
-                  Confidence: {comparison.previousConfidence}% ➔ {comparison.currentConfidence}% ({comparison.confidenceDelta >= 0 ? `+${comparison.confidenceDelta}` : comparison.confidenceDelta}%)
+                  {activeLang === 'hi' ? 'विश्वास स्तर' : activeLang === 'gu' ? 'વિશ્વાસ સ્તર' : 'Confidence'}: {comparison.previousConfidence}% ➔ {comparison.currentConfidence}% ({comparison.confidenceDelta >= 0 ? `+${comparison.confidenceDelta}` : comparison.confidenceDelta}%)
                 </div>
               </div>
 
               {/* Visual Acuity OD/OS */}
               <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
-                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Visual Acuity Shift</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">
+                  {activeLang === 'hi' ? 'दृष्टि तीक्ष्णता परिवर्तन' : activeLang === 'gu' ? 'દ્રષ્ટિ ક્ષમતા ફેરફાર' : 'Visual Acuity Shift'}
+                </div>
                 <div className="mt-1 space-y-0.5">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-600">OD (Right):</span>
+                    <span className="font-semibold text-slate-600">
+                      {activeLang === 'hi' ? 'दाहिनी आंख (OD):' : activeLang === 'gu' ? 'જમણી આંખ (OD):' : 'OD (Right):'}
+                    </span>
                     <span className="font-bold text-slate-900">{comparison.visualAcuity.rightEye.previous} ➔ {comparison.visualAcuity.rightEye.current}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-600">OS (Left):</span>
+                    <span className="font-semibold text-slate-600">
+                      {activeLang === 'hi' ? 'बाईं आंख (OS):' : activeLang === 'gu' ? 'ડાબી આંખ (OS):' : 'OS (Left):'}
+                    </span>
                     <span className="font-bold text-slate-900">{comparison.visualAcuity.leftEye.previous} ➔ {comparison.visualAcuity.leftEye.current}</span>
                   </div>
                 </div>
@@ -495,14 +611,20 @@ function ReportContentInner() {
 
               {/* IOP Shift */}
               <div className="bg-white border border-slate-300 p-2.5 rounded print:p-1.5">
-                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">Intraocular Pressure (IOP)</div>
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest print:text-[6px]">
+                  {activeLang === 'hi' ? 'आंतरिक नेत्र दबाव (IOP)' : activeLang === 'gu' ? 'આંતરિક આંખ દબાણ (IOP)' : 'Intraocular Pressure (IOP)'}
+                </div>
                 <div className="mt-1 space-y-0.5">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-600">OD:</span>
+                    <span className="font-semibold text-slate-600">
+                      {activeLang === 'hi' ? 'दाहिनी (OD):' : activeLang === 'gu' ? 'જમણી (OD):' : 'OD:'}
+                    </span>
                     <span className="font-bold text-slate-900">{comparison.iop.rightEye.previous} ➔ {comparison.iop.rightEye.current}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-600">OS:</span>
+                    <span className="font-semibold text-slate-600">
+                      {activeLang === 'hi' ? 'बाईं (OS):' : activeLang === 'gu' ? 'ડાબી (OS):' : 'OS:'}
+                    </span>
                     <span className="font-bold text-slate-900">{comparison.iop.leftEye.previous} ➔ {comparison.iop.leftEye.current}</span>
                   </div>
                 </div>
@@ -512,7 +634,7 @@ function ReportContentInner() {
             {/* Categorized Findings Section (Improved / Worsened / Stable / Newly Detected / Resolved) */}
             <div className="space-y-2 border-t border-slate-300 pt-3 print:pt-1.5 print:space-y-1">
               <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest print:text-[7px]">
-                Detailed Comparative Pathology Analysis
+                {activeLang === 'hi' ? 'विस्तृत तुलनात्मक पैथोलॉजी विश्लेषण' : activeLang === 'gu' ? 'વિગતવાર તુલનાત્મક પેથોલોજી વિશ્લેષણ' : 'Detailed Comparative Pathology Analysis'}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 print:grid-cols-2 print:gap-1.5">
@@ -521,11 +643,12 @@ function ReportContentInner() {
                 {comparison.categorizedFindings.improved.length > 0 && (
                   <div className="bg-emerald-50/60 border border-emerald-200 p-2.5 rounded print:p-1">
                     <div className="text-[10px] font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
-                      <CheckCircle className="w-3 h-3 text-emerald-700" /> Improved Findings
+                      <CheckCircle className="w-3 h-3 text-emerald-700" /> 
+                      {activeLang === 'hi' ? 'सुधरे हुए नैदानिक निष्कर्ष' : activeLang === 'gu' ? 'સુધરેલા ક્લિનિકલ તારણો' : 'Improved Findings'}
                     </div>
                     <ul className="list-disc list-inside space-y-0.5 text-xs text-emerald-950 font-medium print:text-[7px]">
                       {comparison.categorizedFindings.improved.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}>{localizeComparisonFinding(item, activeLang)}</li>
                       ))}
                     </ul>
                   </div>
@@ -535,11 +658,12 @@ function ReportContentInner() {
                 {comparison.categorizedFindings.worsened.length > 0 && (
                   <div className="bg-rose-50/60 border border-rose-200 p-2.5 rounded print:p-1">
                     <div className="text-[10px] font-bold text-rose-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
-                      <AlertTriangle className="w-3 h-3 text-rose-700" /> Worsened / Disease Advancement
+                      <AlertTriangle className="w-3 h-3 text-rose-700" /> 
+                      {activeLang === 'hi' ? 'गंभीरता में वृद्धि / रोग विस्तार' : activeLang === 'gu' ? 'ગંભીરતામાં વધારો / રોગ વધારો' : 'Worsened / Disease Advancement'}
                     </div>
                     <ul className="list-disc list-inside space-y-0.5 text-xs text-rose-950 font-medium print:text-[7px]">
                       {comparison.categorizedFindings.worsened.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}>{localizeComparisonFinding(item, activeLang)}</li>
                       ))}
                     </ul>
                   </div>
@@ -549,11 +673,12 @@ function ReportContentInner() {
                 {comparison.categorizedFindings.newlyDetected.length > 0 && (
                   <div className="bg-amber-50/60 border border-amber-200 p-2.5 rounded print:p-1">
                     <div className="text-[10px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
-                      <AlertTriangle className="w-3 h-3 text-amber-700" /> Newly Detected Findings
+                      <AlertTriangle className="w-3 h-3 text-amber-700" /> 
+                      {activeLang === 'hi' ? 'नए पाए गए निष्कर्ष' : activeLang === 'gu' ? 'નવા નોંધાયેલ તારણો' : 'Newly Detected Findings'}
                     </div>
                     <ul className="list-disc list-inside space-y-0.5 text-xs text-amber-950 font-medium print:text-[7px]">
                       {comparison.categorizedFindings.newlyDetected.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}>{localizeComparisonFinding(item, activeLang)}</li>
                       ))}
                     </ul>
                   </div>
@@ -563,11 +688,12 @@ function ReportContentInner() {
                 {comparison.categorizedFindings.resolved.length > 0 && (
                   <div className="bg-teal-50/60 border border-teal-200 p-2.5 rounded print:p-1">
                     <div className="text-[10px] font-bold text-teal-900 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
-                      <CheckCircle2 className="w-3 h-3 text-teal-700" /> Resolved Findings
+                      <CheckCircle2 className="w-3 h-3 text-teal-700" /> 
+                      {activeLang === 'hi' ? 'समाधानित / ठीक हुए निष्कर्ष' : activeLang === 'gu' ? 'સાજા થયેલ / દૂર થયેલ તારણો' : 'Resolved Findings'}
                     </div>
                     <ul className="list-disc list-inside space-y-0.5 text-xs text-teal-950 font-medium print:text-[7px]">
                       {comparison.categorizedFindings.resolved.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}>{localizeComparisonFinding(item, activeLang)}</li>
                       ))}
                     </ul>
                   </div>
@@ -577,11 +703,12 @@ function ReportContentInner() {
                 {comparison.categorizedFindings.stable.length > 0 && (
                   <div className="bg-slate-100/70 border border-slate-200 p-2.5 rounded print:p-1">
                     <div className="text-[10px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1 mb-1 print:text-[7px]">
-                      <Minus className="w-3 h-3 text-slate-600" /> Stable Findings
+                      <Minus className="w-3 h-3 text-slate-600" /> 
+                      {activeLang === 'hi' ? 'स्थिर निष्कर्ष' : activeLang === 'gu' ? 'સ્થિર તારણો' : 'Stable Findings'}
                     </div>
                     <ul className="list-disc list-inside space-y-0.5 text-xs text-slate-800 font-medium print:text-[7px]">
                       {comparison.categorizedFindings.stable.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx}>{localizeComparisonFinding(item, activeLang)}</li>
                       ))}
                     </ul>
                   </div>
@@ -591,8 +718,10 @@ function ReportContentInner() {
 
             {/* Progression Narrative */}
             <div className="bg-white border border-slate-300 p-3 rounded print:p-1.5 text-xs print:text-[7px] text-slate-800">
-              <strong className="text-slate-900 font-bold block mb-1">Clinical Progression Summary:</strong>
-              {comparison.clinicalProgressionSummary}
+              <strong className="text-slate-900 font-bold block mb-1">
+                {activeLang === 'hi' ? 'क्लिनिकल प्रगति सारांश:' : activeLang === 'gu' ? 'ક્લિનિકલ પ્રગતિ સારાંશ:' : 'Clinical Progression Summary:'}
+              </strong>
+              {localizeComparisonSummary(comparison.clinicalProgressionSummary, activeLang)}
             </div>
           </div>
         )}
@@ -668,18 +797,18 @@ function ReportContentInner() {
             <div className="flex items-center gap-1.5">
               <Pill className="w-4 h-4 text-teal-700 shrink-0" />
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest print:text-[8px]">
-                Relevant Clinical Medications & Pharmacotherapy
+                {medLabels.sectionTitle}
               </h3>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider print:text-[6px]">
-                Official Medical Books Reference
+                {medLabels.officialRefBadge}
               </span>
             </div>
           </div>
 
           <div className="text-[10px] text-slate-700 print:text-[7px] leading-tight">
-            <strong>Stage Pharmacological Target:</strong> {medicationsGuidance.clinicalSummary}
+            <strong>{medLabels.stageTarget}</strong> {medicationsGuidance.clinicalSummary}
           </div>
 
           {/* Ophthalmic Medications Subsection */}
@@ -687,7 +816,7 @@ function ReportContentInner() {
             <div className="space-y-2 print:space-y-1">
               <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1 print:text-[7px]">
                 <Eye className="w-3 h-3 text-teal-600" />
-                Targeted Ophthalmic Biologics & Intravitreal Pharmacotherapy:
+                {medLabels.ophthalmicTitle}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 print:grid-cols-2 print:gap-1.5">
                 {medicationsGuidance.primaryOphthalmicMedications.map((med, idx) => (
@@ -696,33 +825,33 @@ function ReportContentInner() {
                       <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
                         {med.drugName}
                       </div>
-                      <span className="text-[8px] font-mono bg-teal-100/80 text-teal-900 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing)}>
-                        {getRouteBadgeLabel(med.routeAndDosing)}
+                      <span className="text-[8px] font-mono bg-teal-100/80 text-teal-900 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing, activeLang)}>
+                        {getRouteBadgeLabel(med.routeAndDosing, activeLang)}
                       </span>
                     </div>
 
                     <div className="text-slate-700 leading-tight">
-                      <strong>Class:</strong> {med.pharmacologicalClass}
+                      <strong>{medLabels.classLabel}</strong> {med.pharmacologicalClass}
                     </div>
 
                     <div className="text-slate-800 leading-tight">
-                      <strong>Dosing & Route:</strong> {med.routeAndDosing}
+                      <strong>{medLabels.dosingRouteLabel}</strong> {med.routeAndDosing}
                     </div>
 
                     <div className="text-slate-700 leading-tight">
-                      <strong>Biological Mechanism:</strong> {med.mechanismOfAction}
+                      <strong>{medLabels.bioMechLabel}</strong> {med.mechanismOfAction}
                     </div>
 
                     <div className="bg-white border border-slate-300 p-1.5 rounded text-[10px] print:text-[6px] space-y-0.5">
                       <div className="font-bold text-teal-900 flex items-center gap-1">
-                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> Official Medical Textbook Citation:
+                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> {medLabels.citationLabel}
                       </div>
                       <div className="text-slate-800 font-semibold">
                         {med.officialTextbookReference.bookTitle} — {med.officialTextbookReference.chapterAndSection}
                       </div>
                       {med.officialTextbookReference.trialEvidence && (
                         <div className="text-slate-500 italic">
-                          Trial Evidence: {med.officialTextbookReference.trialEvidence}
+                          {medLabels.trialEvidenceLabel} {med.officialTextbookReference.trialEvidence}
                         </div>
                       )}
                     </div>
@@ -737,7 +866,7 @@ function ReportContentInner() {
             <div className="space-y-2 print:space-y-1 pt-1 border-t border-slate-200 print-break-inside-avoid">
               <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1 print:text-[7px]">
                 <Activity className="w-3 h-3 text-teal-600" />
-                Systemic Microvascular & Endothelial Protective Pharmacotherapy:
+                {medLabels.systemicTitle}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 print:grid-cols-2 print:gap-1.5">
                 {medicationsGuidance.systemicMicrovascularMedications.map((med, idx) => (
@@ -746,33 +875,33 @@ function ReportContentInner() {
                       <div className="font-bold text-slate-900 text-[11px] print:text-[7px] leading-tight">
                         {med.drugName}
                       </div>
-                      <span className="text-[8px] font-mono bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing)}>
-                        {getRouteBadgeLabel(med.routeAndDosing)}
+                      <span className="text-[8px] font-mono bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded print:text-[6px] max-w-[140px] truncate shrink-0 font-bold" title={getRouteBadgeLabel(med.routeAndDosing, activeLang)}>
+                        {getRouteBadgeLabel(med.routeAndDosing, activeLang)}
                       </span>
                     </div>
 
                     <div className="text-slate-700 leading-tight">
-                      <strong>Class:</strong> {med.pharmacologicalClass}
+                      <strong>{medLabels.classLabel}</strong> {med.pharmacologicalClass}
                     </div>
 
                     <div className="text-slate-800 leading-tight">
-                      <strong>Dosing & Regimen:</strong> {med.routeAndDosing}
+                      <strong>{medLabels.dosingRegimenLabel}</strong> {med.routeAndDosing}
                     </div>
 
                     <div className="text-slate-700 leading-tight">
-                      <strong>Target Mechanism:</strong> {med.mechanismOfAction}
+                      <strong>{medLabels.targetMechLabel}</strong> {med.mechanismOfAction}
                     </div>
 
                     <div className="bg-white border border-slate-300 p-1.5 rounded text-[10px] print:text-[6px] space-y-0.5">
                       <div className="font-bold text-teal-900 flex items-center gap-1">
-                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> Official Medical Textbook Citation:
+                        <BookOpen className="w-2.5 h-2.5 text-teal-700" /> {medLabels.citationLabel}
                       </div>
                       <div className="text-slate-800 font-semibold">
                         {med.officialTextbookReference.bookTitle} — {med.officialTextbookReference.chapterAndSection}
                       </div>
                       {med.officialTextbookReference.trialEvidence && (
                         <div className="text-slate-500 italic">
-                          Validation: {med.officialTextbookReference.trialEvidence}
+                          {medLabels.validationLabel} {med.officialTextbookReference.trialEvidence}
                         </div>
                       )}
                     </div>
@@ -783,7 +912,7 @@ function ReportContentInner() {
           )}
 
           <div className="bg-amber-50 border border-amber-200 p-2 rounded text-[9px] text-amber-900 leading-tight print:text-[6px]">
-            <strong>OFFICIAL PHARMACOTHERAPY DISCLAIMER:</strong> {medicationsGuidance.pharmacotherapyDisclaimer}
+            <strong>{medLabels.disclaimerLabel}</strong> {medicationsGuidance.pharmacotherapyDisclaimer}
           </div>
         </div>
 

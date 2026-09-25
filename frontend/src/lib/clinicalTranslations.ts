@@ -661,6 +661,317 @@ function getEnglishMedicationsGuidance(
         ]
       };
     }
+  } else if (grade === 1) {
+    if (lang === 'hi') {
+      return {
+        grade: 1,
+        stageTitle: "हल्की नॉन-प्रोलिफेरेटिव डायबिटिक रेटिनोपैथी (Mild NPDR) — प्रारंभिक माइक्रोएंजियोपैथी",
+        clinicalSummary: "कठोर एक्सयूडेट्स, कॉटन-वूल स्पॉट्स या मैकुलर सूजन के बिना केवल छिटपुट माइक्रोएन्यूरिज्म की उपस्थिति। इंट्राविट्रियल नेत्र फार्माकोथेरेपी की आवश्यकता नहीं है। रोग की प्रगति रोकने हेतु प्राथमिक ध्यान गहन प्रणालीगत सूक्ष्म संवहनी स्थिरीकरण पर है।",
+        pharmacotherapyDisclaimer: disclaimer,
+        officialTextbookCitations: [
+          "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Ed.), Chapter 47: Endocrine Pancreas & Pharmacotherapy of Diabetes Mellitus, pp. 838–846",
+          "American Academy of Ophthalmology (AAO) Diabetic Retinopathy Preferred Practice Pattern (2023–2024)",
+          "ADA Standards of Care in Diabetes (2024), Chapter 12: Retinopathy & Microvascular Complications"
+        ],
+        primaryOphthalmicMedications: [
+          {
+            drugName: "Aflibercept (Eylea / VEGF Trap-Eye)",
+            genericInn: "Aflibercept (recombinant fusion protein)",
+            pharmacologicalClass: "घुलनशील डिकॉय रिसेप्टर फ्यूजन प्रोटीन (VEGFR-1 एवं VEGFR-2 फ्यूज्ड टू ह्यूमन IgG1 Fc)",
+            routeAndDosing: "Intravitreal Injection: 2.0 mg (0.05 mL) प्रथम 5 खुराकों के लिए प्रत्येक 4 सप्ताह में, तत्पश्चात प्रत्येक 8 सप्ताह में (Treat-and-extend लचीलेपन के साथ)।",
+            clinicalIndication: "उच्च जोखिम Proliferative Diabetic Retinopathy (PDR) और Center-Involving Diabetic Macular Edema (CI-DME)।",
+            mechanismOfAction: "सभी आइसोफॉर्म डिकॉय रिसेप्टर के रूप में कार्य करता है जो पिकोमोलर आत्मीयता (Kd ~0.5 pM) के साथ VEGF-A, VEGF-B और Placental Growth Factor (PlGF) को बांधता है, जिससे एंडोथेलियल VEGFR सक्रियण पूरी तरह रुक जाता है, असामान्य नियोवैस्कुलराइजेशन अवरुद्ध होता है और रिसने वाली केशिकाएं सील होती हैं।",
+            prescribingConsiderations: "30-गेज सुई का उपयोग करके स्टेराइल ऑप्थेलमिक परिस्थितियों में प्रशासित किया जाना चाहिए। इंजेक्शन के 30 मिनट बाद Intraocular Pressure (IOP) की निगरानी करें। सक्रिय नेत्र संक्रमण की जांच करें।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology — Antiangiogenic Agents, pp. 1247–1249",
+              biologicalPharmacology: "Recombinant dimeric glycoprotein blocking VEGF-A/B and PlGF signaling pathways with higher binding affinity than native receptors.",
+              trialEvidence: "DRCR.net Protocol T (NEJM 2015; 372:1193-1204) & VIVID/VISTA Trials (Ophthalmology 2015)"
+            }
+          },
+          {
+            drugName: "Ranibizumab (Lucentis)",
+            genericInn: "Ranibizumab",
+            pharmacologicalClass: "पुनः संयोजक मानवीकृत मोनोक्लोनल एंटीबॉडी Fab फ्रैगमेंट",
+            routeAndDosing: "Intravitreal Injection: PDR हेतु 0.5 mg (0.05 mL) या DME हेतु 0.3 mg (0.05 mL) मासिक रूप से।",
+            clinicalIndication: "Proliferative Diabetic Retinopathy और Diabetic Macular Edema।",
+            mechanismOfAction: "Fc डोमेन रहित उच्च आत्मीयता मानवीकृत Fab फ्रैगमेंट जो VEGF-A के सभी जैविक रूप से सक्रिय आइसोफॉर्म (क्लीव्ड VEGF110 सहित) को चयनात्मक रूप से बांधकर निष्क्रिय करता है, एंडोथेलियल प्रसार को रोकता है और संवहनी रिसाव को कम करता है।",
+            prescribingConsiderations: "दृष्टि तीक्ष्णता संरक्षण हेतु Panretinal Photocoagulation (PRP) के गैर-हीन (non-inferior) सिद्ध, जिसमें परिधीय दृश्य क्षेत्र के नुकसान की दर कम होती है।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology, pp. 1248–1250",
+              biologicalPharmacology: "Monoclonal antibody Fab fragment engineered without Fc domain to accelerate retinal penetration and vitreal clearance while neutralizing VEGF-A.",
+              trialEvidence: "DRCR.net Protocol S (JAMA 2015; 314:2137-2146) & RIDE/RISE Trials"
+            }
+          }
+        ],
+        systemicMicrovascularMedications: [
+          {
+            drugName: "Lisinopril / Enalapril (or Telmisartan / Losartan)",
+            genericInn: "Lisinopril (ACE Inhibitor) or Telmisartan (ARB)",
+            pharmacologicalClass: "Renin-Angiotensin-Aldosterone System (RAAS) एंटागोनिस्ट",
+            routeAndDosing: "Oral: Lisinopril 10–40 mg PO दिन में एक बार या Telmisartan 40–80 mg PO दिन में एक बार।",
+            clinicalIndication: "रक्तचाप अनुकूलन (लक्ष्य <130/80 mmHg) और डायबिटिक रेटिनोपैथी में माइक्रोवैस्कुलर केशिका संरक्षण।",
+            mechanismOfAction: "Angiotensin II-प्रेरित वाहिकासंकीर्णन को अवरुद्ध करता है, जिससे रेटिना केशिकाओं पर अत्यधिक दबाव कम होता है; रेटिना केशिका कोशिकाओं के अपोप्टोसिस को दबाता है और रेटिना VEGF अभिव्यक्ति को घटाता है।",
+            prescribingConsiderations: "शुरुआत के 2 सप्ताह बाद सीरम क्रिएटिनिन और पोटेशियम की निगरानी करें। दोहरी ACE-I + ARB संयोजन से बचें।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 26: Renin and Angiotensin, pp. 471–488",
+              biologicalPharmacology: "Competitive inhibition of angiotensin-converting enzyme prevents conversion of angiotensin I to active vasoconstrictor angiotensin II.",
+              trialEvidence: "EUCLID Study (Lancet 1997) & DIRECT Retinopathy Program (Lancet 2008)"
+            }
+          },
+          {
+            drugName: "Fenofibrate (Lipanthyl / Tricor)",
+            genericInn: "Fenofibrate",
+            pharmacologicalClass: "Peroxisome Proliferator-Activated Receptor Alpha (PPAR-alpha) एगोनिस्ट",
+            routeAndDosing: "Oral: भोजन के साथ दिन में एक बार 145 mg से 200 mg PO।",
+            clinicalIndication: "डायबिटिक रेटिनोपैथी की प्रगति को धीमा करने और लेजर फोटोकोएग्यूलेशन की आवश्यकता को कम करने हेतु सहायक प्रणालीगत फार्माकोथेरेपी।",
+            mechanismOfAction: "परमाणु रिसेप्टर PPAR-alpha को उत्तेजित करता है, फैटी एसिड बीटा-ऑक्सीकरण को बढ़ाता है, इंट्रा-रेटिनल सूजन को कम करता है, पेरिसाइट्स को नष्ट होने से बचाता है, और बेसलाइन ट्राइग्लिसराइड्स से स्वतंत्र होकर आंतरिक रक्त-रेटिना बाधा को संरक्षित करता है।",
+            prescribingConsiderations: "हल्के से मध्यम क्रोनिक किडनी रोग (eGFR 30–59 mL/min) में खुराक में कमी आवश्यक। गंभीर गुर्दे की दुर्बलता (eGFR <30) में वर्जित।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 33: Lipid-Lowering Drugs — Fibrates, pp. 612–616",
+              biologicalPharmacology: "Synthetic PPAR-alpha ligand modulating transcriptional expression of endothelial adhesion molecules and lipid transport apolipoproteins.",
+              trialEvidence: "FIELD Trial (Lancet 2007; 370:1687-1697) & ACCORD-Eye Trial (NEJM 2010; 363:233-244)"
+            }
+          }
+        ]
+      };
+    } else if (lang === 'gu') {
+      return {
+        grade: 1,
+        stageTitle: "હળવી નોન-પ્રોલિફેરેટિવ ડાયાબિટીક રેટિનોપેથી (Mild NPDR) — પ્રારંભિક માઇક્રોએન્જિયોપેથી",
+        clinicalSummary: "હાર્ડ એક્સ્યુડેટ્સ, કોટન-વૂલ સ્પોટ્સ અથવા મેક્યુલર સોજા વિના માત્ર છૂટાછવાયા માઇક્રોએન્યુરિઝમ્સની હાજરી. ઇન્ટ્રાવિટ્રીયલ નેત્ર દવાની જરૂર નથી. રોગની પ્રગતિ અટકાવવા માટે પ્રાથમિક ધ્યાન સઘન પ્રણાલીગત સૂક્ષ્મ રક્તવાહિની સ્થિરતા પર છે.",
+        pharmacotherapyDisclaimer: disclaimer,
+        officialTextbookCitations: [
+          "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Ed.), Chapter 47: Endocrine Pancreas & Pharmacotherapy of Diabetes Mellitus, pp. 838–846",
+          "American Academy of Ophthalmology (AAO) Diabetic Retinopathy Preferred Practice Pattern (2023–2024)",
+          "ADA Standards of Care in Diabetes (2024), Chapter 12: Retinopathy & Microvascular Complications"
+        ],
+        primaryOphthalmicMedications: [
+          {
+            drugName: "Aflibercept (Eylea / VEGF Trap-Eye)",
+            genericInn: "Aflibercept (recombinant fusion protein)",
+            pharmacologicalClass: "દ્રાવ્ય ડિકોય રીસેપ્ટર ફ્યુઝન પ્રોટીન (VEGFR-1 અને VEGFR-2 ફ્યુઝ્ડ ટુ હ્યુમન IgG1 Fc)",
+            routeAndDosing: "Intravitreal Injection: પ્રથમ 5 ડોઝ માટે દર 4 અઠવાડિયે 2.0 mg (0.05 mL), ત્યારબાદ દર 8 અઠવાડિયે 2.0 mg (Treat-and-extend અનુકૂળતા સાથે).",
+            clinicalIndication: "ઉચ્ચ જોખમ Proliferative Diabetic Retinopathy (PDR) અને Center-Involving Diabetic Macular Edema (CI-DME).",
+            mechanismOfAction: "બધા આઇસોફોર્મ ડિકોય રીસેપ્ટર તરીકે કાર્ય કરે છે જે પિકોમોલર એફિનિટી (Kd ~0.5 pM) સાથે VEGF-A, VEGF-B અને Placental Growth Factor (PlGF) ને બાંધે છે, જેનાથી એન્ડોથેલિયલ VEGFR સક્રિયકરણ સંપૂર્ણપણે અટકે છે, અસામાન્ય નવી રક્તવાહિનીઓ બનતી અટકે છે અને લિક થતી નળીઓ સીલ થાય છે.",
+            prescribingConsiderations: "30-ગેજ સોયનો ઉપયોગ કરીને જંતુમુક્ત નેત્ર પરિસ્થિતિઓમાં આપવું. ઇન્જેક્શન પછી 30 મિનિટે Intraocular Pressure (IOP) તપાસો. સક્રિય આંખના ચેપ માટે તપાસ કરો.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology — Antiangiogenic Agents, pp. 1247–1249",
+              biologicalPharmacology: "Recombinant dimeric glycoprotein blocking VEGF-A/B and PlGF signaling pathways with higher binding affinity than native receptors.",
+              trialEvidence: "DRCR.net Protocol T (NEJM 2015; 372:1193-1204) & VIVID/VISTA Trials (Ophthalmology 2015)"
+            }
+          },
+          {
+            drugName: "Ranibizumab (Lucentis)",
+            genericInn: "Ranibizumab",
+            pharmacologicalClass: "રિકોમ્બિનન્ટ હ્યુમનાઇઝ્ડ મોનોક્લોનલ એન્ટિબોડી Fab ફ્રેગમેન્ટ",
+            routeAndDosing: "Intravitreal Injection: PDR માટે 0.5 mg (0.05 mL) અથવા DME માટે 0.3 mg (0.05 mL) દર મહિને.",
+            clinicalIndication: "Proliferative Diabetic Retinopathy અને Diabetic Macular Edema.",
+            mechanismOfAction: "Fc ડોમેન વગરનું હાઇ-એફિનિટી માનવીય Fab ફ્રેગમેન્ટ જે VEGF-A ના તમામ જૈવિક સક્રિય આઇસોફોર્મને બાંધીને નિષ્ક્રિય કરે છે, રક્તવાહિની કોષોનો અનિયંત્રિત ફેલાવો રોકે છે અને રક્તવાહિની લિકેજ ઘટાડે છે.",
+            prescribingConsiderations: "દ્રષ્ટિ સુરક્ષિત રાખવા માટે Panretinal Photocoagulation (PRP) સમકક્ષ સાબિત, જેમાં પરિઘ દ્રષ્ટિ ક્ષેત્રનું નુકસાન ઓછું થાય છે.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology, pp. 1248–1250",
+              biologicalPharmacology: "Monoclonal antibody Fab fragment engineered without Fc domain to accelerate retinal penetration and vitreal clearance while neutralizing VEGF-A.",
+              trialEvidence: "DRCR.net Protocol S (JAMA 2015; 314:2137-2146) & RIDE/RISE Trials"
+            }
+          }
+        ],
+        systemicMicrovascularMedications: [
+          {
+            drugName: "Lisinopril / Enalapril (or Telmisartan / Losartan)",
+            genericInn: "Lisinopril (ACE Inhibitor) or Telmisartan (ARB)",
+            pharmacologicalClass: "Renin-Angiotensin-Aldosterone System (RAAS) એન્ટાગોનિસ્ટ",
+            routeAndDosing: "Oral: Lisinopril 10–40 mg PO દિવસમાં એક વાર અથવા Telmisartan 40–80 mg PO દિવસમાં એક વાર.",
+            clinicalIndication: "બ્લડ પ્રેશર નિયંત્રણ (લક્ષ્ય <130/80 mmHg) અને ડાયાબિટીક રેટિનોપેથીમાં સૂક્ષ્મ રક્તવાહિની રક્ષણ.",
+            mechanismOfAction: "Angiotensin II-પ્રેરિત નળીઓના સંકોચનને રોકે છે, જેથી રેટિનાની સૂક્ષ્મ નળીઓ પરનું દબાણ ઘટે છે; રેટિના કોષોના નાશને અટકાવે છે અને રેટિનલ VEGF નું ઉત્પાદન ઘટાડે છે.",
+            prescribingConsiderations: "દવા શરૂ કર્યાના 2 અઠવાડિયા પછી સીરમ ક્રિએટિનાઇન અને પોટેશિયમ તપાસો. બેવડી ACE-I + ARB દવા એકસાથે ન આપવી.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 26: Renin and Angiotensin, pp. 471–488",
+              biologicalPharmacology: "Competitive inhibition of angiotensin-converting enzyme prevents conversion of angiotensin I to active vasoconstrictor angiotensin II.",
+              trialEvidence: "EUCLID Study (Lancet 1997) & DIRECT Retinopathy Program (Lancet 2008)"
+            }
+          },
+          {
+            drugName: "Fenofibrate (Lipanthyl / Tricor)",
+            genericInn: "Fenofibrate",
+            pharmacologicalClass: "Peroxisome Proliferator-Activated Receptor Alpha (PPAR-alpha) એગોનિસ્ટ",
+            routeAndDosing: "Oral: જમવાની સાથે દિવસમાં એક વાર 145 mg થી 200 mg PO.",
+            clinicalIndication: "ડાયાબિટીક રેટિનોપેથીની પ્રગતિ ધીમી કરવા અને લેસર સારવારની જરૂરિયાત ઘટાડવા માટે પૂરક દવા.",
+            mechanismOfAction: "ન્યુક્લિયર રીસેપ્ટર PPAR-alpha ને ઉત્તેજિત કરે છે, ફેટી એસિડ બીટા-ઓક્સિડેશન વધારે છે, રેટિનાના અંદરના સોજાને ઘટાડે છે, પેરીસાઇટ્સને સુરક્ષિત રાખે છે, અને બ્લડ-રેટિનલ બેરિયરની અખંડિતતા જાળવી રાખે છે.",
+            prescribingConsiderations: "કિડનીની હળવી સમસ્યામાં (eGFR 30–59 mL/min) ડોઝ ઘટાડવો જરૂરી. ગંભીર કિડની રોગમાં (eGFR <30) પ્રતિબંધિત.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 33: Lipid-Lowering Drugs — Fibrates, pp. 612–616",
+              biologicalPharmacology: "Synthetic PPAR-alpha ligand modulating transcriptional expression of endothelial adhesion molecules and lipid transport apolipoproteins.",
+              trialEvidence: "FIELD Trial (Lancet 2007; 370:1687-1697) & ACCORD-Eye Trial (NEJM 2010; 363:233-244)"
+            }
+          }
+        ]
+      };
+    }
+  } else {
+    // Grade 0: No Apparent DR (Baseline / Primary Prevention)
+    if (lang === 'hi') {
+      return {
+        grade: 0,
+        stageTitle: "कोई प्रत्यक्ष डायबिटिक रेटिनोपैथी नहीं — बुनियादी मेटाबोलिक सुरक्षा",
+        clinicalSummary: "डायबिटिक माइक्रोवैस्कुलर घावों के बिना सामान्य रेटिना फंडस। प्राथमिक नैदानिक उद्देश्य प्राथमिक रोकथाम है: रेटिना केशिका बेसमेंट मेम्ब्रेन के मोटे होने और पेरिसाइट अपोप्टोसिस को रोकने के लिए सख्त ग्लाइसेमिक, रक्तचाप और लिपिड मापदंडों को बनाए रखना।",
+        pharmacotherapyDisclaimer: disclaimer,
+        officialTextbookCitations: [
+          "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Ed.), Chapter 69: Ophthalmic Pharmacology, pp. 1247–1250",
+          "Katzung’s Basic & Clinical Pharmacology (15th Ed.), Chapter 65: Specialized Biologics & Ophthalmic Therapeutics",
+          "American Academy of Ophthalmology (AAO) Retina/Vitreous Preferred Practice Pattern (2023–2024)",
+          "DRCR Retina Network Protocols S & T (JAMA Ophthalmology / NEJM)"
+        ],
+        primaryOphthalmicMedications: [
+          {
+            drugName: "Aflibercept (Eylea / VEGF Trap-Eye)",
+            genericInn: "Aflibercept (recombinant fusion protein)",
+            pharmacologicalClass: "घुलनशील डिकॉय रिसेप्टर फ्यूजन प्रोटीन (VEGFR-1 एवं VEGFR-2 फ्यूज्ड टू ह्यूमन IgG1 Fc)",
+            routeAndDosing: "Intravitreal Injection: 2.0 mg (0.05 mL) प्रथम 5 खुराकों के लिए प्रत्येक 4 सप्ताह में, तत्पश्चात प्रत्येक 8 सप्ताह में (Treat-and-extend लचीलेपन के साथ)।",
+            clinicalIndication: "उच्च जोखिम Proliferative Diabetic Retinopathy (PDR) और Center-Involving Diabetic Macular Edema (CI-DME)।",
+            mechanismOfAction: "सभी आइसोफॉर्म डिकॉय रिसेप्टर के रूप में कार्य करता है जो पिकोमोलर आत्मीयता (Kd ~0.5 pM) के साथ VEGF-A, VEGF-B और Placental Growth Factor (PlGF) को बांधता है, जिससे एंडोथेलियल VEGFR सक्रियण पूरी तरह रुक जाता है, असामान्य नियोवैस्कुलराइजेशन अवरुद्ध होता है और रिसने वाली केशिकाएं सील होती हैं।",
+            prescribingConsiderations: "30-गेज सुई का उपयोग करके स्टेराइल ऑप्थेलमिक परिस्थितियों में प्रशासित किया जाना चाहिए। इंजेक्शन के 30 मिनट बाद Intraocular Pressure (IOP) की निगरानी करें। सक्रिय नेत्र संक्रमण की जांच करें।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology — Antiangiogenic Agents, pp. 1247–1249",
+              biologicalPharmacology: "Recombinant dimeric glycoprotein blocking VEGF-A/B and PlGF signaling pathways with higher binding affinity than native receptors.",
+              trialEvidence: "DRCR.net Protocol T (NEJM 2015; 372:1193-1204) & VIVID/VISTA Trials (Ophthalmology 2015)"
+            }
+          },
+          {
+            drugName: "Ranibizumab (Lucentis)",
+            genericInn: "Ranibizumab",
+            pharmacologicalClass: "पुनः संयोजक मानवीकृत मोनोक्लोनल एंटीबॉडी Fab फ्रैगमेंट",
+            routeAndDosing: "Intravitreal Injection: PDR हेतु 0.5 mg (0.05 mL) या DME हेतु 0.3 mg (0.05 mL) मासिक रूप से।",
+            clinicalIndication: "Proliferative Diabetic Retinopathy और Diabetic Macular Edema।",
+            mechanismOfAction: "Fc डोमेन रहित उच्च आत्मीयता मानवीकृत Fab फ्रैगमेंट जो VEGF-A के सभी जैविक रूप से सक्रिय आइसोफॉर्म (क्लीव्ड VEGF110 सहित) को चयनात्मक रूप से बांधकर निष्क्रिय करता है, एंडोथेलियल प्रसार को रोकता है और संवहनी रिसाव को कम करता है।",
+            prescribingConsiderations: "दृष्टि तीक्ष्णता संरक्षण हेतु Panretinal Photocoagulation (PRP) के गैर-हीन सिद्ध।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology, pp. 1248–1250",
+              biologicalPharmacology: "Monoclonal antibody Fab fragment engineered without Fc domain to accelerate retinal penetration and vitreal clearance while neutralizing VEGF-A.",
+              trialEvidence: "DRCR.net Protocol S (JAMA 2015; 314:2137-2146) & RIDE/RISE Trials"
+            }
+          }
+        ],
+        systemicMicrovascularMedications: [
+          {
+            drugName: "Lisinopril / Enalapril (or Telmisartan / Losartan)",
+            genericInn: "Lisinopril (ACE Inhibitor) or Telmisartan (ARB)",
+            pharmacologicalClass: "Renin-Angiotensin-Aldosterone System (RAAS) एंटागोनिस्ट",
+            routeAndDosing: "Oral: Lisinopril 10–40 mg PO दिन में एक बार या Telmisartan 40–80 mg PO दिन में एक बार।",
+            clinicalIndication: "रक्तचाप अनुकूलन (लक्ष्य <130/80 mmHg) और डायबिटिक रेटिनोपैथी में माइक्रोवैस्कुलर केशिका संरक्षण।",
+            mechanismOfAction: "Angiotensin II-प्रेरित वाहिकासंकीर्णन को अवरुद्ध करता है, जिससे रेटिना केशिकाओं पर अत्यधिक दबाव कम होता है; रेटिना केशिका कोशिकाओं के अपोप्टोसिस को दबाता है और रेटिना VEGF अभिव्यक्ति को घटाता है।",
+            prescribingConsiderations: "शुरुआत के 2 सप्ताह बाद सीरम क्रिएटिनिन और पोटेशियम की निगरानी करें। दोहरी ACE-I + ARB संयोजन से बचें।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 26: Renin and Angiotensin, pp. 471–488",
+              biologicalPharmacology: "Competitive inhibition of angiotensin-converting enzyme prevents conversion of angiotensin I to active vasoconstrictor angiotensin II.",
+              trialEvidence: "EUCLID Study (Lancet 1997) & DIRECT Retinopathy Program (Lancet 2008)"
+            }
+          },
+          {
+            drugName: "Fenofibrate (Lipanthyl / Tricor)",
+            genericInn: "Fenofibrate",
+            pharmacologicalClass: "Peroxisome Proliferator-Activated Receptor Alpha (PPAR-alpha) एगोनिस्ट",
+            routeAndDosing: "Oral: भोजन के साथ दिन में एक बार 145 mg से 200 mg PO।",
+            clinicalIndication: "डायबिटिक रेटिनोपैथी की प्रगति को धीमा करने और लेजर फोटोकोएग्यूलेशन की आवश्यकता को कम करने हेतु सहायक प्रणालीगत फार्माकोथेरेपी।",
+            mechanismOfAction: "परमाणु रिसेप्टर PPAR-alpha को उत्तेजित करता है, फैटी एसिड बीटा-ऑक्सीकरण को बढ़ाता है, इंट्रा-रेटिनल सूजन को कम करता है, पेरिसाइट्स को नष्ट होने से बचाता है, और बेसलाइन ट्राइग्लिसराइड्स से स्वतंत्र होकर आंतरिक रक्त-रेटिना बाधा को संरक्षित करता है।",
+            prescribingConsiderations: "हल्के से मध्यम क्रोनिक किडनी रोग (eGFR 30–59 mL/min) में खुराक में कमी आवश्यक। गंभीर गुर्दे की दुर्बलता (eGFR <30) में वर्जित।",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 33: Lipid-Lowering Drugs — Fibrates, pp. 612–616",
+              biologicalPharmacology: "Synthetic PPAR-alpha ligand modulating transcriptional expression of endothelial adhesion molecules and lipid transport apolipoproteins.",
+              trialEvidence: "FIELD Trial (Lancet 2007; 370:1687-1697) & ACCORD-Eye Trial (NEJM 2010; 363:233-244)"
+            }
+          }
+        ]
+      };
+    } else if (lang === 'gu') {
+      return {
+        grade: 0,
+        stageTitle: "કોઈ સ્પષ્ટ ડાયાબિટીક રેટિનોપેથી નથી — બેઝલાઇન મેટાબોલિક રક્ષણ",
+        clinicalSummary: "ડાયાબિટીક સૂક્ષ્મ રક્તવાહિની ઇજા વિના સામાન્ય રેટિના ફંડસ. પ્રાથમિક ક્લિનિકલ ઉદ્દેશ્ય પ્રાથમિક નિવારણ છે: રેટિના રક્તવાહિની બેઝમેન્ટ મેમ્બ્રેન જાડી થતી અટકાવવા અને પેરીસાઇટ કોષોના રક્ષણ માટે કડક બ્લડ શુગર, બ્લડ પ્રેશર અને લિપિડ નિયંત્રણ જાળવવું.",
+        pharmacotherapyDisclaimer: disclaimer,
+        officialTextbookCitations: [
+          "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Ed.), Chapter 69: Ophthalmic Pharmacology, pp. 1247–1250",
+          "Katzung’s Basic & Clinical Pharmacology (15th Ed.), Chapter 65: Specialized Biologics & Ophthalmic Therapeutics",
+          "American Academy of Ophthalmology (AAO) Retina/Vitreous Preferred Practice Pattern (2023–2024)",
+          "DRCR Retina Network Protocols S & T (JAMA Ophthalmology / NEJM)"
+        ],
+        primaryOphthalmicMedications: [
+          {
+            drugName: "Aflibercept (Eylea / VEGF Trap-Eye)",
+            genericInn: "Aflibercept (recombinant fusion protein)",
+            pharmacologicalClass: "દ્રાવ્ય ડિકોય રીસેપ્ટર ફ્યુઝન પ્રોટીન (VEGFR-1 અને VEGFR-2 ફ્યુઝ્ડ ટુ હ્યુમન IgG1 Fc)",
+            routeAndDosing: "Intravitreal Injection: પ્રથમ 5 ડોઝ માટે દર 4 અઠવાડિયે 2.0 mg (0.05 mL), ત્યારબાદ દર 8 અઠવાડિયે 2.0 mg (Treat-and-extend અનુકૂળતા સાથે).",
+            clinicalIndication: "ઉચ્ચ જોખમ Proliferative Diabetic Retinopathy (PDR) અને Center-Involving Diabetic Macular Edema (CI-DME).",
+            mechanismOfAction: "બધા આઇસોફોર્મ ડિકોય રીસેપ્ટર તરીકે કાર્ય કરે છે જે પિકોમોલર એફિનિટી (Kd ~0.5 pM) સાથે VEGF-A, VEGF-B અને Placental Growth Factor (PlGF) ને બાંધે છે, જેનાથી એન્ડોથેલિયલ VEGFR સક્રિયકરણ સંપૂર્ણપણે અટકે છે, અસામાન્ય નવી રક્તવાહિનીઓ બનતી અટકે છે અને લિક થતી નળીઓ સીલ થાય છે.",
+            prescribingConsiderations: "30-ગેજ સોયનો ઉપયોગ કરીને જંતુમુક્ત નેત્ર પરિસ્થિતિઓમાં આપવું. ઇન્જેક્શન પછી 30 મિનિટે Intraocular Pressure (IOP) તપાસો. સક્રિય આંખના ચેપ માટે તપાસ કરો.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology — Antiangiogenic Agents, pp. 1247–1249",
+              biologicalPharmacology: "Recombinant dimeric glycoprotein blocking VEGF-A/B and PlGF signaling pathways with higher binding affinity than native receptors.",
+              trialEvidence: "DRCR.net Protocol T (NEJM 2015; 372:1193-1204) & VIVID/VISTA Trials (Ophthalmology 2015)"
+            }
+          },
+          {
+            drugName: "Ranibizumab (Lucentis)",
+            genericInn: "Ranibizumab",
+            pharmacologicalClass: "રિકોમ્બિનન્ટ હ્યુમનાઇઝ્ડ મોનોક્લોનલ એન્ટિબોડી Fab ફ્રેગમેન્ટ",
+            routeAndDosing: "Intravitreal Injection: PDR માટે 0.5 mg (0.05 mL) અથવા DME માટે 0.3 mg (0.05 mL) દર મહિને.",
+            clinicalIndication: "Proliferative Diabetic Retinopathy અને Diabetic Macular Edema.",
+            mechanismOfAction: "Fc ડોમેન વગરનું હાઇ-એફિનિટી માનવીય Fab ફ્રેગમેન્ટ જે VEGF-A ના તમામ જૈવિક સક્રિય આઇસોફોર્મને બાંધીને નિષ્ક્રિય કરે છે, રક્તવાહિની કોષોનો અનિયંત્રિત ફેલાવો રોકે છે અને રક્તવાહિની લિકેજ ઘટાડે છે.",
+            prescribingConsiderations: "દ્રષ્ટિ સુરક્ષિત રાખવા માટે Panretinal Photocoagulation (PRP) સમકક્ષ સાબિત, જેમાં પરિઘ દ્રષ્ટિ ક્ષેત્રનું નુકસાન ઓછું થાય છે.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 69: Ophthalmic Pharmacology, pp. 1248–1250",
+              biologicalPharmacology: "Monoclonal antibody Fab fragment engineered without Fc domain to accelerate retinal penetration and vitreal clearance while neutralizing VEGF-A.",
+              trialEvidence: "DRCR.net Protocol S (JAMA 2015; 314:2137-2146) & RIDE/RISE Trials"
+            }
+          }
+        ],
+        systemicMicrovascularMedications: [
+          {
+            drugName: "Lisinopril / Enalapril (or Telmisartan / Losartan)",
+            genericInn: "Lisinopril (ACE Inhibitor) or Telmisartan (ARB)",
+            pharmacologicalClass: "Renin-Angiotensin-Aldosterone System (RAAS) એન્ટાગોનિસ્ટ",
+            routeAndDosing: "Oral: Lisinopril 10–40 mg PO દિવસમાં એક વાર અથવા Telmisartan 40–80 mg PO દિવસમાં એક વાર.",
+            clinicalIndication: "બ્લડ પ્રેશર નિયંત્રણ (લક્ષ્ય <130/80 mmHg) અને ડાયાબિટીક રેટિનોપેથીમાં સૂક્ષ્મ રક્તવાહિની રક્ષણ.",
+            mechanismOfAction: "Angiotensin II-પ્રેરિત નળીઓના સંકોચનને રોકે છે, જેથી રેટિનાની સૂક્ષ્મ નળીઓ પરનું દબાણ ઘટે છે; રેટિના કોષોના નાશને અટકાવે છે અને રેટિનલ VEGF નું ઉત્પાદન ઘટાડે છે.",
+            prescribingConsiderations: "દવા શરૂ કર્યાના 2 અઠવાડિયા પછી સીરમ ક્રિએટિનાઇન અને પોટેશિયમ તપાસો. બેવડી ACE-I + ARB દવા એકસાથે ન આપવી.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 26: Renin and Angiotensin, pp. 471–488",
+              biologicalPharmacology: "Competitive inhibition of angiotensin-converting enzyme prevents conversion of angiotensin I to active vasoconstrictor angiotensin II.",
+              trialEvidence: "EUCLID Study (Lancet 1997) & DIRECT Retinopathy Program (Lancet 2008)"
+            }
+          },
+          {
+            drugName: "Fenofibrate (Lipanthyl / Tricor)",
+            genericInn: "Fenofibrate",
+            pharmacologicalClass: "Peroxisome Proliferator-Activated Receptor Alpha (PPAR-alpha) એગોનિસ્ટ",
+            routeAndDosing: "Oral: જમવાની સાથે દિવસમાં એક વાર 145 mg થી 200 mg PO.",
+            clinicalIndication: "ડાયાબિટીક રેટિનોપેથીની પ્રગતિ ધીમી કરવા અને લેસર સારવારની જરૂરિયાત ઘટાડવા માટે પૂરક દવા.",
+            mechanismOfAction: "ન્યુક્લિયર રીસેપ્ટર PPAR-alpha ને ઉત્તેજિત કરે છે, ફેટી એસિડ બીટા-ઓક્સિડેશન વધારે છે, રેટિનાના અંદરના સોજાને ઘટાડે છે, પેરીસાઇટ્સને સુરક્ષિત રાખે છે, અને બ્લડ-રેટિનલ બેરિયરની અખંડિતતા જાળવી રાખે છે.",
+            prescribingConsiderations: "કિડનીની હળવી સમસ્યામાં (eGFR 30–59 mL/min) ડોઝ ઘટાડવો જરૂરી. ગંભીર કિડની રોગમાં (eGFR <30) પ્રતિબંધિત.",
+            officialTextbookReference: {
+              bookTitle: "Goodman & Gilman’s The Pharmacological Basis of Therapeutics (14th Edition)",
+              chapterAndSection: "Chapter 33: Lipid-Lowering Drugs — Fibrates, pp. 612–616",
+              biologicalPharmacology: "Synthetic PPAR-alpha ligand modulating transcriptional expression of endothelial adhesion molecules and lipid transport apolipoproteins.",
+              trialEvidence: "FIELD Trial (Lancet 2007; 370:1687-1697) & ACCORD-Eye Trial (NEJM 2010; 363:233-244)"
+            }
+          }
+        ]
+      };
+    }
   }
 
   // Default English representation for Grade 4/3/2/1/0

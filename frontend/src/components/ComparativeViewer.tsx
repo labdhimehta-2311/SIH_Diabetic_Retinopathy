@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Eye, Layers, Sparkles, AlertCircle, ZoomIn, Sliders } from 'lucide-react';
+import { useReportLanguage } from '../lib/reportLanguageContext';
 
 interface ImagesData {
   originalUrl: string;
@@ -16,6 +17,7 @@ interface ComparativeViewerProps {
 }
 
 export default function ComparativeViewer({ images, m3Executed = true }: ComparativeViewerProps) {
+  const { activeLang } = useReportLanguage();
   const [activeTab, setActiveTab] = useState<'grid' | 'overlay'>('grid');
   const [overlayAlpha, setOverlayAlpha] = useState<number>(50);
   const [overlayType, setOverlayType] = useState<'heatmap' | 'lesion'>('heatmap');
@@ -25,7 +27,9 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm min-h-[300px]">
         <Layers className="w-8 h-8 text-slate-300 mb-3 animate-pulse" />
-        <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Synchronizing AI Image Data...</span>
+        <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+          {activeLang === 'hi' ? 'एआई छवि डेटा सिंक्रनाइज़ हो रहा है...' : activeLang === 'gu' ? 'AI ઇમેજ ડેટા સિંક્રનાઇઝ થઈ રહ્યો છે...' : 'Synchronizing AI Image Data...'}
+        </span>
       </div>
     );
   }
@@ -37,10 +41,10 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
         <div>
           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 print:text-[10px] print:uppercase print:tracking-widest">
             <Layers className="w-5 h-5 text-teal-600 print:hidden" />
-            Comparative Fundus Diagnostic Matrix
+            {activeLang === 'hi' ? 'तुलनात्मक फंडस डायग्नोस्टिक मैट्रिक्स' : activeLang === 'gu' ? 'તુલનાત્મક ફંડસ ડાયગ્નોસ્ટિક મેટ્રિક્સ' : 'Comparative Fundus Diagnostic Matrix'}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5 print:text-[7px] print:uppercase print:mt-0">
-            Synchronized clinical side-by-side inspection
+            {activeLang === 'hi' ? 'समानांतर क्लिनिकल प्रत्यक्ष निरीक्षण' : activeLang === 'gu' ? 'સમાંતર ક્લિનિકલ સીધું નિરીક્ષણ' : 'Synchronized clinical side-by-side inspection'}
           </p>
         </div>
 
@@ -49,13 +53,13 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
             onClick={() => setActiveTab('grid')} 
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${activeTab === 'grid' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            4-Panel Matrix
+            {activeLang === 'hi' ? '4-पैनल मैट्रिक्स' : activeLang === 'gu' ? '4-પેનલ મેટ્રિક્સ' : '4-Panel Matrix'}
           </button>
           <button 
             onClick={() => setActiveTab('overlay')} 
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${activeTab === 'overlay' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            <Sliders className="w-3.5 h-3.5" /> Interactive Overlay Blend
+            <Sliders className="w-3.5 h-3.5" /> {activeLang === 'hi' ? 'इंटरएक्टिव ओवरले ब्लेंड' : activeLang === 'gu' ? 'ઇન્ટરેક્ટિવ ઓવરલે બ્લેન્ડ' : 'Interactive Overlay Blend'}
           </button>
         </div>
       </div>
@@ -67,7 +71,9 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           {/* 1. Original Fundus */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">1. Raw Fundus Capture</span>
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">
+                {activeLang === 'hi' ? '1. कच्चा फंडस कैप्चर (Raw)' : activeLang === 'gu' ? '1. રો ફંડસ કેપ્ચર (Raw)' : '1. Raw Fundus Capture'}
+              </span>
               <button onClick={() => setSelectedZoomImage(images.originalUrl)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
@@ -76,14 +82,17 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
             >
               <img src={images.originalUrl} alt="Raw Fundus Capture" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Unmodified 45° macular retinal field.</div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
+              {activeLang === 'hi' ? 'अपरिवर्तित 45° मैकुलर रेटिना क्षेत्र।' : activeLang === 'gu' ? 'અપરિવર્તિત 45° મેક્યુલર રેટિના ક્ષેત્ર.' : 'Unmodified 45° macular retinal field.'}
+            </div>
           </div>
 
           {/* 2. Enhanced */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-teal-700 uppercase tracking-wide flex items-center gap-1 print:text-[8px] print:text-slate-900">
-                <Sparkles className="w-3.5 h-3.5 print:hidden" /> 2. CLAHE Contrast
+                <Sparkles className="w-3.5 h-3.5 print:hidden" />
+                {activeLang === 'hi' ? '2. CLAHE कंट्रास्ट' : activeLang === 'gu' ? '2. CLAHE કોન્ટ્રાસ્ટ' : '2. CLAHE Contrast'}
               </span>
               <button onClick={() => setSelectedZoomImage(images.enhancedUrl)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
             </div>
@@ -93,13 +102,17 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
             >
               <img src={images.enhancedUrl} alt="CLAHE Enhanced Fundus" className="w-full h-full object-contain print:scale-100" />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">Green-channel microvascular boost.</div>
+            <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
+              {activeLang === 'hi' ? 'ग्रीन-चैनल सूक्ष्म संवहनी संवर्धन।' : activeLang === 'gu' ? 'ગ્રીન-ચેનલ સૂક્ષ્મ રક્તવાહિની સંવર્ધન.' : 'Green-channel microvascular boost.'}
+            </div>
           </div>
 
           {/* 3. Lesion Mask */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
-              <span className="text-xs font-bold text-amber-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">3. U-Net Lesion Mask</span>
+              <span className="text-xs font-bold text-amber-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">
+                {activeLang === 'hi' ? '3. U-Net घाव विभाजन' : activeLang === 'gu' ? '3. U-Net જખમ માસ્ક' : '3. U-Net Lesion Mask'}
+              </span>
               {images.lesionMaskUrl && (
                 <button onClick={() => setSelectedZoomImage(images.lesionMaskUrl!)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
               )}
@@ -113,12 +126,16 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               ) : (
                 <div className="flex flex-col items-center justify-center p-4 text-center">
                   <AlertCircle className="w-6 h-6 text-slate-400 mb-1" />
-                  <span className="text-[8px] font-semibold text-slate-300">Segmentation Bypassed</span>
+                  <span className="text-[8px] font-semibold text-slate-300">
+                    {activeLang === 'hi' ? 'विभाजन बाईपास किया गया' : activeLang === 'gu' ? 'વિભાજન બાયપાસ કરેલ' : 'Segmentation Bypassed'}
+                  </span>
                 </div>
               )}
             </div>
             <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
-              {m3Executed ? 'Microaneurysms, hemorrhages & exudates.' : 'Lesion segmentation disabled.'}
+              {m3Executed 
+                ? (activeLang === 'hi' ? 'माइक्रोएन्यूरिज्म, रक्तस्राव एवं एक्सयूडेट्स।' : activeLang === 'gu' ? 'માઇક્રોએન્યુરિઝમ, રક્તસ્રાવ અને એક્સ્યુડેટ્સ.' : 'Microaneurysms, hemorrhages & exudates.')
+                : (activeLang === 'hi' ? 'घाव विभाजन निष्क्रिय।' : activeLang === 'gu' ? 'જખમ વિભાજન નિષ્ક્રિય.' : 'Lesion segmentation disabled.')}
             </div>
           </div>
 
@@ -126,7 +143,8 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1 print:text-[8px] print:text-slate-900">
-                <Eye className="w-3.5 h-3.5 print:hidden" /> 4. Grad-CAM Activation
+                <Eye className="w-3.5 h-3.5 print:hidden" />
+                {activeLang === 'hi' ? '4. Grad-CAM एक्टिवेशन' : activeLang === 'gu' ? '4. Grad-CAM એક્ટિવેશન' : '4. Grad-CAM Activation'}
               </span>
               <button 
                 onClick={() => setSelectedZoomImage(images.heatmapUrl)} 
@@ -142,7 +160,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               <img src={images.heatmapUrl} alt="Grad-CAM Neural Heatmap" className="w-full h-full object-contain print:scale-100" />
             </div>
             <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
-              Attentive feature grading saliency.
+              {activeLang === 'hi' ? 'मॉडल ध्यान एवं ग्रेडिंग प्रमुखता।' : activeLang === 'gu' ? 'મોડલ ધ્યાન અને ગ્રેડિંગ મુખ્યતા.' : 'Attentive feature grading saliency.'}
             </div>
           </div>
 
@@ -153,32 +171,56 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
           <div className="flex items-center justify-between border-b border-slate-200 pb-1 mb-1.5 print:pb-0.5 print:mb-1">
             <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px] print:text-[7.5px] flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-teal-600 inline-block"></span>
-              Quantitative Lesion Distribution & Optical Assessment
+              {activeLang === 'hi' ? 'मात्रात्मक घाव वितरण एवं ऑप्टिकल मूल्यांकन' : activeLang === 'gu' ? 'માત્રાત્મક જખમ વિતરણ અને ઓપ્ટિકલ મૂલ્યાંકન' : 'Quantitative Lesion Distribution & Optical Assessment'}
             </span>
             <span className="text-[10px] print:text-[6.5px] text-slate-500 font-mono">
-              Field of View: 45° • Depth: 24-bit sRGB • Optics Quality: High
+              {activeLang === 'hi' ? 'दृश्य क्षेत्र: 45° • गहराई: 24-बिट sRGB • ऑप्टिक्स: उच्च' : activeLang === 'gu' ? 'દ્રષ્ટિ ક્ષેત્ર: 45° • ઊંડાણ: 24-બીટ sRGB • ઓપ્ટિક્સ: ઉચ્ચ' : 'Field of View: 45° • Depth: 24-bit sRGB • Optics Quality: High'}
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 print:grid-cols-4 print:gap-1.5 text-center">
             <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Microaneurysms (MA)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-amber-700 mt-0.5">Focal Vascular Dilations</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Isolated capillary outpouchings</div>
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">
+                {activeLang === 'hi' ? 'माइक्रोएन्यूरिज्म (MA)' : activeLang === 'gu' ? 'માઇક્રોએન્યુરિઝમ (MA)' : 'Microaneurysms (MA)'}
+              </div>
+              <div className="text-xs print:text-[8.5px] font-black text-amber-700 mt-0.5">
+                {activeLang === 'hi' ? 'फोकल वैस्कुलर फैलाव' : activeLang === 'gu' ? 'ફોકલ વેસ્ક્યુલર વિસ્તરણ' : 'Focal Vascular Dilations'}
+              </div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">
+                {activeLang === 'hi' ? 'अलग सूक्ष्म केशिका फैलाव' : activeLang === 'gu' ? 'અલગ કેશિકા વિસ્તરણ' : 'Isolated capillary outpouchings'}
+              </div>
             </div>
             <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hemorrhages (HEM)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-rose-700 mt-0.5">Intra-Retinal Micro-Bleeds</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Blot, dot & flame patterns</div>
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">
+                {activeLang === 'hi' ? 'रेटिनल रक्तस्राव (HEM)' : activeLang === 'gu' ? 'રેટિનલ રક્તસ્રાવ (HEM)' : 'Hemorrhages (HEM)'}
+              </div>
+              <div className="text-xs print:text-[8.5px] font-black text-rose-700 mt-0.5">
+                {activeLang === 'hi' ? 'इंट्रा-रेटिनल सूक्ष्म रक्तस्राव' : activeLang === 'gu' ? 'ઇન્ટ્રા-રેટિનલ સૂક્ષ્મ રક્તસ્રાવ' : 'Intra-Retinal Micro-Bleeds'}
+              </div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">
+                {activeLang === 'hi' ? 'ब्लॉट, डॉट एवं फ्लेम पैटर्न' : activeLang === 'gu' ? 'બ્લોટ, ડોટ અને ફ્લેમ પેટર્ન' : 'Blot, dot & flame patterns'}
+              </div>
             </div>
             <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Hard Exudates (EX)</div>
-              <div className="text-xs print:text-[8.5px] font-black text-teal-700 mt-0.5">Lipoprotein Deposition</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Macular edema risk assessment</div>
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">
+                {activeLang === 'hi' ? 'हार्ड एक्सयूडेट्स (EX)' : activeLang === 'gu' ? 'હાર્ડ એક્સ્યુડેટ્સ (EX)' : 'Hard Exudates (EX)'}
+              </div>
+              <div className="text-xs print:text-[8.5px] font-black text-teal-700 mt-0.5">
+                {activeLang === 'hi' ? 'लिपोप्रोटीन जमाव' : activeLang === 'gu' ? 'લિપોપ્રોટીન જમાવટ' : 'Lipoprotein Deposition'}
+              </div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">
+                {activeLang === 'hi' ? 'मैकुलर एडिमा जोखिम मूल्यांकन' : activeLang === 'gu' ? 'મેક્યુલર એડીમા જોખમ આકલન' : 'Macular edema risk assessment'}
+              </div>
             </div>
             <div className="bg-white border border-slate-200 rounded p-1.5 print:p-1">
-              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">Vessel Arborization</div>
-              <div className="text-xs print:text-[8.5px] font-black text-slate-800 mt-0.5">Arcades & Caliber Checked</div>
-              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">Optic disc & foveal centration</div>
+              <div className="text-[9px] print:text-[6.5px] text-slate-500 uppercase font-bold">
+                {activeLang === 'hi' ? 'रक्तवाहिका संरचना' : activeLang === 'gu' ? 'રક્તવાહિની સંરચના' : 'Vessel Arborization'}
+              </div>
+              <div className="text-xs print:text-[8.5px] font-black text-slate-800 mt-0.5">
+                {activeLang === 'hi' ? 'धमनी एवं शिरा कैलिबर परीक्षण' : activeLang === 'gu' ? 'ધમની અને શિરા વ્યાસ તપાસ' : 'Arcades & Caliber Checked'}
+              </div>
+              <div className="text-[9px] print:text-[6px] text-slate-600 mt-0.5">
+                {activeLang === 'hi' ? 'ऑप्टिक डिस्क एवं फोविया संरेखण' : activeLang === 'gu' ? 'ઓપ્ટિક ડિસ્ક અને ફોવિયા કેન્દ્રીકરણ' : 'Optic disc & foveal centration'}
+              </div>
             </div>
           </div>
         </div>

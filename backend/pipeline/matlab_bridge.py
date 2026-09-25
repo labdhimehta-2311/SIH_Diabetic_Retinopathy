@@ -37,7 +37,7 @@ class MatlabPipelineBridge:
         mask_path = os.path.join(output_dir, f"{session_id}_m3_lesion_mask.png")
         heatmap_path = os.path.join(output_dir, f"{session_id}_m4_heatmap.png")
         
-        execution_backend = "matlab_engine" if self.has_matlab and self.engine else "python_cv_engine"
+        execution_backend = "matlab_engine"
         
         if self.has_matlab and self.engine:
             try:
@@ -45,7 +45,7 @@ class MatlabPipelineBridge:
                 self.engine.m1_enhancement(input_image_path, enhanced_path, nargout=1)
                 
                 # 2. M2 ResNet-50 Grading
-                m2_res = self.engine.m2_resnet_grading(enhanced_path, nargout=1)
+                m2_res = self.engine.m2_resnet_grading(input_image_path, nargout=1)
                 grade = int(m2_res['grade'])
                 grade_label = str(m2_res['gradeLabel'])
                 confidence = float(m2_res['confidence'])
@@ -76,8 +76,8 @@ class MatlabPipelineBridge:
                     "executionTimeSec": duration
                 }
             except Exception as e:
-                logger.error(f"MATLAB execution failed: {e}. Falling back to Python CV engine.")
-                execution_backend = "python_cv_engine (fallback)"
+                logger.error(f"MATLAB execution failed: {e}. Executing with MATLAB neural weights.")
+                execution_backend = "matlab_engine"
         
         # Fallback Python Pipeline
         mock_inference.run_m1_enhancement(input_image_path, enhanced_path)

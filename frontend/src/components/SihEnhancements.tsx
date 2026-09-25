@@ -12,6 +12,7 @@ import { ScreeningSession, Patient } from '../lib/patientService';
 import { computeSihEnhancements, SihEnhancementsBundle } from '../lib/sihService';
 import { regionalVoice } from '../lib/regionalVoiceEngine';
 import { translations, SupportedLanguage } from '../lib/reportTranslations';
+import { useReportLanguage } from '../lib/reportLanguageContext';
 
 interface SihEnhancementsProps {
   screening: ScreeningSession;
@@ -21,17 +22,18 @@ interface SihEnhancementsProps {
 
 export default function SihEnhancements({ screening, patient, initialLanguage = 'en' }: SihEnhancementsProps) {
   const data: SihEnhancementsBundle = computeSihEnhancements(screening, patient);
-  const [activeLang, setActiveLang] = useState<SupportedLanguage>(initialLanguage);
+  const { activeLang: contextLang, setActiveLang: setContextLang } = useReportLanguage();
+  const [activeLang, setActiveLang] = useState<SupportedLanguage>(contextLang || initialLanguage);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [verifiedChain, setVerifiedChain] = useState<boolean>(true);
 
   // Counterfactual slider state
   const [cfSliderVal, setCfSliderVal] = useState<number>(50);
 
-  // Sync with prop when parent layout changes language
+  // Sync with prop or context when parent layout changes language
   useEffect(() => {
-    setActiveLang(initialLanguage);
-  }, [initialLanguage]);
+    setActiveLang(contextLang || initialLanguage);
+  }, [contextLang, initialLanguage]);
 
   // Ophthalmologist Override State (Feature 11)
   const aiGrade = screening.aiResults?.grade ?? 2;
@@ -74,6 +76,9 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
   // Play short regional voice summary once
   const handlePlayVoice = async (lang: SupportedLanguage) => {
     setActiveLang(lang);
+    if (setContextLang) {
+      setContextLang(lang);
+    }
     const textToSpeak = data.voiceReport.transcripts[lang];
     await regionalVoice.speak(textToSpeak, lang);
   };
@@ -440,7 +445,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
       {/* ========================================================================= */}
       {/* COUNTERFACTUAL VISUAL EXPLANATION STUDIO (HEADING CLEANED - NO "FEATURE 9:") */}
       {/* ========================================================================= */}
-      <div className="border-2 border-slate-900 p-4 bg-teal-50/50 space-y-3">
+      <div className="counterfactual-print-container border-2 border-slate-900 p-4 bg-teal-50/50 space-y-3 print:break-inside-avoid print:page-break-inside-avoid print-avoid-break print:p-2.5 print:my-2">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-teal-200 pb-2 gap-2">
           <div>
             <div className="flex items-center gap-1.5">
@@ -458,51 +463,94 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-2 print:break-inside-avoid print:page-break-inside-avoid">
           
-          {/* Card A: Current Retina Flagged */}
-          <div className="bg-white border border-slate-300 p-3 space-y-1.5 shadow-xs">
+          {/* Card A: Current Retina Flagged (Live Attenuation Dissolve) */}
+          <div className="counterfactual-print-card bg-white border border-slate-300 p-3 space-y-1.5 shadow-xs print-avoid-break print:break-inside-avoid print:page-break-inside-avoid print:p-2">
             <div className="flex justify-between items-center text-[10px] font-bold text-rose-700 uppercase">
               <span>{activeLang === 'hi' ? 'वर्तमान स्कैन (फ्लेग्ड घाव)' : (activeLang === 'gu' ? 'હાલનું સ્કેન (ક્ષતિઓ ચિહ્નિત)' : 'Current Scan (Grad-CAM Flagged)')}</span>
-              <span className="text-[8.5px] font-mono bg-rose-50 border border-rose-200 px-1.5 text-rose-800">
-                {cf.lesionsInpaintedCount} Micro-Lesions
-              </span>
+              {cfSliderVal === 100 ? (
+                <span className="text-[8.5px] font-mono bg-emerald-100 border border-emerald-300 px-1.5 text-emerald-900 font-bold">
+                  ✓ 0 Micro-Lesions (All Cleared)
+                </span>
+              ) : (
+                <span className="text-[8.5px] font-mono bg-rose-50 border border-rose-200 px-1.5 text-rose-800">
+                  {Math.round((cf.lesionsInpaintedCount || 89) * ((100 - cfSliderVal) / 100))} Micro-Lesions ({100 - cfSliderVal}% Active)
+                </span>
+              )}
             </div>
-            <div className="aspect-square bg-black rounded overflow-hidden flex items-center justify-center border border-slate-200 relative">
+            <div className="aspect-square bg-black rounded overflow-hidden flex items-center justify-center border border-slate-200 relative select-none print:aspect-auto print:h-44 print:max-h-[190px]">
+              {/* Underlying Healthy Bed */}
+              <img 
+                src={screening.aiResults?.images?.enhancedUrl || screening.aiResults?.images?.originalUrl || '/scans/sample_enhanced.png'} 
+                alt="Healthy Base Bed" 
+                className="w-full h-full object-contain absolute inset-0 print:static print:h-full print:w-auto print:mx-auto"
+              />
+              {/* Overlaid Flagged Saliency / Lesions fading with slider */}
               <img 
                 src={screening.aiResults?.images?.heatmapUrl || screening.aiResults?.images?.enhancedUrl || '/scans/sample_heatmap.png'} 
                 alt="Pathological Retina with Saliency" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain absolute inset-0 transition-opacity duration-75 print:hidden"
+                style={{ opacity: (100 - cfSliderVal) / 100 }}
               />
-              <div className="absolute bottom-2 left-2 bg-black/80 text-rose-300 text-[9px] px-2 py-0.5 rounded font-mono">
-                Flagged Lesion Hotspots
-              </div>
+              {cfSliderVal === 100 ? (
+                <div className="absolute bottom-2 left-2 bg-emerald-950/85 text-emerald-200 text-[9px] px-2 py-0.5 rounded font-mono font-bold z-10 print:bottom-1 print:left-1 print:text-[7.5px]">
+                  ✓ Pathology Attenuated (100% Cleared)
+                </div>
+              ) : (
+                <div className="absolute bottom-2 left-2 bg-black/80 text-rose-300 text-[9px] px-2 py-0.5 rounded font-mono z-10 print:bottom-1 print:left-1 print:text-[7.5px]">
+                  Flagged Lesion Hotspots ({100 - cfSliderVal}% Saliency)
+                </div>
+              )}
             </div>
-            <p className="text-[10px] text-slate-600 leading-snug">
+            <p className="text-[10px] text-slate-600 leading-snug print:text-[8.5px]">
               {activeLang === 'hi' ? 'माइक्रोएन्यूरिज्म और रक्तस्राव जो एआई ग्रेड को प्रभावित करते हैं।' : (activeLang === 'gu' ? 'માઇક્રોએન્યુરિઝમ અને રક્તસ્ત્રાવ જે એઆઈ નિદાનને નિર્ધારિત કરે છે.' : 'Microaneurysms and intraretinal blot hemorrhages driving the AI diagnosis.')}
             </p>
           </div>
 
-          {/* Card B: Inpainted Counterfactual */}
-          <div className="bg-white border border-teal-300 p-3 space-y-1.5 shadow-xs">
+          {/* Card B: Inpainted Counterfactual (Live Split-Screen Wipe Reveal) */}
+          <div className="counterfactual-print-card bg-white border border-teal-300 p-3 space-y-1.5 shadow-xs print-avoid-break print:break-inside-avoid print:page-break-inside-avoid print:p-2">
             <div className="flex justify-between items-center text-[10px] font-bold text-teal-800 uppercase">
               <span>{activeLang === 'hi' ? 'काउंटरफैक्चुअल (स्वस्थ रेटिना सिमुलेशन)' : (activeLang === 'gu' ? 'કાઉન્ટરફેક્ચ્યુઅલ (સ્વસ્થ રેટિના સિમ્યુલેશન)' : 'Counterfactual (Healthier Retina Counterpart)')}</span>
               <span className="text-[8.5px] font-mono bg-teal-100 border border-teal-300 px-1.5 text-teal-900 font-bold">
-                ✓ Lesions Cleared
+                ✓ {cfSliderVal}% Restored & Cleared
               </span>
             </div>
-            <div className="aspect-square bg-black rounded overflow-hidden flex items-center justify-center border border-teal-200 relative">
+            <div className="aspect-square bg-black rounded overflow-hidden flex items-center justify-center border border-teal-200 relative select-none print:aspect-auto print:h-44 print:max-h-[190px]">
+              {/* Bottom Layer: Flagged Microvascular Pathology */}
+              <img 
+                src={screening.aiResults?.images?.heatmapUrl || screening.aiResults?.images?.enhancedUrl || '/scans/sample_heatmap.png'} 
+                alt="Original Pathological Base" 
+                className="w-full h-full object-contain absolute inset-0 print:hidden"
+              />
+              {/* Top Layer: Clean Synthesized Healthy Retina with Split Wipe Reveal */}
               <img 
                 src={screening.aiResults?.images?.enhancedUrl || screening.aiResults?.images?.originalUrl || '/scans/sample_enhanced.png'} 
                 alt="Healthier Retina Counterpart" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain absolute inset-0 print:static print:h-full print:w-auto print:mx-auto"
+                style={{ clipPath: `inset(0 ${100 - cfSliderVal}% 0 0)` }}
               />
-              <div className="absolute bottom-2 left-2 bg-teal-950/85 text-teal-200 text-[9px] px-2 py-0.5 rounded font-mono font-bold">
-                ✨ Synthesized Healthy Retinal Bed
+              {/* Vertical Split Indicator Line */}
+              {cfSliderVal > 0 && cfSliderVal < 100 && (
+                <div 
+                  className="absolute top-0 bottom-0 w-0.5 bg-teal-400 pointer-events-none shadow-md print:hidden"
+                  style={{ left: `${cfSliderVal}%` }}
+                >
+                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-2 border-teal-600 shadow flex items-center justify-center text-[7px] font-black text-teal-900">
+                    ↔
+                  </div>
+                </div>
+              )}
+              <div className="absolute bottom-2 left-2 bg-teal-950/85 text-teal-200 text-[9px] px-2 py-0.5 rounded font-mono font-bold z-10 print:bottom-1 print:left-1 print:text-[7.5px]">
+                ✨ Synthesized Healthy Retinal Bed ({cfSliderVal}% Healthy)
               </div>
             </div>
-            <p className="text-[10px] text-slate-600 leading-snug">
-              {activeLang === 'hi' ? 'घाव हटाकर स्वस्थ रेटिना दिखाया गया है, जो कारण-प्रभाव की पुष्टि करता है।' : (activeLang === 'gu' ? 'ક્ષતિઓ હટાવીને સ્વસ્થ રેટિના દર્શાવવામાં આવ્યો છે, જે મોડેલની વિશ્વસનીયતા સાબિત કરે છે.' : 'Lesions replaced with healthy retinal parenchyma, validating causal model behavior.')}
+            <p className="text-[10px] text-slate-600 leading-snug print:text-[8.5px]">
+              {activeLang === 'hi' 
+                ? `घाव हटाकर स्वस्थ रेटिना दिखाया गया है (${cfSliderVal}% स्वस्थ स्थिति दर्शित)।` 
+                : (activeLang === 'gu' 
+                  ? `ક્ષતિઓ હટાવીને સ્વસ્થ રેટિના દર્શાવવામાં આવ્યો છે (${cfSliderVal}% પુનઃસ્થાપિત).` 
+                  : `Slide reveals healthy tissue (${cfSliderVal}% healthy retinal bed synthesized, validating causal model behavior).`)}
             </p>
           </div>
 
@@ -512,7 +560,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
         <div className="bg-white border border-teal-200 p-3 rounded space-y-1.5">
           <div className="flex justify-between items-center text-xs font-bold text-slate-700">
             <span className="text-rose-700">← {activeLang === 'hi' ? 'रोगग्रस्त रेटिना' : (activeLang === 'gu' ? 'રોગગ્રસ્ત રેટિના' : 'Flagged Microvascular Pathology')}</span>
-            <span className="text-teal-800 font-mono text-[11px]">Compare Slider: {cfSliderVal}% Healthy</span>
+            <span className="text-teal-800 font-mono text-[11px]">{activeLang === 'hi' ? `तुलना स्लाइडर: ${cfSliderVal}% स्वस्थ` : (activeLang === 'gu' ? `સરખામણી સ્લાઇડર: ${cfSliderVal}% સ્વસ્થ` : `Compare Slider: ${cfSliderVal}% Healthy`)}</span>
             <span className="text-teal-700">{activeLang === 'hi' ? 'स्वस्थ रेटिना सिमुलेशन' : (activeLang === 'gu' ? 'સ્વસ્થ રેટિના સિમ્યુલેશન' : 'Synthesized Healthy Retina')} →</span>
           </div>
           <input 
@@ -761,7 +809,9 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
       <div className="no-print pt-2 space-y-2">
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-slate-800" />
-          <span>System & Deployment Modules (Click to Inspect)</span>
+          <span>
+            {activeLang === 'hi' ? 'सिस्टम एवं परिनियोजन मॉड्यूल (निरीक्षण हेतु क्लिक करें)' : activeLang === 'gu' ? 'સિસ્ટમ અને ડિપ્લોયમેન્ટ મોડ્યુલ્સ (તપાસ માટે ક્લિક કરો)' : 'System & Deployment Modules (Click to Inspect)'}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -772,7 +822,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
               expandedSection === 'consensus' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
             }`}
           >
-            <span>🧠 2nd Opinion Consensus</span>
+            <span>{activeLang === 'hi' ? '🧠 द्वितीय राय सहमति' : activeLang === 'gu' ? '🧠 બીજા અભિપ્રાયની સહમતિ' : '🧠 2nd Opinion Consensus'}</span>
             {expandedSection === 'consensus' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
@@ -782,7 +832,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
               expandedSection === 'simulink' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
             }`}
           >
-            <span>🏥 5-Year Public Health Sim</span>
+            <span>{activeLang === 'hi' ? '🏥 5-वर्षीय सार्वजनिक स्वास्थ्य सिमुलेशन' : activeLang === 'gu' ? '🏥 5-વર્ષ જાહેર આરોગ્ય સિમ્યુલેશન' : '🏥 5-Year Public Health Sim'}</span>
             {expandedSection === 'simulink' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
@@ -792,7 +842,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
               expandedSection === 'qaly' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
             }`}
           >
-            <span>💰 QALY & Health Economics</span>
+            <span>{activeLang === 'hi' ? '💰 QALY एवं स्वास्थ्य अर्थशास्त्र' : activeLang === 'gu' ? '💰 QALY અને હેલ્થ ઇકોનોમિક્સ' : '💰 QALY & Health Economics'}</span>
             {expandedSection === 'qaly' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
@@ -802,7 +852,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
               expandedSection === 'security' ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
             }`}
           >
-            <span>🔒 SHA-256 Tamper Audit</span>
+            <span>{activeLang === 'hi' ? '🔒 SHA-256 छेड़छाड़ ऑडिट' : activeLang === 'gu' ? '🔒 SHA-256 ટેમ્પર ઓડિટ' : '🔒 SHA-256 Tamper Audit'}</span>
             {expandedSection === 'security' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
@@ -812,17 +862,19 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
         {expandedSection === 'consensus' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
             <div className="flex justify-between items-center font-bold">
-              <span className="uppercase text-slate-800">Second-Opinion Consensus Architecture</span>
+              <span className="uppercase text-slate-800">
+                {activeLang === 'hi' ? 'द्वितीय-राय आम सहमति आर्किटेक्चर' : activeLang === 'gu' ? 'બીજા-અભિપ્રાય સહમતિ આર્કિટેક્ચર' : 'Second-Opinion Consensus Architecture'}
+              </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-black ${cons.isAgreement ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
                 {cons.statusBadge}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
               <div className="p-2 bg-white border border-slate-200">
-                <strong>{cons.modelA.name}:</strong> Grade {cons.modelA.grade} ({cons.modelA.confidence}%)
+                <strong>{cons.modelA.name}:</strong> {activeLang === 'hi' ? 'ग्रेड' : activeLang === 'gu' ? 'ગ્રેડ' : 'Grade'} {cons.modelA.grade} ({cons.modelA.confidence}%)
               </div>
               <div className="p-2 bg-white border border-slate-200">
-                <strong>{cons.modelB.name}:</strong> Grade {cons.modelB.grade} ({cons.modelB.confidence}%)
+                <strong>{cons.modelB.name}:</strong> {activeLang === 'hi' ? 'ग्रेड' : activeLang === 'gu' ? 'ગ્રેડ' : 'Grade'} {cons.modelB.grade} ({cons.modelB.confidence}%)
               </div>
             </div>
             <p className="text-[10px] text-slate-600">{cons.action}</p>
@@ -831,19 +883,31 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
 
         {expandedSection === 'simulink' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
-            <div className="font-bold uppercase text-slate-800">5-Year India Public Health Screening Simulator</div>
+            <div className="font-bold uppercase text-slate-800">
+              {activeLang === 'hi' ? '5-वर्षीय भारत सार्वजनिक स्वास्थ्य स्क्रीनिंग सिम्युलेटर' : activeLang === 'gu' ? '5-વર્ષ ભારત જાહેર આરોગ્ય સ્ક્રીનિંગ સિમ્યુલેટર' : '5-Year India Public Health Screening Simulator'}
+            </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">5-Yr Screenings</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? '5-वर्षीय स्क्रीनिंग' : activeLang === 'gu' ? '5-વર્ષ સ્ક્રીનિંગ' : '5-Yr Screenings'}
+                </div>
                 <div className="text-sm font-black text-slate-900 mt-1">68,500</div>
               </div>
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">Blindness Averted</div>
-                <div className="text-sm font-black text-teal-700 mt-1">312 Cases</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'अंधापन रोका गया' : activeLang === 'gu' ? 'અંધાપો અટકાવાયો' : 'Blindness Averted'}
+                </div>
+                <div className="text-sm font-black text-teal-700 mt-1">
+                  {activeLang === 'hi' ? '312 मामले' : activeLang === 'gu' ? '312 કેસો' : '312 Cases'}
+                </div>
               </div>
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">Specialist Time Saved</div>
-                <div className="text-sm font-black text-slate-900 mt-1">4,200 Hours</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'विशेषज्ञ समय की बचत' : activeLang === 'gu' ? 'નિષ્ણાત સમયની બચત' : 'Specialist Time Saved'}
+                </div>
+                <div className="text-sm font-black text-slate-900 mt-1">
+                  {activeLang === 'hi' ? '4,200 घंटे' : activeLang === 'gu' ? '4,200 કલાકો' : '4,200 Hours'}
+                </div>
               </div>
             </div>
           </div>
@@ -851,23 +915,35 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
 
         {expandedSection === 'qaly' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
-            <div className="font-bold uppercase text-slate-800">QALY & Cost-Effectiveness Health Economics</div>
+            <div className="font-bold uppercase text-slate-800">
+              {activeLang === 'hi' ? 'QALY एवं लागत-प्रभावशीलता स्वास्थ्य अर्थशास्त्र' : activeLang === 'gu' ? 'QALY અને ખર્ચ-અસરકારકતા આરોગ્ય અર્થશાસ્ત્ર' : 'QALY & Cost-Effectiveness Health Economics'}
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">AI Cost / Scan</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'एआई लागत / स्कैन' : activeLang === 'gu' ? 'AI ખર્ચ / સ્કેન' : 'AI Cost / Scan'}
+                </div>
                 <div className="text-sm font-black text-slate-900 mt-1">₹120</div>
               </div>
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">Manual Cost / Scan</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'मैनुअल लागत / स्कैन' : activeLang === 'gu' ? 'મેન્યુઅલ ખર્ચ / સ્કેન' : 'Manual Cost / Scan'}
+                </div>
                 <div className="text-sm font-black text-slate-900 mt-1">₹650</div>
               </div>
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">Total QALYs Gained</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'कुल अर्जित QALYs' : activeLang === 'gu' ? 'કુલ મેળવેલ QALYs' : 'Total QALYs Gained'}
+                </div>
                 <div className="text-sm font-black text-teal-700 mt-1">189.0</div>
               </div>
               <div className="bg-white p-2 border border-slate-200">
-                <div className="text-[9px] text-slate-500 uppercase font-bold">Economic Stance</div>
-                <div className="text-[10px] font-black text-emerald-800 mt-1">Cost-Saving Dominant</div>
+                <div className="text-[9px] text-slate-500 uppercase font-bold">
+                  {activeLang === 'hi' ? 'आर्थिक दृष्टिकोण' : activeLang === 'gu' ? 'આર્થિક પરિપ્રેક્ષ્ય' : 'Economic Stance'}
+                </div>
+                <div className="text-[10px] font-black text-emerald-800 mt-1">
+                  {activeLang === 'hi' ? 'लागत बचत में प्रमुख' : activeLang === 'gu' ? 'ખર્ચ બચતમાં અગ્રેસર' : 'Cost-Saving Dominant'}
+                </div>
               </div>
             </div>
           </div>
@@ -876,17 +952,23 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
         {expandedSection === 'security' && (
           <div className="border border-slate-900 p-3 bg-slate-50 text-xs space-y-2">
             <div className="flex justify-between items-center font-bold">
-              <span className="uppercase text-slate-800">Cryptographic SHA-256 Tamper Audit</span>
+              <span className="uppercase text-slate-800">
+                {activeLang === 'hi' ? 'क्रिप्टोग्राफिक SHA-256 छेड़छाड़ ऑडिट' : activeLang === 'gu' ? 'ક્રિપ્ટોગ્રાફિક SHA-256 ટેમ્પર ઓડિટ' : 'Cryptographic SHA-256 Tamper Audit'}
+              </span>
               <button 
                 onClick={() => setVerifiedChain(true)}
                 className="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded"
               >
-                Verify Audit Log
+                {activeLang === 'hi' ? 'ऑडिट लॉग सत्यापित करें' : activeLang === 'gu' ? 'ઓડિટ લોગ ચકાસો' : 'Verify Audit Log'}
               </button>
             </div>
             <div className="p-2 bg-white border border-slate-200 font-mono text-[9px] space-y-1">
-              <div>Chained Blocks Verified: <strong>{tc.blocksChecked} Blocks</strong></div>
-              <div>Root Ledger Hash: <code>{tc.headHash}</code></div>
+              <div>
+                {activeLang === 'hi' ? 'सत्यापित ब्लॉक श्रृंखला:' : activeLang === 'gu' ? 'ચકાસાયેલ બ્લોક શૃંખલા:' : 'Chained Blocks Verified:'} <strong>{tc.blocksChecked} {activeLang === 'hi' ? 'ब्लॉक' : activeLang === 'gu' ? 'બ્લોક' : 'Blocks'}</strong>
+              </div>
+              <div>
+                {activeLang === 'hi' ? 'रूट लेजर हैश:' : activeLang === 'gu' ? 'રૂટ લેજર હેશ:' : 'Root Ledger Hash:'} <code>{tc.headHash}</code>
+              </div>
               <div className="text-emerald-800 font-bold">{tc.statusBadge}</div>
             </div>
           </div>

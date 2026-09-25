@@ -119,34 +119,41 @@ def validate_fundus_image(image_path: str):
         # Classification Logic for Rejection:
         rejection_reasons = []
 
-        # High non-retinal color content (sky, clothes, cartoon art, green trees)
-        if non_retinal_pct > 15.0:
+        # Detect authentic circular ophthalmic aperture (dark unilluminated corners)
+        is_circular_aperture = (corner_mean <= 28.0) or (coverage < 94.0 and corner_mean < 38.0)
+
+        # 1. Edge-to-edge rectangular photography (modeling, selfies, portraits, landscapes, rooms)
+        if not is_circular_aperture:
+            rejection_reasons.append(
+                "Standard rectangular photograph detected without circular fundus camera aperture (modeling photos, outdoor selfies, and landscapes cannot be assessed)"
+            )
+
+        # 2. Cool/blue/green tones (sky, clothing, cartoon art, green trees)
+        # Authentic circular fundi with flash reflection/underexposure can reach ~24% cool tones.
+        max_allowed_non_retinal = 26.0 if is_circular_aperture else 8.0
+        if non_retinal_pct > max_allowed_non_retinal:
             rejection_reasons.append(
                 f"Non-ocular color spectrum detected ({non_retinal_pct:.1f}% cool/blue/green tones from background or clothing)"
             )
 
-        # Low retinal red-amber content
-        if retinal_hue_pct < 65.0:
+        # 3. Retinal pigment/hemoglobin spectrum (Red-Orange-Amber)
+        min_allowed_retinal_hue = 48.0 if is_circular_aperture else 68.0
+        if retinal_hue_pct < min_allowed_retinal_hue:
             rejection_reasons.append(
                 f"Retinal pigment/hemoglobin spectrum absent (only {retinal_hue_pct:.1f}% retinal hue detected)"
             )
 
-        # Edge-to-edge bright rectangular photo (modeling/selfie/landscape)
-        if corner_mean > 32.0 and coverage > 90.0 and non_retinal_pct > 6.0:
-            rejection_reasons.append(
-                "Standard rectangular photograph detected without circular fundus camera aperture"
-            )
-
-        # Excessive blue channel reflection (blue sky, ambient daylight, white flash)
-        if rb_ratio < 1.45:
+        # 4. Red-to-Blue absorption ratio (retina absorbs blue light)
+        min_allowed_rb_ratio = 1.15 if is_circular_aperture else 1.45
+        if rb_ratio < min_allowed_rb_ratio:
             rejection_reasons.append(
                 f"Abnormal chromatic absorption (Red/Blue ratio = {rb_ratio:.2f}; fundus absorbs blue wavelengths)"
             )
 
-        # Flat artwork or cartoon without vascular branching
-        if vessel_density < 0.8 and retinal_hue_pct < 85.0:
+        # 5. Flat artwork, anime, cartoons, or graphics without vascular branching
+        if vessel_density < 0.65 and retinal_hue_pct < 80.0:
             rejection_reasons.append(
-                "Branching retinal vascular tree and optic disc landmarks not found"
+                "Branching retinal vascular tree and optic disc landmarks not found (graphic artwork or cartoon detected)"
             )
 
         if len(rejection_reasons) > 0:

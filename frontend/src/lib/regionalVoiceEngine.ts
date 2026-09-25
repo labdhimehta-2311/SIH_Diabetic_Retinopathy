@@ -109,6 +109,13 @@ class RegionalVoiceEngine {
       sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 to $2');
       // Slashes (e.g. 130/80 -> 130 over 80)
       sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 over $2');
+      // Medical expansions for natural speech flow
+      sanitized = sanitized.replace(/\bPDR\b/g, 'Proliferative Diabetic Retinopathy');
+      sanitized = sanitized.replace(/\bNPDR\b/g, 'Non-Proliferative Diabetic Retinopathy');
+      sanitized = sanitized.replace(/\bDME\b/g, 'Diabetic Macular Edema');
+      sanitized = sanitized.replace(/\bIOP\b/g, 'Intraocular Pressure');
+      sanitized = sanitized.replace(/\bBCVA\b/g, 'Visual Acuity');
+      sanitized = sanitized.replace(/\bapprox\.?\b/gi, 'approximately');
       sanitized = sanitized.replace(/[:;–—_#*•]/g, ', ');
     }
 
@@ -290,12 +297,36 @@ class RegionalVoiceEngine {
         utterance.lang = 'hi-IN';
         utterance.rate = 0.95;
       } else {
-        const enVoice = voices.find(v => 
-          v.lang.toLowerCase().startsWith('en') && (v.lang.includes('US') || v.lang.includes('GB'))
+        // Human-sounding English Voice Selection:
+        // Priority 1: High-fidelity natural/neural voices (Jenny Natural, Aria Natural, Guy Natural)
+        // Priority 2: Chrome/Edge Google WaveNet voices (Google US English, Google UK English Female)
+        // Priority 3: Clear human-like conversational voices (Aria, Jenny, Zira, Samantha, Victoria)
+        // Avoid legacy robotic desktop voices (e.g. "Microsoft David Desktop")
+        const naturalVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && 
+          (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural'))
         );
-        if (enVoice) utterance.voice = enVoice;
-        utterance.lang = 'en-US';
-        utterance.rate = 1.0;
+        const googleVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && (v.name.includes('Google') || v.name.includes('WaveNet'))
+        );
+        const modernVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && 
+          (v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Zira') || v.name.includes('Samantha'))
+        );
+        const fallbackEnVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && !v.name.includes('David')
+        ) || voices.find(v => v.lang.toLowerCase().startsWith('en'));
+
+        const enVoice = naturalVoice || googleVoice || modernVoice || fallbackEnVoice;
+        if (enVoice) {
+          utterance.voice = enVoice;
+          utterance.lang = enVoice.lang || 'en-US';
+        } else {
+          utterance.lang = 'en-US';
+        }
+        // Human conversational pacing: rate 0.93 - 0.95, pitch 1.0 (avoids metallic robotic speed)
+        utterance.rate = 0.94;
+        utterance.pitch = 1.0;
       }
 
       let isFinished = false;

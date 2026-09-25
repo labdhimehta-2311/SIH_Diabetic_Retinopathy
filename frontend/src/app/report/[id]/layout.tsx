@@ -50,6 +50,12 @@ export default function ReportLayout({ children }: { children: React.ReactNode }
     };
   }, []);
 
+  useEffect(() => {
+    if (wrapperRef.current) {
+      applyLanguageToDOM(wrapperRef.current, activeLang);
+    }
+  }, [activeLang, screening, patient]);
+
   const handleLanguageChange = (lang: SupportedLanguage) => {
     setActiveLang(lang);
     regionalVoice.stop();
