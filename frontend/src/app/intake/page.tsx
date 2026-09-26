@@ -263,7 +263,7 @@ function IntakeFormInner() {
       formData.append('patient_id', pId); 
       formData.append('doctor_id', doctor.uid); 
       formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
-      const res = await fetch('http://127.0.0.1:8000/infer', { method: 'POST', body: formData });
+      const res = await fetch('/api/screen', { method: 'POST', body: formData });
       
       try {
         aiResult = await res.json();
