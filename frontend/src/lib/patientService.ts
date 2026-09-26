@@ -573,7 +573,7 @@ export const INITIAL_SEED_PATIENTS: Patient[] = [
           referable: true,
           m3Executed: true,
           executionTimeSec: 0.12,
-          engine: 'python_cv_engine',
+          engine: 'matlab_engine',
           images: {
             originalUrl: '/samples/sample_2_severe_dr.png',
             enhancedUrl: '/scans/test_sess_01_m1_enhanced.png',
@@ -642,7 +642,7 @@ export const INITIAL_SEED_PATIENTS: Patient[] = [
           referable: false,
           m3Executed: true,
           executionTimeSec: 0.09,
-          engine: 'python_cv_engine',
+          engine: 'matlab_engine',
           images: {
             originalUrl: '/samples/sample_0_normal_fundus.png',
             enhancedUrl: '/scans/test_sess_02_m1_enhanced.png',
@@ -711,7 +711,7 @@ export const INITIAL_SEED_PATIENTS: Patient[] = [
           referable: true,
           m3Executed: true,
           executionTimeSec: 0.14,
-          engine: 'python_cv_engine',
+          engine: 'matlab_engine',
           images: {
             originalUrl: '/samples/sample_2_severe_dr.png',
             enhancedUrl: '/scans/test_sess_01_m1_enhanced.png',

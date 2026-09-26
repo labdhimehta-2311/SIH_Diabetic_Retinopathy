@@ -512,7 +512,7 @@ function ReportContentInner() {
 
         {/* Visual Diagnostics Matrix */}
         <div className="print-break-inside-avoid print:block">
-          <ComparativeViewer images={screening.aiResults.images} m3Executed={screening.checkM3Setup} />
+          <ComparativeViewer images={screening.aiResults.images} m3Executed={screening.checkM3Setup} grade={screening.aiResults.grade} />
         </div>
 
         {/* ================================================================ */}

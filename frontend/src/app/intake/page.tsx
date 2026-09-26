@@ -8,7 +8,6 @@ import { User, Activity, ClipboardList, UploadCloud, CheckCircle2, AlertTriangle
 import { useAuth } from '../../lib/authContext';
 import { PatientService, Patient, ScreeningSession } from '../../lib/patientService';
 import { AuditService } from '../../lib/auditService';
-import { generateClinicalDiagnosticImages } from '../../lib/clinicalImageProcessor';
 import { SyncQueue } from '../../lib/syncQueue';
 
 const SAMPLE_FUNDUS_IMAGES = [
@@ -280,17 +279,24 @@ function IntakeFormInner() {
       const roundTripTimeMs = Math.round(endTime - startTime);
 
       if (aiResult && aiResult.success) {
-        // Synthesize authentic 4-panel diagnostic matrix directly from the uploaded/selected retinal image
-        setSubmitStatusText('Synthesizing Comparative Fundus Diagnostic Matrix (CLAHE, U-Net, Grad-CAM)...');
-        try {
-          const clinicalImages = await generateClinicalDiagnosticImages(
-            uploadedFile,
-            checkM3Setup,
-            aiResult.grade ?? 2
-          );
-          aiResult.images = clinicalImages;
-        } catch (imgErr) {
-          console.warn('Clinical image synthesis fallback:', imgErr);
+        // Guarantee Panel 1 faithfully displays the exact retinal image uploaded or selected
+        if (uploadedFile) {
+          try {
+            const originalDataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(uploadedFile);
+            });
+            if (originalDataUrl) {
+              aiResult.images = {
+                ...(aiResult.images || {}),
+                originalUrl: originalDataUrl,
+              };
+            }
+          } catch (fileErr) {
+            console.warn('Could not read uploaded fundus file to Data URL:', fileErr);
+          }
         }
 
         // 3. ATTACH PERFORMANCE METRICS TO THE RESULT OBJECT
@@ -309,7 +315,7 @@ function IntakeFormInner() {
           visualExam: { vaRight, vaLeft, iopRight, iopLeft, notes: visualExamNotes }, 
           checkM3Setup, 
           aiResults: aiResult,
-          clinicalNotes: `AI Diagnostic Screening completed using ${aiResult.engine || 'MATLAB ResNet-50'}. Result: ${aiResult.gradeLabel} (Confidence: ${aiResult.confidence}%). Inference executed in ${aiResult.latency_ms}ms with a total round-trip of ${roundTripTimeMs}ms.`,
+          clinicalNotes: `AI Diagnostic Screening completed using ${aiResult.engine || 'matlab_engine'}. Result: ${aiResult.gradeLabel} (Confidence: ${aiResult.confidence}%). Inference executed in ${aiResult.latency_ms}ms with a total round-trip of ${roundTripTimeMs}ms.`,
           recommendation: aiResult.referable ? 'Refer to Vitreoretinal Specialist for detailed optical coherence tomography.' : 'Low risk. Continue routine metabolic control.', 
           followUpInterval: aiResult.referable ? '1 to 3 Months' : '12 Months', 
           finalized: false, 

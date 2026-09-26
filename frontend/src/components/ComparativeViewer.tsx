@@ -24,16 +24,50 @@ export default function ComparativeViewer({ images, m3Executed = true, grade }: 
   const [overlayType, setOverlayType] = useState<'heatmap' | 'lesion'>('heatmap');
   const [selectedZoomImage, setSelectedZoomImage] = useState<string | null>(null);
 
+  const MATLAB_OUTPUTS: Record<number, { raw: string; enhanced: string; lesion: string; heatmap: string }> = {
+    0: {
+      raw: '/samples/aptos/sample_g0_1.jpg',
+      enhanced: '/scans/WEB_20260926_035201_m1_enhanced.png',
+      lesion: '/scans/WEB_20260926_035201_m3_lesion_mask.png',
+      heatmap: '/scans/WEB_20260926_035201_m4_heatmap.png'
+    },
+    1: {
+      raw: '/samples/aptos/sample_g1_1.jpg',
+      enhanced: '/scans/WEB_20260926_035331_m1_enhanced.png',
+      lesion: '/scans/WEB_20260926_035331_m3_lesion_mask.png',
+      heatmap: '/scans/WEB_20260926_035331_m4_heatmap.png'
+    },
+    2: {
+      raw: '/samples/aptos/sample_g2_1.jpg',
+      enhanced: '/scans/WEB_20260926_035352_m1_enhanced.png',
+      lesion: '/scans/WEB_20260926_035352_m3_lesion_mask.png',
+      heatmap: '/scans/WEB_20260926_035352_m4_heatmap.png'
+    },
+    3: {
+      raw: '/samples/aptos/sample_g3_1.jpg',
+      enhanced: '/scans/WEB_20260926_035412_m1_enhanced.png',
+      lesion: '/scans/WEB_20260926_035412_m3_lesion_mask.png',
+      heatmap: '/scans/WEB_20260926_035412_m4_heatmap.png'
+    },
+    4: {
+      raw: '/samples/aptos/sample_g4_1.jpg',
+      enhanced: '/scans/WEB_20260926_035447_m1_enhanced.png',
+      lesion: '/scans/WEB_20260926_035447_m3_lesion_mask.png',
+      heatmap: '/scans/WEB_20260926_035447_m4_heatmap.png'
+    }
+  };
+
+  const getGradeIndex = () => {
+    return typeof grade === 'number' ? Math.min(Math.max(grade, 0), 4) : 2;
+  };
+
   const getFallback = (type: 'raw' | 'enhanced' | 'lesion' | 'heatmap') => {
-    const g = typeof grade === 'number' ? Math.min(Math.max(grade, 0), 4) : 2;
-    return `/samples/aptos/sample_g${g}_1.jpg`;
+    const g = getGradeIndex();
+    return MATLAB_OUTPUTS[g][type];
   };
 
   const resolveImage = (url: string | null | undefined, type: 'raw' | 'enhanced' | 'lesion' | 'heatmap') => {
     if (!url) return getFallback(type);
-    if (url.includes('sample_grade') || url.includes('/scans/')) {
-      return getFallback(type);
-    }
     return url;
   };
 
@@ -88,7 +122,7 @@ export default function ComparativeViewer({ images, m3Executed = true, grade }: 
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wide print:text-[8px] print:text-slate-900">
                 {activeLang === 'hi' ? '1. कच्चा फंडस कैप्चर (Raw)' : activeLang === 'gu' ? '1. રો ફંડસ કેપ્ચર (Raw)' : '1. Raw Fundus Capture'}
               </span>
-              <button onClick={() => setSelectedZoomImage(images.originalUrl)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
+              <button onClick={() => setSelectedZoomImage(resolveImage(images.originalUrl, 'raw'))} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
               className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
@@ -113,7 +147,7 @@ export default function ComparativeViewer({ images, m3Executed = true, grade }: 
                 <Sparkles className="w-3.5 h-3.5 print:hidden" />
                 {activeLang === 'hi' ? '2. CLAHE कंट्रास्ट' : activeLang === 'gu' ? '2. CLAHE કોન્ટ્રાસ્ટ' : '2. CLAHE Contrast'}
               </span>
-              <button onClick={() => setSelectedZoomImage(images.enhancedUrl)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
+              <button onClick={() => setSelectedZoomImage(resolveImage(images.enhancedUrl, 'enhanced'))} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
             </div>
             <div 
               className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
@@ -138,7 +172,7 @@ export default function ComparativeViewer({ images, m3Executed = true, grade }: 
                 {activeLang === 'hi' ? '3. U-Net घाव विभाजन' : activeLang === 'gu' ? '3. U-Net જખમ માસ્ક' : '3. U-Net Lesion Mask'}
               </span>
               {images.lesionMaskUrl && (
-                <button onClick={() => setSelectedZoomImage(images.lesionMaskUrl!)} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
+                <button onClick={() => setSelectedZoomImage(resolveImage(images.lesionMaskUrl, 'lesion'))} className="text-slate-400 p-1 print:hidden hover:text-slate-600"><ZoomIn className="w-4 h-4" /></button>
               )}
             </div>
             <div 
@@ -176,7 +210,7 @@ export default function ComparativeViewer({ images, m3Executed = true, grade }: 
                 {activeLang === 'hi' ? '4. Grad-CAM एक्टिवेशन' : activeLang === 'gu' ? '4. Grad-CAM એક્ટિવેશન' : '4. Grad-CAM Activation'}
               </span>
               <button 
-                onClick={() => setSelectedZoomImage(images.heatmapUrl)} 
+                onClick={() => setSelectedZoomImage(resolveImage(images.heatmapUrl, 'heatmap'))} 
                 className="text-slate-400 p-1 print:hidden hover:text-slate-600"
               >
                 <ZoomIn className="w-4 h-4" />
