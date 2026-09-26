@@ -40,6 +40,6 @@ build/
 .env.local
 __pycache__/
 scratch/
-frontend/public/scans/*
+frontend/public/scans/tmp*
 !frontend/public/scans/.gitkeep
 frontend/tsconfig.tsbuildinfo

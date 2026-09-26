@@ -39,34 +39,34 @@ export async function POST(req: NextRequest) {
       m4_heatmap: string;
     }> = {
       0: {
-        raw: "/scans/WEB_20260926_035201_raw.jpg",
-        m1_enhanced: "/scans/WEB_20260926_035201_m1_enhanced.png",
-        m3_lesion_mask: "/scans/WEB_20260926_035201_m3_lesion_mask.png",
-        m4_heatmap: "/scans/WEB_20260926_035201_m4_heatmap.png",
+        raw: "/samples/aptos/sample_g0_1.jpg",
+        m1_enhanced: "/samples/aptos/sample_g0_enhanced.png",
+        m3_lesion_mask: "/samples/aptos/sample_g0_lesion.png",
+        m4_heatmap: "/samples/aptos/sample_g0_heatmap.png",
       },
       1: {
-        raw: "/scans/WEB_20260926_035331_raw.jpg",
-        m1_enhanced: "/scans/WEB_20260926_035331_m1_enhanced.png",
-        m3_lesion_mask: "/scans/WEB_20260926_035331_m3_lesion_mask.png",
-        m4_heatmap: "/scans/WEB_20260926_035331_m4_heatmap.png",
+        raw: "/samples/aptos/sample_g1_1.jpg",
+        m1_enhanced: "/samples/aptos/sample_g1_enhanced.png",
+        m3_lesion_mask: "/samples/aptos/sample_g1_lesion.png",
+        m4_heatmap: "/samples/aptos/sample_g1_heatmap.png",
       },
       2: {
-        raw: "/scans/WEB_20260926_035352_raw.jpg",
-        m1_enhanced: "/scans/WEB_20260926_035352_m1_enhanced.png",
-        m3_lesion_mask: "/scans/WEB_20260926_035352_m3_lesion_mask.png",
-        m4_heatmap: "/scans/WEB_20260926_035352_m4_heatmap.png",
+        raw: "/samples/aptos/sample_g2_1.jpg",
+        m1_enhanced: "/samples/aptos/sample_g2_enhanced.png",
+        m3_lesion_mask: "/samples/aptos/sample_g2_lesion.png",
+        m4_heatmap: "/samples/aptos/sample_g2_heatmap.png",
       },
       3: {
-        raw: "/scans/WEB_20260926_035412_raw.jpg",
-        m1_enhanced: "/scans/WEB_20260926_035412_m1_enhanced.png",
-        m3_lesion_mask: "/scans/WEB_20260926_035412_m3_lesion_mask.png",
-        m4_heatmap: "/scans/WEB_20260926_035412_m4_heatmap.png",
+        raw: "/samples/aptos/sample_g3_1.jpg",
+        m1_enhanced: "/samples/aptos/sample_g3_enhanced.png",
+        m3_lesion_mask: "/samples/aptos/sample_g3_lesion.png",
+        m4_heatmap: "/samples/aptos/sample_g3_heatmap.png",
       },
       4: {
-        raw: "/scans/WEB_20260926_035447_raw.jpg",
-        m1_enhanced: "/scans/WEB_20260926_035447_m1_enhanced.png",
-        m3_lesion_mask: "/scans/WEB_20260926_035447_m3_lesion_mask.png",
-        m4_heatmap: "/scans/WEB_20260926_035447_m4_heatmap.png",
+        raw: "/samples/aptos/sample_g4_1.jpg",
+        m1_enhanced: "/samples/aptos/sample_g4_enhanced.png",
+        m3_lesion_mask: "/samples/aptos/sample_g4_lesion.png",
+        m4_heatmap: "/samples/aptos/sample_g4_heatmap.png",
       }
     };
 
