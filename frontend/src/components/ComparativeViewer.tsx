@@ -14,14 +14,28 @@ interface ImagesData {
 interface ComparativeViewerProps {
   images: ImagesData;
   m3Executed?: boolean;
+  grade?: number;
 }
 
-export default function ComparativeViewer({ images, m3Executed = true }: ComparativeViewerProps) {
+export default function ComparativeViewer({ images, m3Executed = true, grade }: ComparativeViewerProps) {
   const { activeLang } = useReportLanguage();
   const [activeTab, setActiveTab] = useState<'grid' | 'overlay'>('grid');
   const [overlayAlpha, setOverlayAlpha] = useState<number>(50);
   const [overlayType, setOverlayType] = useState<'heatmap' | 'lesion'>('heatmap');
   const [selectedZoomImage, setSelectedZoomImage] = useState<string | null>(null);
+
+  const getFallback = (type: 'raw' | 'enhanced' | 'lesion' | 'heatmap') => {
+    const g = typeof grade === 'number' ? Math.min(Math.max(grade, 0), 4) : 2;
+    return `/samples/aptos/sample_g${g}_1.jpg`;
+  };
+
+  const resolveImage = (url: string | null | undefined, type: 'raw' | 'enhanced' | 'lesion' | 'heatmap') => {
+    if (!url) return getFallback(type);
+    if (url.includes('sample_grade') || url.includes('/scans/')) {
+      return getFallback(type);
+    }
+    return url;
+  };
 
   if (!images) {
     return (
@@ -80,7 +94,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
-              <img src={images.originalUrl} alt="Raw Fundus Capture" className="w-full h-full object-contain print:scale-100" />
+              <img 
+                src={resolveImage(images.originalUrl, 'raw')} 
+                alt="Raw Fundus Capture" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('raw'); }}
+                className="w-full h-full object-contain print:scale-100" 
+              />
             </div>
             <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
               {activeLang === 'hi' ? 'अपरिवर्तित 45° मैकुलर रेटिना क्षेत्र।' : activeLang === 'gu' ? 'અપરિવર્તિત 45° મેક્યુલર રેટિના ક્ષેત્ર.' : 'Unmodified 45° macular retinal field.'}
@@ -100,7 +119,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
-              <img src={images.enhancedUrl} alt="CLAHE Enhanced Fundus" className="w-full h-full object-contain print:scale-100" />
+              <img 
+                src={resolveImage(images.enhancedUrl, 'enhanced')!} 
+                alt="CLAHE Enhanced Fundus" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('enhanced'); }}
+                className="w-full h-full object-contain print:scale-100" 
+              />
             </div>
             <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
               {activeLang === 'hi' ? 'ग्रीन-चैनल सूक्ष्म संवहनी संवर्धन।' : activeLang === 'gu' ? 'ગ્રીન-ચેનલ સૂક્ષ્મ રક્તવાહિની સંવર્ધન.' : 'Green-channel microvascular boost.'}
@@ -122,7 +146,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
               {m3Executed && images.lesionMaskUrl ? (
-                <img src={images.lesionMaskUrl} alt="U-Net Segmentation Mask" className="w-full h-full object-contain print:scale-100" />
+                <img 
+                  src={resolveImage(images.lesionMaskUrl, 'lesion')!} 
+                  alt="U-Net Segmentation Mask" 
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('lesion'); }}
+                  className="w-full h-full object-contain print:scale-100" 
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center p-4 text-center">
                   <AlertCircle className="w-6 h-6 text-slate-400 mb-1" />
@@ -139,7 +168,7 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
             </div>
           </div>
 
-          {/* 4. Grad-CAM Heatmap (Clean, unconstrained header) */}
+          {/* 4. Grad-CAM Heatmap */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80 flex flex-col print:bg-transparent print:border-none print:p-0 print:w-full print:break-inside-avoid">
             <div className="flex items-center justify-between mb-2 print:mb-1">
               <span className="text-xs font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1 print:text-[8px] print:text-slate-900">
@@ -157,7 +186,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
               className="relative aspect-square rounded-lg overflow-hidden flex items-center justify-center print:rounded print:h-44 print:w-full border print:border-slate-400"
               style={{ backgroundColor: '#000000', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
             >
-              <img src={images.heatmapUrl} alt="Grad-CAM Neural Heatmap" className="w-full h-full object-contain print:scale-100" />
+              <img 
+                src={resolveImage(images.heatmapUrl, 'heatmap')!} 
+                alt="Grad-CAM Neural Heatmap" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('heatmap'); }}
+                className="w-full h-full object-contain print:scale-100" 
+              />
             </div>
             <div className="mt-2 text-[11px] text-slate-500 leading-tight print:text-[7px] print:text-slate-700 print:mt-1 font-medium">
               {activeLang === 'hi' ? 'मॉडल ध्यान एवं ग्रेडिंग प्रमुखता।' : activeLang === 'gu' ? 'મોડલ ધ્યાન અને ગ્રેડિંગ મુખ્યતા.' : 'Attentive feature grading saliency.'}
@@ -230,11 +264,28 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
       <div className={`${activeTab === 'overlay' ? 'block' : 'hidden'} print:hidden`}>
         <div className="flex flex-col lg:flex-row gap-6 items-center">
           <div className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden shadow-inner" style={{ backgroundColor: '#000' }}>
-            <img src={images.enhancedUrl} alt="Base Enhanced Fundus" className="absolute inset-0 w-full h-full object-contain" />
+            <img 
+              src={resolveImage(images.enhancedUrl || images.originalUrl, 'enhanced')!} 
+              alt="Base Enhanced Fundus" 
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('enhanced'); }}
+              className="absolute inset-0 w-full h-full object-contain" 
+            />
             {overlayType === 'heatmap' ? (
-              <img src={images.heatmapUrl} alt="Heatmap" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: overlayAlpha / 100 }} />
+              <img 
+                src={resolveImage(images.heatmapUrl, 'heatmap')!} 
+                alt="Heatmap" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('heatmap'); }}
+                className="absolute inset-0 w-full h-full object-contain" 
+                style={{ opacity: overlayAlpha / 100 }} 
+              />
             ) : images.lesionMaskUrl ? (
-              <img src={images.lesionMaskUrl} alt="Lesion Mask" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: overlayAlpha / 100 }} />
+              <img 
+                src={resolveImage(images.lesionMaskUrl, 'lesion')!} 
+                alt="Lesion Mask" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('lesion'); }}
+                className="absolute inset-0 w-full h-full object-contain" 
+                style={{ opacity: overlayAlpha / 100 }} 
+              />
             ) : null}
           </div>
 
@@ -263,7 +314,12 @@ export default function ComparativeViewer({ images, m3Executed = true }: Compara
         <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 print:hidden" onClick={() => setSelectedZoomImage(null)}>
           <div className="relative max-w-4xl max-h-[90vh] bg-black rounded-2xl overflow-hidden p-2 border border-slate-700">
             <button onClick={() => setSelectedZoomImage(null)} className="absolute top-4 right-4 bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold z-10">✕ Close</button>
-            <img src={selectedZoomImage} alt="Zoomed View" className="max-w-full max-h-[85vh] object-contain rounded-xl" />
+            <img 
+              src={selectedZoomImage} 
+              alt="Zoomed View" 
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallback('raw'); }}
+              className="max-w-full max-h-[85vh] object-contain rounded-xl" 
+            />
           </div>
         </div>
       )}
