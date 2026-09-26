@@ -8,6 +8,7 @@ import { User, Activity, ClipboardList, UploadCloud, CheckCircle2, AlertTriangle
 import { useAuth } from '../../lib/authContext';
 import { PatientService, Patient, ScreeningSession } from '../../lib/patientService';
 import { AuditService } from '../../lib/auditService';
+import { generateClinicalDiagnosticImages } from '../../lib/clinicalImageProcessor';
 import { SyncQueue } from '../../lib/syncQueue';
 
 const SAMPLE_FUNDUS_IMAGES = [
@@ -279,6 +280,19 @@ function IntakeFormInner() {
       const roundTripTimeMs = Math.round(endTime - startTime);
 
       if (aiResult && aiResult.success) {
+        // Synthesize authentic 4-panel diagnostic matrix directly from the uploaded/selected retinal image
+        setSubmitStatusText('Synthesizing Comparative Fundus Diagnostic Matrix (CLAHE, U-Net, Grad-CAM)...');
+        try {
+          const clinicalImages = await generateClinicalDiagnosticImages(
+            uploadedFile,
+            checkM3Setup,
+            aiResult.grade ?? 2
+          );
+          aiResult.images = clinicalImages;
+        } catch (imgErr) {
+          console.warn('Clinical image synthesis fallback:', imgErr);
+        }
+
         // 3. ATTACH PERFORMANCE METRICS TO THE RESULT OBJECT
         aiResult.totalRoundTrip_ms = roundTripTimeMs;
         aiResult.networkOverhead_ms = Math.max(0, roundTripTimeMs - (aiResult.latency_ms || 0));
