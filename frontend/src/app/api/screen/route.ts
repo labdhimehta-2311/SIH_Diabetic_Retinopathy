@@ -64,10 +64,10 @@ export async function POST(req: NextRequest) {
       executionTimeSec: 1.45,
       latency_ms: 1450.0,
       images: {
-        originalUrl: `/samples/sample_${cfg.img}.png`,
-        enhancedUrl: `/samples/sample_${cfg.img}.png`,
-        heatmapUrl: `/samples/sample_${cfg.img}.png`,
-        lesionMaskUrl: runM3 ? `/samples/sample_${cfg.img}.png` : null
+        originalUrl: `/samples/aptos/sample_g${targetGrade}_1.jpg`,
+        enhancedUrl: `/samples/aptos/sample_g${targetGrade}_1.jpg`,
+        heatmapUrl: `/samples/aptos/sample_g${targetGrade}_1.jpg`,
+        lesionMaskUrl: runM3 ? `/samples/aptos/sample_g${targetGrade}_1.jpg` : null
       }
     });
 
