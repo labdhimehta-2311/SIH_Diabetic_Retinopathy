@@ -62,6 +62,11 @@ export interface SihVoiceReport {
     hi: string;
     gu: string;
   };
+  romanTranscripts?: {
+    en?: string;
+    hi?: string;
+    gu?: string;
+  };
 }
 
 export interface SihTamperChain {
@@ -305,6 +310,22 @@ export function computeSihEnhancements(
     4: 'અત્યંત ગંભીર સ્થિતિ છે, તાત્કાલિક રેટિના નિષ્ણાત ડૉક્ટરનો સંપર્ક કરો'
   };
 
+  const hiRomanTexts: Record<number, string> = {
+    0: 'Aankhon ki jaanch samanya hai, koi diabetic retinopathy ke lakshan nahi mile hain, niyamit varshik jaanch jaari rakhein',
+    1: 'Halki diabetic retinopathy ke shuruaati lakshan mile hain, niyamit sugar niyantran rakhein',
+    2: 'Madhyam diabetic retinopathy paayi gayi hai, netra visheshagya doctor se jaanch ki salah di jaati hai',
+    3: 'Gambhir diabetic retinopathy ke lakshan hain, turant netra aspatal mein dikhana aavashyak hai',
+    4: 'Atyadhik gambhir retinopathy hai, drishti bachane hetu tatkal retina visheshagya se sampark karein'
+  };
+
+  const guRomanTexts: Record<number, string> = {
+    0: 'Aankh ni tapaas samanya chhe, koi diabetic retinopathy na chihno malya nathi, niyamit vaarshik tapaas karavo',
+    1: 'Halvi diabetic retinopathy na prarambhik chihno malya chhe, blood sugar niyantran ma rakho',
+    2: 'Madhyam diabetic retinopathy jova mali chhe, aankh na nishnat doctor paase tapaas karavvi jaroori chhe',
+    3: 'Gambhir diabetic retinopathy janay chhe, aankh ni vishesh hospital ma taatkalik saarvaar lo',
+    4: 'Atyant gambhir sthiti chhe, taatkalik retina nishnat doctor no sampark karo'
+  };
+
   // 6. Adaptive Screening Interval
   let intervalMonths = 12;
   let intervalLabel = '12 Months (Routine Annual Recall)';
@@ -401,6 +422,11 @@ export function computeSihEnhancements(
         en: enTexts[grade] || enTexts[0],
         hi: hiTexts[grade] || hiTexts[0],
         gu: guTexts[grade] || guTexts[0]
+      },
+      romanTranscripts: {
+        en: enTexts[grade] || enTexts[0],
+        hi: hiRomanTexts[grade] || hiRomanTexts[0],
+        gu: guRomanTexts[grade] || guRomanTexts[0]
       }
     },
     tamperChain: {

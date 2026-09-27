@@ -80,7 +80,8 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
       setContextLang(lang);
     }
     const textToSpeak = data.voiceReport.transcripts[lang];
-    await regionalVoice.speak(textToSpeak, lang);
+    const romanFallback = data.voiceReport.romanTranscripts?.[lang];
+    await regionalVoice.speak(textToSpeak, lang, romanFallback);
   };
 
   const handleRecordOverride = (e: React.FormEvent) => {
@@ -306,7 +307,7 @@ export default function SihEnhancements({ screening, patient, initialLanguage = 
               </span>
             </div>
             <div className="text-xs font-black text-slate-900">
-              {activeLang === 'hi' ? 'सामान्य कप-टू-डिस्क अनुपात (कम ग्लूकोमा जोखिम)' : (activeLang === 'gu' ? 'સામાન્ય કપ-ટુ-ડિસ્ક રેશિયો (ઓછું ગ્લુકોમા જોખમ)' : 'Physiologic Cupping (Low Glaucoma Suspicion)')}
+              {activeLang === 'hi' ? 'सामान्य कप टू डिस्क अनुपात (कम ग्लूकोमा जोखिम)' : (activeLang === 'gu' ? 'સામાન્ય કપ ટુ ડિસ્ક રેશિયો (ઓછું ગ્લુકોમા જોખમ)' : 'Physiologic Cupping (Low Glaucoma Suspicion)')}
             </div>
             {/* Visual CDR Gauge Bar */}
             <div className="space-y-0.5">

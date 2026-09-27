@@ -68,7 +68,7 @@ export default function ReportLayout({ children }: { children: React.ReactNode }
     if (!screening) return;
     const sihData = computeSihEnhancements(screening, patient);
     const narrative = getFullReportSpokenNarrative(patient, screening, sihData, activeLang);
-    await regionalVoice.speak(narrative, activeLang);
+    await regionalVoice.speak(narrative.text, activeLang, narrative.romanized);
   };
 
   const handlePauseAudio = () => {

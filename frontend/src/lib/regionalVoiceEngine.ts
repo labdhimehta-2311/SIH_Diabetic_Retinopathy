@@ -75,6 +75,8 @@ class RegionalVoiceEngine {
   /**
    * Phonetizes and sanitizes all punctuation so the speech engine
    * never verbalizes "dot", "minus", or "slash".
+   * Completely strips ASCII hyphens (-) so mobile TTS engines
+   * never verbalize "minus minus".
    */
   public sanitizePunctuation(text: string, lang: 'en' | 'hi' | 'gu'): string {
     let sanitized = text;
@@ -83,43 +85,66 @@ class RegionalVoiceEngine {
     sanitized = sanitized.replace(/\.{2,}/g, ', ');
     sanitized = sanitized.replace(/\.\s*\./g, ', ');
 
-    // 2. Language-specific number and symbol phonetization
+    // 2. Expand ranges like "1-2" or "20-30" or "1–2" (en-dash, em-dash, hyphen)
     if (lang === 'gu') {
-      // Decimals (e.g. 95.90 -> 95 પોઇન્ટ 90, 0.42 -> 0 પોઇન્ટ 42)
-      sanitized = sanitized.replace(/(\d+)\.(\d+)/g, '$1 પોઇન્ટ $2');
-      // Ranges (e.g. 1-2 -> 1 થી 2, 20-30 -> 20 થી 30)
-      sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 થી $2');
-      // Blood pressure or ratio slash (e.g. 130/80 -> 130 બાય 80)
-      sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 બાય $2');
-      // Strip all periods, colons, semicolons, and dashes — replace with natural breath pause
-      sanitized = sanitized.replace(/[\.:;–—_#*•|।]/g, ', ');
+      sanitized = sanitized.replace(/(\d+)\s*[-–—]\s*(\d+)/g, '$1 થી $2');
     } else if (lang === 'hi') {
-      // Decimals (e.g. 95.90 -> 95 दशमलव 90, 0.42 -> 0 दशमलव 42)
-      sanitized = sanitized.replace(/(\d+)\.(\d+)/g, '$1 दशमलव $2');
-      // Ranges (e.g. 1-2 -> 1 से 2, 20-30 -> 20 से 30)
-      sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 से $2');
-      // Blood pressure or ratio slash (e.g. 130/80 -> 130 बटा 80)
-      sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 बटा $2');
-      // Strip all periods, colons, semicolons, and danda — replace with natural breath pause
-      sanitized = sanitized.replace(/[\.:;–—_#*•|।]/g, ', ');
+      sanitized = sanitized.replace(/(\d+)\s*[-–—]\s*(\d+)/g, '$1 से $2');
     } else {
-      // English: Decimals (e.g. 0.42 -> 0 point 42)
+      sanitized = sanitized.replace(/(\d+)\s*[-–—]\s*(\d+)/g, '$1 to $2');
+    }
+
+    // 3. Decimals (e.g. 95.90 -> 95 પોઇન્ટ 90, 0.42 -> 0 दशमलव 42)
+    if (lang === 'gu') {
+      sanitized = sanitized.replace(/(\d+)\.(\d+)/g, '$1 પોઇન્ટ $2');
+    } else if (lang === 'hi') {
+      sanitized = sanitized.replace(/(\d+)\.(\d+)/g, '$1 दशमलव $2');
+    } else {
       sanitized = sanitized.replace(/(\d+)\.(\d+)/g, '$1 point $2');
-      // Ranges (e.g. 1-2 -> 1 to 2, 20-30 -> 20 to 30)
-      sanitized = sanitized.replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1 to $2');
-      // Slashes (e.g. 130/80 -> 130 over 80)
+    }
+
+    // 4. Blood pressure or ratio slash (e.g. 130/80)
+    if (lang === 'gu') {
+      sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 બાય $2');
+    } else if (lang === 'hi') {
+      sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 बटा $2');
+    } else {
       sanitized = sanitized.replace(/(\d+)\s*\/\s*(\d+)/g, '$1 over $2');
-      // Medical expansions for natural speech flow
+    }
+
+    // 5. Explicit plus/minus with numbers (e.g. +4.7, +4, -3)
+    if (lang === 'gu') {
+      sanitized = sanitized.replace(/\+\s*(\d+)/g, 'પ્લસ $1');
+      sanitized = sanitized.replace(/-\s*(\d+)/g, 'માઇનસ $1');
+      sanitized = sanitized.replace(/%/g, ' ટકા');
+    } else if (lang === 'hi') {
+      sanitized = sanitized.replace(/\+\s*(\d+)/g, 'प्लस $1');
+      sanitized = sanitized.replace(/-\s*(\d+)/g, 'माइनस $1');
+      sanitized = sanitized.replace(/%/g, ' प्रतिशत');
+    } else {
+      sanitized = sanitized.replace(/\+\s*(\d+)/g, 'plus $1');
+      sanitized = sanitized.replace(/-\s*(\d+)/g, 'minus $1');
+      sanitized = sanitized.replace(/%/g, ' percent');
+    }
+
+    // 6. English medical expansions
+    if (lang === 'en') {
       sanitized = sanitized.replace(/\bPDR\b/g, 'Proliferative Diabetic Retinopathy');
-      sanitized = sanitized.replace(/\bNPDR\b/g, 'Non-Proliferative Diabetic Retinopathy');
+      sanitized = sanitized.replace(/\bNPDR\b/g, 'Non Proliferative Diabetic Retinopathy');
       sanitized = sanitized.replace(/\bDME\b/g, 'Diabetic Macular Edema');
       sanitized = sanitized.replace(/\bIOP\b/g, 'Intraocular Pressure');
       sanitized = sanitized.replace(/\bBCVA\b/g, 'Visual Acuity');
       sanitized = sanitized.replace(/\bapprox\.?\b/gi, 'approximately');
-      sanitized = sanitized.replace(/[:;–—_#*•]/g, ', ');
     }
 
-    // 3. Clean up duplicate commas and whitespace
+    // 7. CRITICAL: Remove any hyphen or dash between words/letters (e.g. कप-टू-डिस्क -> कप टू डिस्क, tele-screening -> tele screening)
+    // This eliminates the bug where mobile Android/iOS TTS engines verbalize hyphens as "minus minus"!
+    sanitized = sanitized.replace(/([^\s\d])\s*[-–—]\s*([^\s\d])/g, '$1 $2');
+
+    // 8. Strip ALL remaining hyphens, dashes, periods, colons, semicolons, bullets, brackets, hashes, asterisks
+    sanitized = sanitized.replace(/[\-–—\.:;,_#*•|।\(\)\[\]\{\}\<\>\"\'\/\\~`^]/g, ', ');
+
+    // 9. Clean up duplicate commas, spaces, and commas at boundaries
     sanitized = sanitized.replace(/,\s*,+/g, ', ');
     sanitized = sanitized.replace(/\s+/g, ' ').trim();
     sanitized = sanitized.replace(/^,\s*|\s*,\s*$/g, '');
@@ -135,6 +160,39 @@ class RegionalVoiceEngine {
       }
       return char;
     }).join('');
+  }
+
+  /**
+   * Asynchronously loads client synthesis voices if not yet populated.
+   */
+  public async getAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      return [];
+    }
+
+    const currentVoices = window.speechSynthesis.getVoices();
+    if (currentVoices.length > 0) {
+      return currentVoices;
+    }
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const onVoicesChanged = () => {
+        if (resolved) return;
+        resolved = true;
+        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        resolve(window.speechSynthesis.getVoices());
+      };
+
+      window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+          resolve(window.speechSynthesis.getVoices());
+        }
+      }, 300);
+    });
   }
 
   /**
@@ -187,8 +245,11 @@ class RegionalVoiceEngine {
 
   /**
    * Starts a brand new sequential readout from the very first clause.
+   * If client machine has no Indic voice for Hindi or Gujarati, smoothly
+   * falls back to clean phonetic Romanized script to prevent raw Unicode
+   * codepoint numbers or screeching on English desktop voices.
    */
-  public async speak(text: string, lang: 'en' | 'hi' | 'gu'): Promise<void> {
+  public async speak(text: string, lang: 'en' | 'hi' | 'gu', romanizedFallback?: string): Promise<void> {
     this.stop();
     if (!text || text.trim().length === 0) return;
 
@@ -196,20 +257,44 @@ class RegionalVoiceEngine {
     const currentSession = this.playbackSessionId;
 
     this.currentLang = lang;
-    const sanitized = this.sanitizePunctuation(text, lang);
+
+    // Detect available voices asynchronously
+    const voices = await this.getAvailableVoices();
+    const hasHiVoice = voices.some(v => 
+      v.lang.toLowerCase().startsWith('hi') || 
+      v.name.toLowerCase().includes('hindi')
+    );
+    const hasGuVoice = voices.some(v => 
+      v.lang.toLowerCase().startsWith('gu') || 
+      v.name.toLowerCase().includes('gujarati')
+    );
+
+    // If Hindi requested but no Hindi voice, or Gujarati requested but neither Gujarati nor Hindi voice:
+    // and romanizedFallback is provided, speak the clean phonetic Romanized script with an English/Indian-English voice!
+    const shouldUseRoman = Boolean(
+      romanizedFallback && (
+        (lang === 'hi' && !hasHiVoice) ||
+        (lang === 'gu' && !hasGuVoice && !hasHiVoice)
+      )
+    );
+
+    const actualText = shouldUseRoman ? romanizedFallback! : text;
+    const actualLang = shouldUseRoman ? 'en' : lang;
+
+    const sanitized = this.sanitizePunctuation(actualText, actualLang);
     this.queue = this.splitIntoClauses(sanitized);
     this.currentQueueIndex = 0;
     this.status = 'playing';
     this.notifyListeners('playing');
 
-    await this.playQueue(currentSession);
+    await this.playQueue(currentSession, shouldUseRoman);
   }
 
   /**
    * Sequential audio queue driver.
    * Completely immune to scrolling, window focus, or resize events.
    */
-  private async playQueue(sessionId: number): Promise<void> {
+  private async playQueue(sessionId: number, isRomanized: boolean = false): Promise<void> {
     while (this.currentQueueIndex < this.queue.length && sessionId === this.playbackSessionId) {
       // If paused, wait until resumed or stopped
       if (this.isPaused()) {
@@ -227,7 +312,7 @@ class RegionalVoiceEngine {
       this.notifyListeners('playing');
 
       // Speak clause strictly ONCE via SpeechSynthesis
-      await this.playUtteranceChunk(chunk, this.currentLang, sessionId);
+      await this.playUtteranceChunk(chunk, this.currentLang, sessionId, isRomanized);
 
       if (sessionId !== this.playbackSessionId || this.isIdle()) {
         return;
@@ -251,7 +336,12 @@ class RegionalVoiceEngine {
    * Plays a single clause using SpeechSynthesis with global GC anchoring.
    * Ensures the utterance is called strictly ONCE, and V8 GC cannot cancel it on scroll.
    */
-  private playUtteranceChunk(chunk: string, lang: 'en' | 'hi' | 'gu', sessionId: number): Promise<void> {
+  private playUtteranceChunk(
+    chunk: string, 
+    lang: 'en' | 'hi' | 'gu', 
+    sessionId: number, 
+    isRomanized: boolean = false
+  ): Promise<void> {
     return new Promise((resolve) => {
       if (typeof window === 'undefined' || !('speechSynthesis' in window) || sessionId !== this.playbackSessionId) {
         resolve();
@@ -272,7 +362,35 @@ class RegionalVoiceEngine {
 
       const voices = window.speechSynthesis.getVoices();
 
-      if (lang === 'gu') {
+      if (isRomanized) {
+        // Phonetic Romanized Hindi/Gujarati: Use Indian English voice or best natural English voice
+        const inVoice = voices.find(v => 
+          v.lang.toLowerCase().includes('in') || 
+          v.name.toLowerCase().includes('india') ||
+          v.name.toLowerCase().includes('heera') ||
+          v.name.toLowerCase().includes('neerja')
+        );
+        const naturalVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && 
+          (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural'))
+        );
+        const googleVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && (v.name.includes('Google') || v.name.includes('WaveNet'))
+        );
+        const modernVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith('en') && 
+          (v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Zira') || v.name.includes('Samantha'))
+        );
+        const enVoice = inVoice || naturalVoice || googleVoice || modernVoice || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0];
+        if (enVoice) {
+          utterance.voice = enVoice;
+          utterance.lang = enVoice.lang || 'en-IN';
+        } else {
+          utterance.lang = 'en-IN';
+        }
+        utterance.rate = 0.92;
+        utterance.pitch = 1.0;
+      } else if (lang === 'gu') {
         const guVoice = voices.find(v => 
           v.lang.toLowerCase().startsWith('gu') || 
           v.name.toLowerCase().includes('gujarati')
@@ -280,28 +398,32 @@ class RegionalVoiceEngine {
         if (guVoice) {
           utterance.voice = guVoice;
           utterance.lang = 'gu-IN';
+          utterance.rate = 0.92;
         } else {
-          // Accurate phonetic fallback to Hindi voice for Gujarati text
+          // Fallback to Hindi voice for Gujarati text (via Devanagari transliteration)
           utterance.text = this.gujaratiToDevanagari(chunk);
-          const indVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN')) || voices[0];
-          if (indVoice) utterance.voice = indVoice;
-          utterance.lang = 'hi-IN';
+          const hiVoice = voices.find(v => 
+            v.lang.toLowerCase().startsWith('hi') || 
+            v.name.toLowerCase().includes('hindi')
+          );
+          if (hiVoice) {
+            utterance.voice = hiVoice;
+            utterance.lang = 'hi-IN';
+          }
+          utterance.rate = 0.92;
         }
-        utterance.rate = 0.95;
       } else if (lang === 'hi') {
         const hiVoice = voices.find(v => 
           v.lang.toLowerCase().startsWith('hi') || 
           v.name.toLowerCase().includes('hindi')
         );
-        if (hiVoice) utterance.voice = hiVoice;
-        utterance.lang = 'hi-IN';
-        utterance.rate = 0.95;
+        if (hiVoice) {
+          utterance.voice = hiVoice;
+          utterance.lang = 'hi-IN';
+        }
+        utterance.rate = 0.92;
       } else {
-        // Human-sounding English Voice Selection:
-        // Priority 1: High-fidelity natural/neural voices (Jenny Natural, Aria Natural, Guy Natural)
-        // Priority 2: Chrome/Edge Google WaveNet voices (Google US English, Google UK English Female)
-        // Priority 3: Clear human-like conversational voices (Aria, Jenny, Zira, Samantha, Victoria)
-        // Avoid legacy robotic desktop voices (e.g. "Microsoft David Desktop")
+        // High-fidelity English Voice Selection
         const naturalVoice = voices.find(v => 
           v.lang.toLowerCase().startsWith('en') && 
           (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural'))
@@ -315,7 +437,7 @@ class RegionalVoiceEngine {
         );
         const fallbackEnVoice = voices.find(v => 
           v.lang.toLowerCase().startsWith('en') && !v.name.includes('David')
-        ) || voices.find(v => v.lang.toLowerCase().startsWith('en'));
+        ) || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0];
 
         const enVoice = naturalVoice || googleVoice || modernVoice || fallbackEnVoice;
         if (enVoice) {
@@ -324,8 +446,8 @@ class RegionalVoiceEngine {
         } else {
           utterance.lang = 'en-US';
         }
-        // Human conversational pacing: rate 0.93 - 0.95, pitch 1.0 (avoids metallic robotic speed)
-        utterance.rate = 0.94;
+        // Human conversational pacing: rate 0.93, pitch 1.0 (natural cadence)
+        utterance.rate = 0.93;
         utterance.pitch = 1.0;
       }
 
@@ -342,8 +464,7 @@ class RegionalVoiceEngine {
         finish();
       };
 
-      utterance.onerror = (e) => {
-        // If interrupted by pause or scroll, resolve cleanly without double-queueing
+      utterance.onerror = () => {
         finish();
       };
 

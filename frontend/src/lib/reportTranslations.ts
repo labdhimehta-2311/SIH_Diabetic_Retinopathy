@@ -65,9 +65,15 @@ export interface ReportTranslations {
   urgentNotice: string;
 }
 
+export interface SpokenNarrativeResult {
+  text: string;
+  romanized: string;
+  toString(): string;
+}
+
 export const translations: Record<SupportedLanguage, ReportTranslations> = {
   en: {
-    title: "Clinical Retinal Tele-Screening",
+    title: "Clinical Retinal Tele Screening",
     subTitle: "Diagnostic Deep Learning Assessment Report",
     patientName: "Patient Name",
     idAgeSex: "ID / Age / Sex",
@@ -83,8 +89,8 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     comparativeMatrix: "Comparative Fundus Diagnostic Matrix",
     rawFundus: "1. Raw Fundus Capture",
     claheContrast: "2. CLAHE Contrast",
-    lesionMask: "3. U-Net Lesion Mask",
-    gradCam: "4. Grad-CAM Activation",
+    lesionMask: "3. U Net Lesion Mask",
+    gradCam: "4. Grad CAM Activation",
     counterfactual: "Counterfactual Visual Explanation (What a Healthier Retina Would Look Like)",
     counterfactualSubtitle: "Generative inpainting of what a healthier retina looks like with lesions cleared",
     quantitativeLesions: "Quantitative Lesion Distribution & Optical Assessment",
@@ -96,7 +102,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     reviewPriorityTitle: "3. Intelligent Review Priority",
     comorbidityTitle: "Opportunistic Rural Comorbidity Screening",
     comorbiditySubtitle: "Single-visit multi-disease screening for rural populations who receive only one annual eye exam",
-    glaucomaCdr: "Glaucomatous Cupping (Cup-to-Disc Ratio)",
+    glaucomaCdr: "Glaucomatous Cupping (Cup to Disc Ratio)",
     hypertensiveRetinopathy: "Hypertensive Retinopathy Indicators",
     amdDrusen: "Age-Related Macular Degeneration (AMD)",
     oculomicsTitle: "✨ AI Oculomics: Retinal Biological Age & Cardiovascular Risk",
@@ -110,7 +116,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     specialistOverride: "Record Specialist Clinical Judgment",
     concordanceRate: "Clinical Concordance Rate",
     submitOverride: "Log Disagreement & Commit to Ledger",
-    screeningIntervalTitle: "Adaptive Follow-up Screening Interval",
+    screeningIntervalTitle: "Adaptive Follow up Screening Interval",
     readFullReport: "Read Entire Clinical Report Aloud",
     pauseAudio: "Pause Audio",
     resumeAudio: "Resume Audio",
@@ -122,7 +128,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     urgentNotice: "Urgent Tertiary Retinal Specialist Review Indicated"
   },
   hi: {
-    title: "क्लिनिकल रेटिना टेली-स्क्रीनिंग",
+    title: "क्लिनिकल रेटिना टेली स्क्रीनिंग",
     subTitle: "डायग्नोस्टिक डीप लर्निंग मूल्यांकन रिपोर्ट",
     patientName: "मरीज़ का नाम",
     idAgeSex: "आईडी / उम्र / लिंग",
@@ -138,8 +144,8 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     comparativeMatrix: "तुलनात्मक रेटिना डायग्नोस्टिक मैट्रिक्स",
     rawFundus: "1. मूल फंडस छवि (Raw)",
     claheContrast: "2. एन्हांस्ड कन्ट्रास्ट (CLAHE)",
-    lesionMask: "3. घाव/क्षति विभाजन मास्क (U-Net)",
-    gradCam: "4. ग्रेड-कैम हीटमैप (Grad-CAM)",
+    lesionMask: "3. घाव विभाजन मास्क (U Net)",
+    gradCam: "4. ग्रेड कैम हीटमैप (Grad CAM)",
     counterfactual: "काउंटरफैक्चुअल दृश्य व्याख्या (स्वस्थ रेटिना सिमुलेशन)",
     counterfactualSubtitle: "घाव और रक्तस्राव हटाने पर स्वस्थ रेटिना कैसा दिखेगा इसका जेनेरेटिव दृश्य",
     quantitativeLesions: "मात्रात्मक घाव वितरण एवं ऑप्टिकल मूल्यांकन",
@@ -151,8 +157,8 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     reviewPriorityTitle: "3. डॉक्टर समीक्षा प्राथमिकता",
     comorbidityTitle: "ग्रामीण समग्र नेत्र जाँच (कोमॉर्बिडिटी स्क्रीनिंग)",
     comorbiditySubtitle: "ग्रामीण आबादी हेतु एकल-दौरे में बहु-रोग जाँच (वर्ष में केवल एक बार नेत्र परीक्षण का अवसर)",
-    glaucomaCdr: "ग्लूकोमा कप-टू-डिस्क अनुपात (CDR)",
-    hypertensiveRetinopathy: "उच्च रक्तचाप (बीपी) जनित रेटिना प्रभाव",
+    glaucomaCdr: "ग्लूकोमा कप टू डिस्क अनुपात (CDR)",
+    hypertensiveRetinopathy: "उच्च रक्तचाप जनित रेटिना प्रभाव",
     amdDrusen: "उम्र संबंधी मैकुलर डिजनरेशन (AMD)",
     oculomicsTitle: "✨ एआई ऑकुलोमिक्स: जैविक रेटिना आयु एवं हृदय रोग जोखिम",
     oculomicsSubtitle: "अतिरिक्त बायोमार्कर खोज — 'वी फाउंड समथिंग एक्स्ट्रा' (सिस्टेमिक कार्डियोवैस्कुलर सिग्नल)",
@@ -165,7 +171,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     specialistOverride: "नेत्र विशेषज्ञ का चिकित्सीय निर्णय दर्ज करें",
     concordanceRate: "मॉडल एवं डॉक्टर सहमति दर",
     submitOverride: "असहमति दर्ज करें एवं ऑडिट लॉग में जोड़ें",
-    screeningIntervalTitle: "अनुकूलित अनुवर्ती (Follow-up) जाँच अंतराल",
+    screeningIntervalTitle: "अनुकूलित अनुवर्ती (Follow up) जाँच अंतराल",
     readFullReport: "पूरा रिपोर्ट सुनें (हिंदी में)",
     pauseAudio: "आवाज रोकें (Pause)",
     resumeAudio: "आवाज जारी रखें (Resume)",
@@ -177,7 +183,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     urgentNotice: "तत्काल रेटिना विशेषज्ञ से संपर्क की आवश्यकता"
   },
   gu: {
-    title: "ક્લિનિકલ રેટિના ટેલિ-સ્ક્રીનિંગ",
+    title: "ક્લિનિકલ રેટિના ટેલિ સ્ક્રીનિંગ",
     subTitle: "ડાયગ્નોસ્ટિક ડીપ લર્નિંગ મૂલ્યાંકન અહેવાલ",
     patientName: "દર્દીનું નામ",
     idAgeSex: "આઈડી / ઉંમર / લિંગ",
@@ -193,8 +199,8 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     comparativeMatrix: "તુલનાત્મક રેટિના ડાયગ્નોસ્ટિક મેટ્રિક્સ",
     rawFundus: "1. મૂળ ફંડસ ફોટો (Raw)",
     claheContrast: "2. ઉન્નત કોન્ટ્રાસ્ટ (CLAHE)",
-    lesionMask: "3. ક્ષતિ વિભાજન માસ્ક (U-Net)",
-    gradCam: "4. ગ્રેડ-કેમ હીટમેપ (Grad-CAM)",
+    lesionMask: "3. ક્ષતિ વિભાજન માસ્ક (U Net)",
+    gradCam: "4. ગ્રેડ કેમ હીટમેપ (Grad CAM)",
     counterfactual: "કાઉન્ટરફેક્ચ્યુઅલ દ્રશ્ય સમજૂતી (સ્વસ્થ રેટિના સિમ્યુલેશન)",
     counterfactualSubtitle: "ક્ષતિઓ અને હેમરેજ દૂર કરવાથી સ્વસ્થ રેટિના કેવો દેખાય તેનું સિમ્યુલેશન",
     quantitativeLesions: "જથ્થાત્મક ક્ષતિ વિતરણ અને ઓપ્ટિકલ મૂલ્યાંકન",
@@ -205,8 +211,8 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     dmeTitle: "2. મેક્યુલર એડીમા (DME) જોખમ",
     reviewPriorityTitle: "3. નિષ્ણાત ડૉક્ટર સમીક્ષા અગ્રતા",
     comorbidityTitle: "ગ્રામીણ સમગ્રી નેત્ર તપાસ (કોમોર્બિડિટી સ્ક્રીનિંગ)",
-    comorbiditySubtitle: "ગ્રામીણ વસ્તી માટે એક મુલાકાતમાં બહુ-રોગ તપાસ (વર્ષમાં ફક્ત એક વાર તપાસનો લાભ)",
-    glaucomaCdr: "ગ્લુકોમા કપ-ટુ-ડિસ્ક ગુણોત્તર (CDR)",
+    comorbiditySubtitle: "ગ્રામીણ વસ્તી માટે એક મુલાકાતમાં બહુ રોગ તપાસ (વર્ષમાં ફક્ત એક વાર તપાસનો લાભ)",
+    glaucomaCdr: "ગ્લુકોમા કપ ટુ ડિસ્ક ગુણોત્તર (CDR)",
     hypertensiveRetinopathy: "હાઈ બ્લડ પ્રેશર જનિત રેટિના ફેરફારો",
     amdDrusen: "મેક્યુલર ડિજનરેશન (AMD)",
     oculomicsTitle: "✨ એઆઈ ઓક્યુલોમિક્સ: જૈવિક રેટિના ઉંમર અને હૃદય રોગ જોખમ",
@@ -220,7 +226,7 @@ export const translations: Record<SupportedLanguage, ReportTranslations> = {
     specialistOverride: "નેત્ર નિષ્ણાતનો તબીબી નિર્ણય નોંધો",
     concordanceRate: "મોડેલ અને ડૉક્ટર સંમતિ દર",
     submitOverride: "અસંમતિ નોંધો અને ઓડિટ લોગમાં ઉમેરો",
-    screeningIntervalTitle: "અનુકૂલિત ફોલો-અપ તપાસ સમયગાળો",
+    screeningIntervalTitle: "અનુકૂલિત ફોલો અપ તપાસ સમયગાળો",
     readFullReport: "સંપૂર્ણ અહેવાલ સાંભળો (ગુજરાતીમાં)",
     pauseAudio: "અવાજ થોભાવો (Pause)",
     resumeAudio: "અવાજ ચાલુ કરો (Resume)",
@@ -238,39 +244,93 @@ export function getFullReportSpokenNarrative(
   screening: any,
   sihData: any,
   lang: SupportedLanguage
-): string {
+): SpokenNarrativeResult {
   const pName = patient?.name || 'Screening Patient';
   const age = patient?.age || 56;
-  const grade = screening?.aiResults?.grade ?? 2;
+  const grade = Number(screening?.aiResults?.grade ?? 2);
   
   // Format model confidence with localized decimal words to guarantee no "dot" is pronounced
   const confRaw = Number(screening?.aiResults?.confidence ?? 95.9);
-  const confNum = isNaN(confRaw) ? 95.9 : confRaw;
+  const confNum = isNaN(confRaw) ? 95.9 : Math.round(confRaw * 10) / 10;
   const confWhole = Math.floor(confNum);
-  const confDec = Math.round((confNum - confWhole) * 100);
+  const confDec = Math.round((confNum - confWhole) * 10);
 
-  const confHindi = confDec > 0 ? `${confWhole} दशमलव ${confDec.toString().padStart(2, '0')} प्रतिशत` : `${confWhole} प्रतिशत`;
-  const confGujarati = confDec > 0 ? `${confWhole} પોઇન્ટ ${confDec.toString().padStart(2, '0')} ટકા` : `${confWhole} ટકા`;
-  const confEnglish = confDec > 0 ? `${confWhole}.${confDec.toString().padStart(2, '0')} percent` : `${confWhole} percent`;
+  const confHindi = confDec > 0 ? `${confWhole} दशमलव ${confDec} प्रतिशत` : `${confWhole} प्रतिशत`;
+  const confGujarati = confDec > 0 ? `${confWhole} પોઇન્ટ ${confDec} ટકા` : `${confWhole} ટકા`;
+  const confEnglish = confDec > 0 ? `${confWhole} point ${confDec} percent` : `${confWhole} percent`;
+  const confRoman = confDec > 0 ? `${confWhole} point ${confDec} percent` : `${confWhole} percent`;
+
+  // Dynamic biological retinal age gap from research signals
+  const gapRaw = sihData?.researchSignals?.retinalAgeGap !== undefined
+    ? Number(sihData.researchSignals.retinalAgeGap)
+    : Math.round(((grade * 2.1) + 1.2) * 10) / 10;
+  const gapAbs = Math.abs(gapRaw);
+  const gapWhole = Math.floor(gapAbs);
+  const gapDec = Math.round((gapAbs - gapWhole) * 10);
+  const isNegative = gapRaw < 0;
+
+  const ageGapHindi = `${isNegative ? 'माइनस ' : 'प्लस '}${gapDec > 0 ? `${gapWhole} दशमलव ${gapDec}` : `${gapWhole}`} वर्ष`;
+  const ageGapGujarati = `${isNegative ? 'માઇનસ ' : 'પ્લસ '}${gapDec > 0 ? `${gapWhole} પોઇન્ટ ${gapDec}` : `${gapWhole}`} વર્ષ`;
+  const ageGapEnglish = `${isNegative ? 'minus ' : 'plus '}${gapDec > 0 ? `${gapWhole} point ${gapDec}` : `${gapWhole}`} years`;
+  const ageGapRoman = `${isNegative ? 'minus ' : 'plus '}${gapDec > 0 ? `${gapWhole} point ${gapDec}` : `${gapWhole}`} varsh`;
+
+  // Dynamic cup-to-disc ratio from comorbidities
+  const cdrRaw = sihData?.comorbidities?.cupToDiscRatio !== undefined
+    ? Number(sihData.comorbidities.cupToDiscRatio)
+    : (grade >= 3 ? 0.48 : 0.42);
+  const cdrDec = Math.round(cdrRaw * 100);
+  const cdrHindi = `0 दशमलव ${cdrDec}`;
+  const cdrGujarati = `0 પોઇન્ટ ${cdrDec}`;
+  const cdrEnglish = `0 point ${cdrDec}`;
+  const cdrRoman = `0 point ${cdrDec}`;
 
   const triage = sihData?.triage?.tier || 'OPHTHALMOLOGIST_REVIEW';
+  const isUrgent = triage === 'URGENT_REFERRAL' || grade >= 3;
+
+  const followUpHindi = isUrgent
+    ? '1 से 2 सप्ताह में तत्काल विशेषज्ञ परामर्श'
+    : '3 से 6 महीने में नियमित अनुवर्ती जाँच';
+  const followUpGujarati = isUrgent
+    ? '1 થી 2 અઠવાડિયામાં તાત્કાલિક આંખના નિષ્ણાત ડૉક્ટર પાસે તપાસ'
+    : '3 થી 6 મહિનામાં નિયમિત તપાસ';
+  const followUpEnglish = isUrgent
+    ? 'urgent specialist consultation recommended within 1 to 2 weeks'
+    : 'routine follow up examination within 3 to 6 months';
+  const followUpRoman = isUrgent
+    ? '1 se 2 saptah mein tatkal visheshagya paramarsh'
+    : '3 se 6 mahine mein niyamit follow up jaanch';
   
   if (lang === 'hi') {
     const gradeHindi = [
       'ग्रेड 0 सामान्य, कोई डायबिटिक रेटिनोपैथी नहीं',
-      'ग्रेड 1 हल्की गैर-प्रोलिफेरेटिव रेटिनोपैथी',
-      'ग्रेड 2 मध्यम गैर-प्रोलिफेरेटिव रेटिनोपैथी',
-      'ग्रेड 3 गंभीर गैर-प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 1 हल्की गैर प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 2 मध्यम गैर प्रोलिफेरेटिव रेटिनोपैथी',
+      'ग्रेड 3 गंभीर गैर प्रोलिफेरेटिव रेटिनोपैथी',
       'ग्रेड 4 अत्यधिक गंभीर प्रोलिफेरेटिव रेटिनोपैथी'
     ][grade] || 'मध्यम रेटिनोपैथी';
 
-    const triageHindi = triage === 'URGENT_REFERRAL' ? 'अत्यंत आवश्यक रेफरल' : 'डॉक्टर समीक्षा';
-    const dmeHindi = sihData?.dmeRisk?.title === 'High DME Risk' ? 'उच्च मैकुलर एडिमा जोखिम' : 'मध्यम मैकुलर एडिमा जोखिम';
-    const cdrHindi = '0 दशमलव 42';
-    const ageGapHindi = 'धन 4 दशमलव 7 वर्ष';
-    const cvRiskHindi = 'हृदय एवं संवहनी जोखिम का मध्यम संकेत';
+    const gradeRoman = [
+      'Grade 0 samanya, koi diabetic retinopathy nahi',
+      'Grade 1 halki gair proliferative retinopathy',
+      'Grade 2 madhyam gair proliferative retinopathy',
+      'Grade 3 gambhir gair proliferative retinopathy',
+      'Grade 4 atyadhik gambhir proliferative retinopathy'
+    ][grade] || 'Grade 2 madhyam retinopathy';
 
-    return `मरीज़ ${pName}, उम्र ${age} वर्ष की संपूर्ण क्लिनिकल रेटिना टेली-स्क्रीनिंग रिपोर्ट, प्राथमिक डायग्नोस्टिक परिणाम ${gradeHindi}, मॉडल विश्वास स्तर ${confHindi}, तुलनात्मक फंडस मैट्रिक्स, यू-नेट लीज़न सेगमेंटेशन द्वारा माइक्रोएन्यूरिज्म और रक्तस्राव की पहचान, तथा ग्रेड-कैम सक्रियण, साक्ष्य-आधारित स्वास्थ्य एवं जीवनशैली उपाय, प्रतिदिन 20 से 30 मिनट हल्का टहलना या व्यायाम करें, भारी वजन उठाने से बचें, सख्त भूमध्यसागरीय आहार लें, रक्त शर्करा 70 से 180 के बीच और रक्तचाप 130 बटा 80 से नीचे रखें, संबंधित चिकित्सीय दवाइयां एवं फार्माकोथेरेपी, उच्च जोखिम रेटिनोपैथी के लिए एफ्लीबरसेप्ट या रैनीबिजुमैब इंट्राविट्रियल एंटी-वीईजीएफ इंजेक्शन, तथा सूक्ष्म संवहनी सुरक्षा हेतु लिसिनोप्रिल और फेनोफाइब्रेट अनुशंसित हैं, एआई क्लिनिकल ट्रायेज, ट्रायेज निर्णय ${triageHindi}, मैकुलर एडिमा जोखिम ${dmeHindi}, ग्रामीण समग्र नेत्र जाँच, कप-टू-डिस्क अनुपात ${cdrHindi} सामान्य शारीरिक सीमा में है, हल्का उच्च रक्तचाप संकेत है, एआई ऑकुलोमिक्स, रेटिनल जैविक आयु अंतराल ${ageGapHindi} है, हृदय एवं संवहनी जोखिम ${cvRiskHindi}, काउंटरफैक्चुअल दृश्य सिमुलेशन, क्षतिमुक्त स्वस्थ रेटिना का प्रतिरूप प्रदर्शित करता है, अनुकूलित अनुवर्ती जाँच, 1 से 2 सप्ताह में तत्काल विशेषज्ञ परामर्श`;
+    const triageHindi = isUrgent ? 'अत्यंत आवश्यक रेफरल' : 'डॉक्टर समीक्षा';
+    const triageRoman = isUrgent ? 'Atyant aavashyak referral' : 'Doctor sameeksha';
+
+    const dmeHindi = sihData?.dmeRisk?.title === 'High DME Risk' ? 'उच्च मैकुलर एडिमा जोखिम' : 'मध्यम मैकुलर एडिमा जोखिम';
+    const dmeRoman = sihData?.dmeRisk?.title === 'High DME Risk' ? 'Uchch macular edema jokhim' : 'Madhyam macular edema jokhim';
+
+    const cvRiskHindi = gapRaw > 3 ? 'हृदय एवं संवहनी जोखिम का उच्च संकेत' : 'हृदय एवं संवहनी स्थिति सामान्य';
+    const cvRiskRoman = gapRaw > 3 ? 'Hriday evam sanvahani jokhim ka uchch sanket' : 'Hriday evam sanvahani sthiti samanya';
+
+    const text = `मरीज़ ${pName}, उम्र ${age} वर्ष की संपूर्ण क्लिनिकल रेटिना टेली स्क्रीनिंग रिपोर्ट, प्राथमिक डायग्नोस्टिक परिणाम ${gradeHindi}, मॉडल विश्वास स्तर ${confHindi}, तुलनात्मक फंडस मैट्रिक्स, यू नेट लीज़न सेगमेंटेशन द्वारा माइक्रोएन्यूरिज्म और रक्तस्राव की पहचान, तथा ग्रेड कैम सक्रियण, साक्ष्य आधारित स्वास्थ्य एवं जीवनशैली उपाय, प्रतिदिन 20 से 30 मिनट हल्का टहलना या व्यायाम करें, भारी वजन उठाने से बचें, सख्त भूमध्यसागरीय आहार लें, रक्त शर्करा 70 से 180 के बीच और रक्तचाप 130 बटा 80 से नीचे रखें, संबंधित चिकित्सीय दवाइयां एवं फार्माकोथेरेपी, उच्च जोखिम रेटिनोपैथी के लिए एफ्लीबरसेप्ट या रैनीबिजुमैब इंट्राविट्रियल एंटी वीईजीएफ इंजेक्शन, तथा सूक्ष्म संवहनी सुरक्षा हेतु लिसिनोप्रिल और फेनोफाइब्रेट अनुशंसित हैं, एआई क्लिनिकल ट्रायेज, ट्रायेज निर्णय ${triageHindi}, मैकुलर एडिमा जोखिम ${dmeHindi}, ग्रामीण समग्र नेत्र जाँच, कप टू डिस्क अनुपात ${cdrHindi} सामान्य शारीरिक सीमा में है, हल्का उच्च रक्तचाप संकेत है, एआई ऑकुलोमिक्स, रेटिनल जैविक आयु अंतराल ${ageGapHindi} है, हृदय एवं संवहनी जोखिम ${cvRiskHindi}, काउंटरफैक्चुअल दृश्य सिमुलेशन, क्षतिमुक्त स्वस्थ रेटिना का प्रतिरूप प्रदर्शित करता है, अनुकूलित अनुवर्ती जाँच, ${followUpHindi}`;
+
+    const romanized = `Mareez ${pName}, umar ${age} varsh ki sampoorna clinical retina tele screening report, prathmik diagnostic parinam ${gradeRoman}, model vishwas star ${confRoman}, tulnatmak fundus matrix, U Net lesion segmentation dwara microaneurysm aur raktsraav ki pehchan, tatha Grad CAM sakriyata, swasthya evam jeevanshaili upaay, pratidin 20 se 30 minute halka tehelna ya vyayam karein, bhaari wajan uthane se bachein, santulit aahar lein, blood sugar 70 se 180 ke beech aur blood pressure 130 over 80 se neeche rakhein, sambhandhit aushadhiyan, uchch jokhim retinopathy ke liye Aflibercept ya Ranibizumab intravitreal anti VEGF injection, tatha Lisinopril aur Fenofibrate anushansit hain, AI clinical triage nirnay ${triageRoman}, macular edema jokhim ${dmeRoman}, cup to disc ratio ${cdrRoman} samanya seema mein hai, AI oculomics biological retinal age gap ${ageGapRoman} hai, cardiovascular jokhim ${cvRiskRoman}, counterfactual visual simulation swasth retina ka prateek pradarshit karta hai, anukoolit anuvarti jaanch, ${followUpRoman}`;
+
+    return { text, romanized, toString: () => text };
   }
 
   if (lang === 'gu') {
@@ -282,20 +342,36 @@ export function getFullReportSpokenNarrative(
       'ગ્રેડ 4 અત્યંત ગંભીર પ્રોલિફેરેટિવ રેટિનોપેથી'
     ][grade] || 'મધ્યમ રેટિનોપેથી';
 
-    const triageGujarati = triage === 'URGENT_REFERRAL' ? 'તાત્કાલિક હોસ્પિટલ તપાસ' : 'નિષ્ણાત ડૉક્ટર સમીક્ષા';
-    const dmeGujarati = sihData?.dmeRisk?.title === 'High DME Risk' ? 'ઉચ્ચ મેક્યુલર એડીમા જોખમ' : 'મધ્યમ મેક્યુલર એડીમા જોખમ';
-    const cdrGujarati = '0 પોઇન્ટ 42';
-    const ageGapGujarati = 'પ્લસ 4 પોઇન્ટ 7 વર્ષ';
-    const cvRiskGujarati = 'સામાન્ય કાર્ડિયોવેસ્ક્યુલર સ્થિતિ';
+    const gradeRoman = [
+      'Grade 0 samanya, koi diabetic retinopathy nathi',
+      'Grade 1 halvi diabetic retinopathy',
+      'Grade 2 madhyam diabetic retinopathy',
+      'Grade 3 gambhir diabetic retinopathy',
+      'Grade 4 atyant gambhir proliferative retinopathy'
+    ][grade] || 'Grade 2 madhyam retinopathy';
 
-    return `દર્દી ${pName}, ઉંમર ${age} વર્ષનો સંપૂર્ણ ક્લિનિકલ રેટિના ટેલિ-સ્ક્રીનિંગ અહેવાલ, પ્રાથમિક નિદાન પરિણામ ${gradeGujarati}, મોડેલ વિશ્વાસ સ્તર ${confGujarati}, તુલનાત્મક ફંડસ ડાયગ્નોસ્ટિક મેટ્રિક્સ, યુ-નેટ ક્ષતિ વિભાજન દ્વારા માઇક્રોએન્યુરિઝમ અને હેમરેજની તપાસ, તેમજ ગ્રેડ-કેમ હીટમેપ, સાબિતી-આધારિત આરોગ્ય અને જીવનશૈલી પગલાં, દરરોજ 20 થી 30 મિનિટ હળવી કસરત કરો, ભારે વજન ઉપાડવાનું ટાળો, સંતુલિત આહાર લો, બ્લડ શુગર 70 થી 180 વચ્ચે અને બ્લડ પ્રેશર 130 બાય 80 થી નીચે રાખો, સંબંધિત ક્લિનિકલ દવાઓ અને ફાર્માકોથેરાપી, ઉચ્ચ જોખમ ધરાવતી રેટિનોપેથી માટે એન્ટી-વીઈજીએફ ઇન્જેક્શન જેમ કે એફ્લીબરસેપ્ટ અથવા રાનિબિઝુમેબ, તેમજ રક્તવાહિની રક્ષણ માટે લિસિનોપ્રિલ અને ફેનોફાઇબ્રેટ સૂચવવામાં આવે છે, એઆઈ ક્લિનિકલ ટ્રાયેજ, ટ્રાયેજ નિર્ણય ${triageGujarati}, મેક્યુલર એડીમા જોખમ ${dmeGujarati}, ગ્રામીણ કોમોર્બિડિટી તપાસ, ઓપ્ટિક કપ-ટુ-ડિસ્ક રેશિયો ${cdrGujarati} સામાન્ય શારીરિક મર્યાદામાં છે, હળવા બ્લડ પ્રેશર ચિહ્નો છે, એઆઈ ઓક્યુલોમિક્સ, રેટિનલ જૈવિક ઉંમર અંતરાલ ${ageGapGujarati} છે, કાર્ડિયોવેસ્ક્યુલર સંકેત ${cvRiskGujarati}, કાઉન્ટરફેક્ચ્યુઅલ દ્રશ્ય સિમ્યુલેશન, ક્ષતિઓ મુક્ત સ્વસ્થ રેટિનાનું નિરૂપણ દર્શાવે છે, અનુકૂલિત ફોલો-અપ તપાસ, 1 થી 2 અઠવાડિયામાં તાત્કાલિક આંખના નિષ્ણાત ડૉક્ટર પાસે તપાસ`;
+    const triageGujarati = isUrgent ? 'તાત્કાલિક હોસ્પિટલ તપાસ' : 'નિષ્ણાત ડૉક્ટર સમીક્ષા';
+    const triageRoman = isUrgent ? 'Taatkalik hospital tapas' : 'Nishnat doctor sameeksha';
+
+    const dmeGujarati = sihData?.dmeRisk?.title === 'High DME Risk' ? 'ઉચ્ચ મેક્યુલર એડીમા જોખમ' : 'મધ્યમ મેક્યુલર એડીમા જોખમ';
+    const dmeRoman = sihData?.dmeRisk?.title === 'High DME Risk' ? 'Uchch macular edema jokhim' : 'Madhyam macular edema jokhim';
+
+    const cvRiskGujarati = gapRaw > 3 ? 'હૃદય રોગ અને કાર્ડિયોવેસ્ક્યુલર જોખમનો ઉચ્ચ સંકેત' : 'સામાન્ય કાર્ડિયોવેસ્ક્યુલર સ્થિતિ';
+    const cvRiskRoman = gapRaw > 3 ? 'Hriday rog ane cardiovascular jokhim no ucch sanket' : 'Samanya cardiovascular sthiti';
+
+    const text = `દર્દી ${pName}, ઉંમર ${age} વર્ષનો સંપૂર્ણ ક્લિનિકલ રેટિના ટેલિ સ્ક્રીનિંગ અહેવાલ, પ્રાથમિક નિદાન પરિણામ ${gradeGujarati}, મોડેલ વિશ્વાસ સ્તર ${confGujarati}, તુલનાત્મક ફંડસ ડાયગ્નોસ્ટિક મેટ્રિક્સ, યુ નેટ ક્ષતિ વિભાજન દ્વારા માઇક્રોએન્યુરિઝમ અને હેમરેજની તપાસ, તેમજ ગ્રેડ કેમ હીટમેપ, સાબિતી આધારિત આરોગ્ય અને જીવનશૈલી પગલાં, દરરોજ 20 થી 30 મિનિટ હળવી કસરત કરો, ભારે વજન ઉપાડવાનું ટાળો, સંતુલિત આહાર લો, બ્લડ શુગર 70 થી 180 વચ્ચે અને બ્લડ પ્રેશર 130 બાય 80 થી નીચે રાખો, સંબંધિત ક્લિનિકલ દવાઓ અને ફાર્માકોથેરાપી, ઉચ્ચ જોખમ ધરાવતી રેટિનોપેથી માટે એન્ટી વીઈજીએફ ઇન્જેક્શન જેમ કે એફ્લીબરસેપ્ટ અથવા રાનિબિઝુમેબ, તેમજ રક્તવાહિની રક્ષણ માટે લિસિનોપ્રિલ અને ફેનોફાઇબ્રેટ સૂચવવામાં આવે છે, એઆઈ ક્લિનિકલ ટ્રાયેજ, ટ્રાયેજ નિર્ણય ${triageGujarati}, મેક્યુલર એડીમા જોખમ ${dmeGujarati}, ગ્રામીણ કોમોર્બિડિટી તપાસ, ઓપ્ટિક કપ ટુ ડિસ્ક રેશિયો ${cdrGujarati} સામાન્ય શારીરિક મર્યાદામાં છે, હળવા બ્લડ પ્રેશર ચિહ્નો છે, એઆઈ ઓક્યુલોમિક્સ, રેટિનલ જૈવિક ઉંમર અંતરાલ ${ageGapGujarati} છે, કાર્ડિયોવેસ્ક્યુલર સંકેત ${cvRiskGujarati}, કાઉન્ટરફેક્ચ્યુઅલ દ્રશ્ય સિમ્યુલેશન, ક્ષતિઓ મુક્ત સ્વસ્થ રેટિનાનું નિરૂપણ દર્શાવે છે, અનુકૂલિત ફોલો અપ તપાસ, ${followUpGujarati}`;
+
+    const romanized = `Dardi ${pName}, umar ${age} varsh no sampoorna clinical retina tele screening aheval, prathmik nidaan parinam ${gradeRoman}, model vishwas star ${confRoman}, tulnatmak fundus diagnostic matrix, U Net lesion segmentation dwara microaneurysm ane hemorrhage ni tapas, temaj Grad CAM heatmap, arogva ane jeevanshaili pagla, darroj 20 thi 30 minute halki kasrat karo, bhari vajan upadvanu taalo, santulit aahar lo, blood sugar 70 thi 180 vachche ane blood pressure 130 over 80 thi neeche rakho, sambandhit davaao, ucch jokhim retinopathy maate anti VEGF injection jem ke Aflibercept athva Ranibizumab, temaj Lisinopril ane Fenofibrate suchavva ma aave chhe, AI clinical triage nirnay ${triageRoman}, macular edema jokhim ${dmeRoman}, optic cup to disc ratio ${cdrRoman} samanya seema ma chhe, AI oculomics retinal jaivik umar antaral ${ageGapRoman} chhe, cardiovascular sanket ${cvRiskRoman}, counterfactual drashya simulation kshati mukt swasth retina nu niroopan darshave chhe, anukoolit follow up tapas, ${followUpRoman}`;
+
+    return { text, romanized, toString: () => text };
   }
 
   // English fallback
   const dmeEnglish = sihData?.dmeRisk?.title || 'Moderate DME Risk';
-  const cdrEnglish = '0 point 42';
-  const ageGapEnglish = 'plus 4 point 7 years';
-  const cvRiskEnglish = sihData?.researchSignals?.cvSignal || 'Elevated Cardiovascular Risk Signal';
+  const cvRiskEnglish = sihData?.researchSignals?.cvSignal || (gapRaw > 3 ? 'Elevated Cardiovascular Risk Signal' : 'Concordant Cardiovascular Profile');
+  const triageEnglish = isUrgent ? 'Urgent Tertiary Referral' : 'Ophthalmologist Specialist Review';
 
-  return `Complete Clinical Retinal Tele-Screening Report for Patient ${pName}, Age ${age} years, Primary Screening Diagnostic Grading: Grade ${grade} with ${confEnglish} model confidence, Comparative Fundus Diagnostic Matrix: 4-panel analysis with CLAHE enhancement, U-Net lesion segmentation detecting microaneurysms and hemorrhages, and Grad-CAM activation heatmap, Evidence-Based Health and Supportive Lifestyle Measures, engage in gentle walking 20 to 30 minutes daily, avoid heavy straining, adopt a strict Mediterranean or DASH dietary pattern, maintain target blood glucose 70 to 180 and blood pressure below 130 over 80, Relevant Clinical Medications and Pharmacotherapy, targeted intravitreal anti-VEGF biologics such as Aflibercept or Ranibizumab are indicated, along with systemic microvascular endothelial protectors Lisinopril and Fenofibrate, AI Clinical Triad, uncertainty-aware triage recommends ${triage}, with ${dmeEnglish}, Rural Opportunistic Comorbidity Screening, optic cup-to-disc ratio is ${cdrEnglish} within physiologic limits, with mild hypertensive arteriolar attenuation and clear macula, AI Deep Oculomics, biological retinal age gap is ${ageGapEnglish} with ${cvRiskEnglish}, Counterfactual Visual Explanation, generative simulation demonstrates a healthier retinal counterpart with lesions cleared, Adaptive Follow-up Screening Interval, urgent specialist consultation recommended within 1 to 2 weeks`;
+  const text = `Complete Clinical Retinal Tele Screening Report for Patient ${pName}, Age ${age} years, Primary Screening Diagnostic Grading: Grade ${grade} with ${confEnglish} model confidence, Comparative Fundus Diagnostic Matrix: 4 panel analysis with CLAHE enhancement, U Net lesion segmentation detecting microaneurysms and hemorrhages, and Grad CAM activation heatmap, Evidence Based Health and Supportive Lifestyle Measures, engage in gentle walking 20 to 30 minutes daily, avoid heavy straining, adopt a strict Mediterranean or DASH dietary pattern, maintain target blood glucose 70 to 180 and blood pressure below 130 over 80, Relevant Clinical Medications and Pharmacotherapy, targeted intravitreal anti VEGF biologics such as Aflibercept or Ranibizumab are indicated, along with systemic microvascular endothelial protectors Lisinopril and Fenofibrate, AI Clinical Triad, uncertainty aware triage recommends ${triageEnglish}, with ${dmeEnglish}, Rural Opportunistic Comorbidity Screening, optic cup to disc ratio is ${cdrEnglish} within physiologic limits, with mild hypertensive arteriolar attenuation and clear macula, AI Deep Oculomics, biological retinal age gap is ${ageGapEnglish} with ${cvRiskEnglish}, Counterfactual Visual Explanation, generative simulation demonstrates a healthier retinal counterpart with lesions cleared, Adaptive Follow up Screening Interval, ${followUpEnglish}`;
+
+  return { text, romanized: text, toString: () => text };
 }

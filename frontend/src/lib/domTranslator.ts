@@ -229,12 +229,12 @@ export const COMPREHENSIVE_TRANSLATION_MAP: Record<string, { hi: string; gu: str
     gu: "ક્લિનિકલ મહત્વ"
   },
   "Optic Disc & Cup-to-Disc Ratio": {
-    hi: "ऑप्टिक डिस्क एवं कप-टू-डिस्क अनुपात (CDR)",
-    gu: "ઓપ્ટિક ડિસ્ક અને કપ-ટુ-ડિસ્ક રેશિયો (CDR)"
+    hi: "ऑप्टिक डिस्क एवं कप टू डिस्क अनुपात (CDR)",
+    gu: "ઓપ્ટિક ડિસ્ક અને કપ ટુ ડિસ્ક રેશિયો (CDR)"
   },
   "Optic Cup-to-Disc Ratio (CDR)": {
-    hi: "ऑप्टिक कप-टू-डिस्क अनुपात (CDR)",
-    gu: "ઓપ્ટિક કપ-ટુ-ડિસ્ક રેશિયો (CDR)"
+    hi: "ऑप्टिक कप टू डिस्क अनुपात (CDR)",
+    gu: "ઓપ્ટિક કપ ટુ ડિસ્ક રેશિયો (CDR)"
   },
   "Normal Physiologic Margins": {
     hi: "सामान्य शारीरिक सीमा",
