@@ -395,22 +395,14 @@ def run_m3_segmentation(enhanced_path, output_mask_path, check_m3_setup=True):
         subtracted, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, -3
     )
     
-    # Retinal FOV mask with strict margin erosion to prevent peripheral crop artifacts
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
-    mask_eroded = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (18, 18))) > 0
-
-    # Filter small noise artifacts strictly inside eroded retinal tissue
+    # Filter small noise artifacts
     kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_small)
-    cleaned[~mask_eroded] = 0
     
-    # Exudates detection (bright lesions on L channel) strictly inside eroded retinal tissue
+    # Exudates detection (bright lesions on L channel)
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
     _, exudates = cv2.threshold(l_channel, 210, 255, cv2.THRESH_BINARY)
-    exudates[~mask_eroded] = 0
     
     # Combine hemorrhages/microaneurysms (red/amber) and exudates (cyan/yellow)
     h, w = green.shape
