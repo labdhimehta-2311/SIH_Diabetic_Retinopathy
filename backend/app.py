@@ -52,6 +52,7 @@ def list_samples():
     return jsonify({"samples": samples})
 
 @app.route('/api/screen', methods=['POST'])
+@app.route('/infer', methods=['POST'])
 def run_screening():
     if 'image' not in request.files:
         return jsonify({"error": "No image file provided in multipart request"}), 400
@@ -83,18 +84,33 @@ def run_screening():
         check_m3_setup=check_m3_setup
     )
     
-    # Construct accessible URLs
+    # Construct accessible URLs & Data URLs for portable network display
     raw_url = f"/api/files/{raw_filename}"
     enhanced_url = f"/api/files/{session_id}_m1_enhanced.png"
     heatmap_url = f"/api/files/{session_id}_m4_heatmap.png"
     lesion_mask_url = f"/api/files/{session_id}_m3_lesion_mask.png" if pipeline_result.get("m3Executed") else None
     
+    def to_data_url(filepath, mime="image/png"):
+        if filepath and os.path.exists(filepath):
+            try:
+                with open(filepath, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode("utf-8")
+                    return f"data:{mime};base64,{b64}"
+            except Exception:
+                return None
+        return None
+
+    raw_data_url = to_data_url(raw_filepath, f"image/{ext if ext != 'jpg' else 'jpeg'}")
+    enh_data_url = to_data_url(pipeline_result.get("enhancedImagePath"))
+    heat_data_url = to_data_url(pipeline_result.get("heatmapPath"))
+    mask_data_url = to_data_url(pipeline_result.get("lesionMaskPath")) if pipeline_result.get("m3Executed") else None
+
     response_data = {
         "sessionId": session_id,
         "patientId": patient_id,
         "doctorId": doctor_id,
         "success": True,
-        "engine": pipeline_result["engine"],
+        "engine": pipeline_result.get("engine", "matlab_engine"),
         "grade": pipeline_result["grade"],
         "gradeLabel": pipeline_result["gradeLabel"],
         "confidence": pipeline_result["confidence"],
@@ -102,10 +118,10 @@ def run_screening():
         "m3Executed": pipeline_result["m3Executed"],
         "executionTimeSec": pipeline_result["executionTimeSec"],
         "images": {
-            "originalUrl": raw_url,
-            "enhancedUrl": enhanced_url,
-            "heatmapUrl": heatmap_url,
-            "lesionMaskUrl": lesion_mask_url
+            "originalUrl": raw_data_url or raw_url,
+            "enhancedUrl": enh_data_url or enhanced_url,
+            "heatmapUrl": heat_data_url or heatmap_url,
+            "lesionMaskUrl": mask_data_url or lesion_mask_url
         }
     }
     

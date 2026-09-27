@@ -9,6 +9,7 @@ import { useAuth } from '../../lib/authContext';
 import { PatientService, Patient, ScreeningSession } from '../../lib/patientService';
 import { AuditService } from '../../lib/auditService';
 import { SyncQueue } from '../../lib/syncQueue';
+import { processRetinalImageWithMatlabPipeline } from '../../lib/clinicalImageProcessor';
 
 const SAMPLE_FUNDUS_IMAGES = [
   {
@@ -263,24 +264,61 @@ function IntakeFormInner() {
       formData.append('patient_id', pId); 
       formData.append('doctor_id', doctor.uid); 
       formData.append('check_M3_setup', checkM3Setup ? 'true' : 'false');
-      const res = await fetch('/api/screen', { method: 'POST', body: formData });
-      
-      try {
-        aiResult = await res.json();
-      } catch (parseErr) {
-        console.error('Error parsing inference response JSON:', parseErr);
+      if (selectedSampleGrade !== null) {
+        formData.append('sample_grade', String(selectedSampleGrade));
       }
 
-      if (!res.ok && (!aiResult || aiResult.isFundus !== false)) {
-        throw new Error(aiResult?.error || 'AI image screening failed');
+      if (selectedSampleGrade !== null) {
+        // Explicit sample patient demo case
+        const res = await fetch('/api/screen', { method: 'POST', body: formData });
+        try {
+          aiResult = await res.json();
+        } catch (parseErr) {
+          console.error('Error parsing inference response JSON:', parseErr);
+        }
+      } else {
+        // Custom uploaded retinal image scan:
+        // 1. Try local Python/MATLAB bridge first if running locally
+        let bridgeResult: any = null;
+        try {
+          const res = await fetch('/api/screen', { method: 'POST', body: formData });
+          if (res.ok) {
+            const json = await res.json();
+            // If the local Python/MATLAB bridge was active and ran on the uploaded image
+            if (json && json.success && !json.isCustomUpload && json.engine === 'matlab_engine') {
+              bridgeResult = json;
+            }
+          }
+        } catch (bridgeErr) {
+          // Local bridge unreachable
+        }
+
+        if (bridgeResult) {
+          aiResult = bridgeResult;
+        } else {
+          // 2. Execute authentic MATLAB screening engine (M1 CLAHE, M2 ICDR grading, M3 U-Net mask, M4 Grad-CAM)
+          // directly on the uploaded image's pixels
+          aiResult = await processRetinalImageWithMatlabPipeline(uploadedFile, checkM3Setup);
+        }
+      }
+
+      if (!aiResult || (aiResult.success === false && aiResult.isFundus !== false)) {
+        throw new Error(aiResult?.error || 'AI image screening pipeline failed to execute');
       }
 
       const endTime = performance.now(); // 2. STOP FRONTEND ROUND-TRIP CLOCK
       const roundTripTimeMs = Math.round(endTime - startTime);
 
       if (aiResult && aiResult.success) {
-        // Guarantee Panel 1 faithfully displays the exact retinal image uploaded or selected
-        if (uploadedFile) {
+        // Guarantee Panel 1 displays the authentic retinal image
+        if (selectedSampleGrade !== null) {
+          if (!aiResult.images?.originalUrl) {
+            aiResult.images = {
+              ...(aiResult.images || {}),
+              originalUrl: `/samples/aptos/sample_g${selectedSampleGrade}_1.jpg`,
+            };
+          }
+        } else if (!aiResult.images?.originalUrl && uploadedFile) {
           try {
             const originalDataUrl = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
