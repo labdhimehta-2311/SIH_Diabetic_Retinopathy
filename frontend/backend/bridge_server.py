@@ -159,16 +159,6 @@ def execute_pipeline(input_image_path: str, run_m3_bool: bool, session_id: str):
 
     mock_inference.run_m4_gradcam(enhanced_path, heatmap_path, grade=m2_res["grade"])
 
-    # Enhance Grad-CAM with vibrant JET overlay
-    if heatmap_path and os.path.exists(heatmap_path) and os.path.exists(enhanced_path):
-        base_img = cv2.imread(enhanced_path)
-        raw_heatmap = cv2.imread(heatmap_path, cv2.IMREAD_GRAYSCALE)
-        if base_img is not None and raw_heatmap is not None:
-            raw_heatmap = cv2.resize(raw_heatmap, (base_img.shape[1], base_img.shape[0]))
-            colored_heatmap = cv2.applyColorMap(raw_heatmap, cv2.COLORMAP_JET)
-            superimposed = cv2.addWeighted(colored_heatmap, 0.5, base_img, 0.7, 0)
-            cv2.imwrite(heatmap_path, superimposed)
-
     duration = round(time.time() - start_time, 2)
     latency_ms = round(duration * 1000, 2)
 

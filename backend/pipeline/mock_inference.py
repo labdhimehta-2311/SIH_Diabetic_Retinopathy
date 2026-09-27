@@ -395,14 +395,22 @@ def run_m3_segmentation(enhanced_path, output_mask_path, check_m3_setup=True):
         subtracted, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, -3
     )
     
-    # Filter small noise artifacts
+    # Retinal FOV mask with strict margin erosion to prevent peripheral crop artifacts
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    mask_eroded = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (18, 18))) > 0
+
+    # Filter small noise artifacts strictly inside eroded retinal tissue
     kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_small)
+    cleaned[~mask_eroded] = 0
     
-    # Exudates detection (bright lesions on L channel)
+    # Exudates detection (bright lesions on L channel) strictly inside eroded retinal tissue
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
     _, exudates = cv2.threshold(l_channel, 210, 255, cv2.THRESH_BINARY)
+    exudates[~mask_eroded] = 0
     
     # Combine hemorrhages/microaneurysms (red/amber) and exudates (cyan/yellow)
     h, w = green.shape
@@ -428,35 +436,41 @@ def run_m4_gradcam(enhanced_path, output_heatmap_path, grade=1):
     h, w, _ = img.shape
     green = img[:, :, 1].astype(np.float32)
     
-    # High-frequency gradient mapping
+    # Retinal FOV mask with strict margin erosion to prevent peripheral crop artifacts
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    mask_eroded = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (18, 18))) > 0
+
+    # High-frequency gradient mapping strictly inside eroded retina
     sobelx = cv2.Sobel(green, cv2.CV_32F, 1, 0, ksize=3)
     sobely = cv2.Sobel(green, cv2.CV_32F, 0, 1, ksize=3)
     grad_mag = cv2.magnitude(sobelx, sobely)
+    grad_mag[~mask_eroded] = 0
     
     # Smooth with Gaussian blur to represent deep feature map activation
     ksize = int(max(31, (min(h, w) // 15) | 1))
     smoothed = cv2.GaussianBlur(grad_mag, (ksize, ksize), 0)
+    smoothed[~mask_eroded] = 0
     
-    # Circular mask to emphasize retinal macula and arcade vessels
-    y, x = np.ogrid[:h, :w]
-    center_y, center_x = h / 2.0, w / 2.0
-    radius = min(center_x, center_y) * 0.92
-    mask = (x - center_x)**2 + (y - center_y)**2 <= radius**2
-    smoothed[~mask] = 0
-    
-    # Normalize 0 to 255
-    min_val, max_val = float(np.min(smoothed)), float(np.max(smoothed))
-    if max_val > min_val:
-        norm_map = ((smoothed - min_val) / (max_val - min_val) * 255).astype(np.uint8)
+    # Normalize 0 to 255 within the active retinal area
+    if np.any(mask_eroded):
+        min_val = float(np.min(smoothed[mask_eroded]))
+        max_val = float(np.max(smoothed[mask_eroded]))
     else:
-        norm_map = np.zeros((h, w), dtype=np.uint8)
+        min_val, max_val = 0.0, 0.0
+
+    norm_map = np.zeros((h, w), dtype=np.uint8)
+    if max_val > min_val:
+        norm_map[mask_eroded] = ((smoothed[mask_eroded] - min_val) / (max_val - min_val) * 255).astype(np.uint8)
     
-    # Colormap: TURBO or JET
+    # Colormap: JET
     heatmap_color = cv2.applyColorMap(norm_map, cv2.COLORMAP_JET)
     
     # Alpha blend: 45% heatmap, 55% enhanced fundus
     alpha = 0.45
     blended = cv2.addWeighted(heatmap_color, alpha, img, 1 - alpha, 0)
+    blended[mask == 0] = 0
     
     cv2.imwrite(output_heatmap_path, blended)
     return output_heatmap_path
